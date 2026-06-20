@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  
+    /* LIGHT MODE - Premium Corporate, Crisp      */
+   
+    --background: #f8fafc; 
+  
+    --foreground: #0f172a; 
+    
+
+  
+    --card: #ffffff;
+    --card-foreground: #1e293b;
+    
+   
+    --border: #e2e8f0; 
+
+  
+    --primary: #0066FF; 
+    --primary-foreground: #ffffff;
+    
+    --secondary: #FF9900; 
+    --secondary-foreground: #ffffff;
+
+ 
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b; 
+    
+
+    --accent: #eff6ff; 
+    --accent-foreground: #0066FF;
+  }
+
+  .dark {
+    /* ========================================== */
+    /* DARK MODE - Cinematic, Deep Navy, Tech     */
+
+    --background: #020B18; 
+    --foreground: #f8fafc; 
+
+  
+    --card: #0a1020; 
+    --card-foreground: #f8fafc;
+    
+
+    --border: rgba(255, 255, 255, 0.1); 
+
+
+    --primary: #0066FF;
+    --primary-foreground: #ffffff;
+    
+    --secondary: #FF9900;
+    --secondary-foreground: #ffffff;
+
+    --muted: #0f172a; 
+    --muted-foreground: #94a3b8; 
+    
+
+    --accent: rgba(0, 102, 255, 0.1); 
+    --accent-foreground: #3b82f6; 
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    
+    /* CRITICAL: This ensures smooth fading across the whole site when the theme toggle is clicked */
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 500ms;
+  }
+}
+
+/* Optional: Custom utility classes for your glowing effects and glass panels */
+@layer utilities {
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+  }
+  
+  .dark .glass-panel {
+    background-color: rgba(10, 16, 32, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+  }
 }
