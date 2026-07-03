@@ -12,6 +12,7 @@ const AreasOfImpact: React.FC = () => {
       icon: <GraduationCap className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#0066FF]", 
       textClass: "text-[#0066FF]",
+      href: "https://www.tutor4study.com/",
       image: "/t4s.png" // Replace with your actual image paths
     },
     {
@@ -20,6 +21,7 @@ const AreasOfImpact: React.FC = () => {
       icon: <BookOpenText className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#10B981]",
       textClass: "text-[#10B981]",
+      href:"https://www.assignmentswallah.com/",
       image: "/aw.png"
     },
     {
@@ -28,6 +30,7 @@ const AreasOfImpact: React.FC = () => {
       icon: <Languages className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#F59E0B]",
       textClass: "text-[#F59E0B]",
+      href:"https://www.assignmentswallah.com/branch/languages-homework-help",
       image: "/Lang.png"
     },
     {
@@ -36,6 +39,7 @@ const AreasOfImpact: React.FC = () => {
       icon: <BriefcaseBusiness className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#8B5CF6]",
       textClass: "text-[#8B5CF6]",
+      href:"https://www.assignmentswallah.com/job-support",
       image: "/Ifs.png"
     },
     {
@@ -44,6 +48,7 @@ const AreasOfImpact: React.FC = () => {
       icon: <MonitorPlay className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#06B6D4]",
       textClass: "text-[#06B6D4]",
+      href:"https://www.gandharvaschoolofmusic.com/",
       image: "/gsm.png"
     }
   ];
@@ -129,7 +134,7 @@ const ImpactCard = ({ item }: { item: any }) => {
           {/* Action Link pushed to the very bottom */}
           <div className="mt-auto">
             <a 
-              href="#" 
+              href={item.href}
               className={`inline-flex items-center text-xs font-bold tracking-[0.1em] uppercase hover:opacity-70 transition-opacity ${item.textClass}`}
             >
               Learn More <span className="ml-1 text-lg leading-none">&rarr;</span>

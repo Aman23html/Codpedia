@@ -2,18 +2,35 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Menu, X, BookOpen, GraduationCap, Languages, Briefcase } from "lucide-react";
+import { ChevronDown, Menu, X, BookOpen, GraduationCap, Languages, Briefcase, Music } from "lucide-react";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/shared/theme-toggle"; 
 import Logo from "./Logo";
 
 const ecosystemBrands = [
-  { name: "Assignment Wallah", icon: BookOpen, href: "#k12" },
-  { name: "Grades Buddy", icon: GraduationCap, href: "#research" },
-  { name: "ZenZlearn", icon: Languages, href: "#language" },
-  { name: "Career Growth", icon: Briefcase, href: "#career" },
+  { name: "Tutor4Study", icon: BookOpen, href: "https://www.tutor4study.com/" },
+  { name: "Assignments wallah", icon: GraduationCap, href: "https://www.assignmentswallah.com/" },
+  { name: "Language Education", icon: Languages, href: "https://www.assignmentswallah.com/branch/languages-homework-help" },
+  { name: "Infinte Solution", icon: Briefcase, href: "https://www.assignmentswallah.com/job-support" },
+  { name: "Gandharva School Of Music", icon: Music, href: "https://www.gandharvaschoolofmusic.com/" },
 ];
 
+// Reusable glowing flare component for the active/hover state
+const NavGlow = ({ isActive }: { isActive: boolean }) => (
+  <span
+    className={`absolute -bottom-1.5 left-1/2 w-full -translate-x-1/2 flex items-center justify-center transition-all duration-300 pointer-events-none ${
+      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+    }`}
+  >
+    {/* Soft wide gradient fade */}
+    <span className="absolute h-[1px] w-[140%] bg-gradient-to-r from-transparent via-[var(--secondary)] to-transparent opacity-80" />
+    {/* Intense bright center core */}
+    <span className="absolute h-[2px] w-[40%] bg-[var(--secondary)] shadow-[0_0_15px_3px_var(--secondary)] rounded-full" />
+  </span>
+);
+
 export default function Navbar() {
+  const pathname = usePathname();
   const [activeDropdown, setActiveDropdown] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState(false);
@@ -25,26 +42,50 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [mobileMenuOpen]);
+
+  // Helper to determine link styles
+  const getLinkClasses = (path: string) => {
+    const isActive = pathname === path;
+    return `relative group flex items-center text-sm font-medium transition-colors py-1 whitespace-nowrap ${
+      isActive ? "text-[var(--foreground)]" : "text-[var(--foreground)]/80 hover:text-[var(--foreground)]"
+    }`;
+  };
+
   return (
     <nav 
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         scrolled 
-          ? "bg-[var(--background)]/90 backdrop-blur-md border-b border-[var(--border)] shadow-sm py-3" 
-          : "bg-transparent py-5"
+          ? "bg-[var(--background)]/90 backdrop-blur-md border-b border-[var(--border)] shadow-sm py-2 sm:py-3" 
+          : "bg-transparent py-4 sm:py-5"
       }`}
     >
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
         
         {/* 1. Logo Section */}
-        <div className="flex-shrink-0 cursor-pointer">
+        <div className="flex-shrink-0 cursor-pointer z-50">
           <Logo />
         </div>
 
-        {/* 2. Desktop Navigation Links (Centered, clean spacing) */}
-        <div className="hidden lg:flex items-center justify-center space-x-10 flex-1">
-          <a href="#home" className="text-sm font-medium text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors">Home</a>
+        {/* 2. Desktop Navigation Links */}
+        <div className="hidden lg:flex items-center justify-center space-x-8 xl:space-x-12 flex-1 px-4">
           
-          <a href="#about" className="text-sm font-medium text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors">About</a>
+          <a href="/" className={getLinkClasses("/")}>
+            Home
+            <NavGlow isActive={pathname === "/"} />
+          </a>
+          
+          <a href="/about" className={getLinkClasses("/about")}>
+            About
+            <NavGlow isActive={pathname === "/about"} />
+          </a>
 
           {/* Clean Dropdown Trigger */}
           <div 
@@ -52,7 +93,7 @@ export default function Navbar() {
             onMouseEnter={() => setActiveDropdown(true)}
             onMouseLeave={() => setActiveDropdown(false)}
           >
-            <button className="flex items-center gap-1.5 text-sm font-medium text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors py-2">
+            <button className={`relative group flex items-center gap-1.5 text-sm font-medium transition-colors py-1 whitespace-nowrap ${activeDropdown ? "text-[var(--foreground)]" : "text-[var(--foreground)]/80 hover:text-[var(--foreground)]"}`}>
               Our Brands 
               <motion.div
                 animate={{ rotate: activeDropdown ? 180 : 0 }}
@@ -60,6 +101,7 @@ export default function Navbar() {
               >
                 <ChevronDown className="w-3.5 h-3.5 opacity-70" />
               </motion.div>
+              <NavGlow isActive={activeDropdown} />
             </button>
 
             {/* Minimalist Dropdown Menu */}
@@ -94,17 +136,40 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          <a href="/careers" className="text-sm font-medium text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors">Careers</a>
-          <a href="#contact" className="text-sm font-medium text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors">Contact</a>
+          <a href="/careers" className={getLinkClasses("/careers")}>
+            Careers
+            <NavGlow isActive={pathname === "/careers"} />
+          </a>
+          
+          <a href="/contact" className={getLinkClasses("/contact")}>
+            Contact
+            <NavGlow isActive={pathname === "/contact"} />
+          </a>
         </div>
 
-        {/* 3. Right Action Area (Theme Toggle & CTA) */}
-        <div className="hidden lg:flex items-center gap-6 flex-shrink-0">
+        {/* 3. Right Action Area (Theme Toggle, Workspace & CTA) */}
+        <div className="hidden lg:flex items-center gap-3 xl:gap-5 flex-shrink-0">
           <ThemeToggle />
+          
+          {/* Desktop Workspace Link */}
+          <a
+            href="/login"
+            className="
+              px-4 py-2
+              text-sm font-medium 
+              text-[var(--foreground)]/80 hover:text-[var(--foreground)]
+              border border-[var(--border)] rounded-full
+              hover:bg-[var(--foreground)]/[0.03]
+              transition-all duration-200
+              whitespace-nowrap
+            "
+          >
+            Workspace
+          </a>
           
           <button
             className="
-              px-6 py-2.5
+              px-5 xl:px-6 py-2.5
               rounded-full
               text-sm font-semibold 
               bg-[var(--foreground)] text-[var(--background)]
@@ -112,6 +177,7 @@ export default function Navbar() {
               active:scale-[0.98]
               transition-all duration-200
               shadow-md
+              whitespace-nowrap
             "
           >
             Partner With Us
@@ -119,29 +185,30 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu Toggle */}
-        <div className="lg:hidden flex items-center gap-4">
+        <div className="lg:hidden flex items-center gap-3 sm:gap-4 z-50">
           <ThemeToggle />
           <button 
-            className="p-2 -mr-2 text-[var(--foreground)]"
+            className="p-2 -mr-2 text-[var(--foreground)] focus:outline-none"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer (Clean styling) */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden absolute top-full left-0 w-full bg-[var(--background)] border-b border-[var(--border)] shadow-xl"
+            className="lg:hidden absolute top-full left-0 w-full bg-[var(--background)] border-b border-[var(--border)] shadow-xl max-h-[calc(100vh-4rem)] overflow-y-auto"
           >
-            <div className="px-6 py-6 flex flex-col gap-6">
-              <a href="#home" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium">Home</a>
-              <a href="#about" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium">About</a>
+            <div className="px-4 sm:px-6 py-6 flex flex-col gap-6 pb-8">
+              <a href="/" onClick={() => setMobileMenuOpen(false)} className={`text-lg font-medium ${pathname === "/" ? "text-[var(--secondary)]" : ""}`}>Home</a>
+              <a href="/about" onClick={() => setMobileMenuOpen(false)} className={`text-lg font-medium ${pathname === "/about" ? "text-[var(--secondary)]" : ""}`}>About</a>
               
               <div className="flex flex-col gap-3">
                 <span className="text-sm font-semibold text-[var(--foreground)]/50 uppercase tracking-wider">Our Brands</span>
@@ -155,12 +222,23 @@ export default function Navbar() {
                 </div>
               </div>
               
-              <a href="/careers" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium">Careers</a>
-              <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium">Contact</a>
+              <a href="/careers" onClick={() => setMobileMenuOpen(false)} className={`text-lg font-medium ${pathname === "/careers" ? "text-[var(--secondary)]" : ""}`}>Careers</a>
+              <a href="/contact" onClick={() => setMobileMenuOpen(false)} className={`text-lg font-medium ${pathname === "/contact" ? "text-[var(--secondary)]" : ""}`}>Contact</a>
               
-              <button className="w-full mt-4 py-3.5 rounded-xl text-base font-semibold bg-[var(--foreground)] text-[var(--background)]">
-                Partner With Us
-              </button>
+              {/* Mobile Primary Actions Stack */}
+              <div className="flex flex-col gap-3 mt-2">
+                <a 
+                  href="/login" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-3 rounded-xl text-center text-base font-semibold border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--foreground)]/[0.03] transition-colors"
+                >
+                  Workspace
+                </a>
+                
+                <button className="w-full py-3.5 rounded-xl text-base font-semibold bg-[var(--foreground)] text-[var(--background)] active:scale-[0.98] transition-transform">
+                  Partner With Us
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

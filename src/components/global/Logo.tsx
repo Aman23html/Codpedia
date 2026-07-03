@@ -12,9 +12,9 @@ export default function Logo() {
         src={CodpLogo}
         alt="Codepedia Logo"
         width={180}
-        height={30}
+        
         priority
-        className="object-contain"
+        className="object-contain height=auto"
       />
 
       {/* 2. Tagline & Lines Section (Using Flexbox for perfect alignment) */}

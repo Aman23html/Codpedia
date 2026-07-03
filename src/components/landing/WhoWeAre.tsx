@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React,  { useEffect, useState } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { Globe, ShieldCheck, Users, Lightbulb } from 'lucide-react';
 import { useTheme } from "next-themes";
@@ -8,11 +8,18 @@ import { themeAssets } from "@/lib/theme-assets";
 
 const WhoWeAre: React.FC = () => {
    const { resolvedTheme } = useTheme();
+   const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
+const currentTheme = mounted ? resolvedTheme : "dark";
   
     const assets =
-      resolvedTheme === "dark"
-        ? themeAssets.dark
-        : themeAssets.light;
+  currentTheme === "dark"
+    ? themeAssets.dark
+    : themeAssets.light;
   const features = [
     {
       icon: <Globe className="w-7 h-7 text-[var(--primary)] transition-colors duration-500" strokeWidth={1.5} />,

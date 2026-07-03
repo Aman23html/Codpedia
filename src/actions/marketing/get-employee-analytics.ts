@@ -1,0 +1,118 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/current-user";
+
+type FilterType = "ALL" | "TODAY" | "7_DAYS" | "30_DAYS";
+
+function getDateFilter(filter: FilterType) {
+  const now = new Date();
+
+  if (filter === "TODAY") {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return { gte: start };
+  }
+
+  if (filter === "7_DAYS") {
+    const start = new Date();
+    start.setDate(now.getDate() - 7);
+    return { gte: start };
+  }
+
+  if (filter === "30_DAYS") {
+    const start = new Date();
+    start.setDate(now.getDate() - 30);
+    return { gte: start };
+  }
+
+  return undefined;
+}
+
+export async function getEmployeeAnalytics(filter: FilterType = "ALL") {
+  const user = await getCurrentUser();
+
+  if (!user) throw new Error("Unauthorized");
+
+  const dateFilter = getDateFilter(filter);
+
+  const reports = await prisma.marketingReport.findMany({
+    where: {
+      userId: user.id,
+      ...(dateFilter ? { createdAt: dateFilter } : {}),
+    },
+
+    include: {
+      user: {
+        select: {
+          id: true,
+          employeeCode: true,
+          profileImageUrl: true,
+          fullName: true,
+          username: true,
+          email: true,
+          phone: true,
+        },
+      },
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (!reports.length) {
+    return {
+      reports: [],
+      summary: {
+        totalReports: 0,
+        whatsappGroups: 0,
+        whatsappPosts: 0,
+        telegramGroups: 0,
+        telegramPosts: 0,
+        facebookGroups: 0,
+        facebookPosts: 0,
+        resourceLogin: 0,
+        accountClean: 0,
+      },
+      filter,
+    };
+  }
+
+  const summary = reports.reduce(
+    (acc, r) => {
+      acc.totalReports += 1;
+
+      acc.whatsappGroups += r.whatsappGroupsJoined || 0;
+      acc.whatsappPosts += r.whatsappPostsDone || 0;
+
+      acc.telegramGroups += r.telegramGroupsJoined || 0;
+      acc.telegramPosts += r.telegramPostsDone || 0;
+
+      acc.facebookGroups += r.facebookGroupsJoined || 0;
+      acc.facebookPosts += r.facebookPostsDone || 0;
+
+      acc.resourceLogin += r.resourceLogin || 0;
+      acc.accountClean += r.accountClean || 0;
+
+      return acc;
+    },
+    {
+      totalReports: 0,
+      whatsappGroups: 0,
+      whatsappPosts: 0,
+      telegramGroups: 0,
+      telegramPosts: 0,
+      facebookGroups: 0,
+      facebookPosts: 0,
+      resourceLogin: 0,
+      accountClean: 0,
+    }
+  );
+
+  return {
+    reports,
+    summary,
+    filter,
+  };
+}

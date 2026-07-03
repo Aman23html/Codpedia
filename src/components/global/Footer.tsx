@@ -1,14 +1,15 @@
 "use client";
 
-import React from 'react';
-import { 
+import React from "react";
+import Link from "next/link";
+import {
   ShieldCheck,
   Mail,
   Clock,
   MapPin,
-  Phone
-} from 'lucide-react';
-import Logo from './Logo';
+  Phone,
+} from "lucide-react";
+import Logo from "./Logo";
 
 const FacebookIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
@@ -36,113 +37,175 @@ const InstagramIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 const YoutubeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
   </svg>
 );
 
 const Footer: React.FC = () => {
   const companyLinks = [
-    "About Us",
-    "Our Mission",
-    "Our Vision",
-    "Leadership",
-    "Careers",
-    "News & Updates"
+    { title: "About Us", href: "/about" },
+    { title: "Our Mission", href: "/about#mission" },
+    { title: "Our Vision", href: "/about#vision" },
+    { title: "Careers", href: "/careers" },
   ];
 
   const brandsLinks = [
-    { title: "Codepedia Academy", subtitle: "(Tutor4Study)" },
-    { title: "Codepedia Research", subtitle: "(Academic Support)" },
-    { title: "Codepedia Languages", subtitle: "(Language Education)" },
-    { title: "Codepedia Career Support", subtitle: "(Career Growth)" },
-    { title: "Codepedia Digital Learning", subtitle: "(Digital Solutions)" }
+    {
+      title: "Codepedia Academy",
+      subtitle: "(Tutor4Study)",
+      href: "https://www.tutor4study.com/",
+    },
+    {
+      title: "Codepedia Research",
+      subtitle: "(Assignments Wallah)",
+      href: "https://www.assignmentswallah.com/",
+    },
+    {
+      title: "Codepedia Languages",
+      subtitle: "(Language Education)",
+      href: "https://www.assignmentswallah.com/branch/languages-homework-help",
+    },
+    {
+      title: "Career Support",
+      subtitle: "(Infinite Solutions)",
+      href: "https://www.assignmentswallah.com/job-support",
+    },
+    {
+      title: "Codepedia Skills",
+      subtitle: "(Gandharva School of Music)",
+      href: "https://www.gandharvaschoolofmusic.com/",
+    },
   ];
 
   const quickLinks = [
-    "Partners",
-    "Our Impact",
-    "Global Reach",
-    "Resources",
-    "Blog",
-    "Contact Us"
+    { title: "Our Brands", href: "/brands" },
+    { title: "Global Reach", href: "/global-reach" },
+    { title: "Resources", href: "/resources" },
+    { title: "Contact Us", href: "/contact" },
   ];
 
   const supportLinks = [
-    "Help Center",
-    "Student Support",
-    "Partner Support",
-    "Terms of Use",
-    "Privacy Policy",
-    "Refund Policy"
+    { title: "Help Center", href: "/help" },
+    { title: "Privacy Policy", href: "/privacy" },
+    { title: "Terms of Use", href: "/terms" },
+  ];
+
+  const socialLinks = [
+    {
+      label: "Facebook",
+      href: "#",
+      icon: FacebookIcon,
+      className: "bg-[#1877F2]",
+    },
+    {
+      label: "LinkedIn",
+      href: "#",
+      icon: LinkedinIcon,
+      className: "bg-[#0A66C2]",
+    },
+    {
+      label: "Twitter",
+      href: "#",
+      icon: TwitterIcon,
+      className: "bg-[#1DA1F2]",
+    },
+    {
+      label: "Instagram",
+      href: "#",
+      icon: InstagramIcon,
+      className:
+        "bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]",
+    },
+    {
+      label: "YouTube",
+      href: "#",
+      icon: YoutubeIcon,
+      className: "bg-[#FF0000]",
+    },
   ];
 
   return (
-   
-    <footer className="relative bg-[var(--background)] pt-20 pb-12 overflow-hidden font-sans border-t border-[var(--border)] transition-colors duration-500">
-      
-      
+    <footer className="relative bg-[var(--background)] pt-20 pb-10 overflow-hidden font-sans border-t border-[var(--border)] transition-colors duration-500">
       <div className="relative z-10 max-w-[1300px] mx-auto px-6 md:px-12 lg:px-24">
-        
-      
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8 mb-16">
-          
-         
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8 mb-14">
           <div className="lg:col-span-2 pr-4">
-            
-            <div className="flex-shrink-0 cursor-pointer -translate-6">
-                      <Logo />
-                    </div>
-            
-            <h3 className="text-xl font-bold text-[var(--foreground)] mb-1 transition-colors duration-500">Codepedia Solutions</h3>
+            <Link
+              href="/"
+              aria-label="Codepedia Solutions Home"
+              className="inline-block -translate-x-6"
+            >
+              <Logo />
+            </Link>
+
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-1 transition-colors duration-500">
+              Codepedia Solutions
+            </h3>
+
             <p className="text-[var(--primary)] text-sm font-medium mb-6 transition-colors duration-500">
-              Registered Education & Knowledge<br />Services Company
-            </p>
-            
-            <p className="text-[var(--muted-foreground)] text-sm leading-relaxed mb-8 pr-4 transition-colors duration-500">
-              The parent company behind a family of specialized education and knowledge-service brands, empowering learners, researchers and professionals worldwide.
+              Registered Education & Knowledge
+              <br />
+              Services Company
             </p>
 
-            {/* Social Icons (Kept original brand colors for recognition) */}
+            <p className="text-[var(--muted-foreground)] text-sm leading-relaxed mb-8 pr-4 transition-colors duration-500">
+              The parent company behind specialized education and
+              knowledge-service brands, empowering learners, researchers and
+              professionals worldwide.
+            </p>
+
             <div className="flex items-center gap-3">
-              <a href="#" className="w-9 h-9 rounded-full bg-[#1877F2] flex items-center justify-center hover:opacity-80 transition-opacity">
-                <FacebookIcon className="w-4 h-4 text-white" />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-full bg-[#0A66C2] flex items-center justify-center hover:opacity-80 transition-opacity">
-                <LinkedinIcon className="w-4 h-4 text-white" />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-full bg-[#1DA1F2] flex items-center justify-center hover:opacity-80 transition-opacity">
-                <TwitterIcon className="w-4 h-4 text-white" />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center hover:opacity-80 transition-opacity">
-                <InstagramIcon className="w-4 h-4 text-white" />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-full bg-[#FF0000] flex items-center justify-center hover:opacity-80 transition-opacity">
-                <YoutubeIcon className="w-4 h-4 text-white" />
-              </a>
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    aria-label={social.label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-9 h-9 rounded-full ${social.className} flex items-center justify-center hover:opacity-80 transition-opacity`}
+                  >
+                    <Icon className="w-4 h-4 text-white" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
-          {/* Column 2: Company */}
           <div className="lg:col-span-1">
-            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">Company</h4>
+            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">
+              Company
+            </h4>
+
             <ul className="space-y-4">
-              {companyLinks.map((link, idx) => (
-                <li key={idx}>
-                  <a href="#" className="text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors duration-300">
-                    {link}
-                  </a>
+              {companyLinks.map((item) => (
+                <li key={item.title}>
+                  <Link
+                    href={item.href}
+                    className="text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors duration-300"
+                  >
+                    {item.title}
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3: Our Brands */}
           <div className="lg:col-span-1">
-            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">Our Brands</h4>
+            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">
+              Our Brands
+            </h4>
+
             <ul className="space-y-4">
-              {brandsLinks.map((brand, idx) => (
-                <li key={idx}>
-                  <a href="#" className="group flex flex-col">
+              {brandsLinks.map((brand) => (
+                <li key={brand.title}>
+                  <a
+                    href={brand.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col"
+                  >
                     <span className="text-[var(--foreground)]/80 text-sm group-hover:text-[var(--primary)] transition-colors duration-300">
                       {brand.title}
                     </span>
@@ -155,112 +218,178 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Column 4: Quick Links */}
           <div className="lg:col-span-1">
-            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">Quick Links</h4>
+            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">
+              Quick Links
+            </h4>
+
             <ul className="space-y-4">
-              {quickLinks.map((link, idx) => (
-                <li key={idx}>
-                  <a href="#" className="text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors duration-300">
-                    {link}
-                  </a>
+              {quickLinks.map((item) => (
+                <li key={item.title}>
+                  <Link
+                    href={item.href}
+                    className="text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors duration-300"
+                  >
+                    {item.title}
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 5: Support */}
           <div className="lg:col-span-1">
-            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">Support</h4>
+            <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">
+              Support
+            </h4>
+
             <ul className="space-y-4">
-              {supportLinks.map((link, idx) => (
-                <li key={idx}>
-                  <a href="#" className="text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors duration-300">
-                    {link}
-                  </a>
+              {supportLinks.map((item) => (
+                <li key={item.title}>
+                  <Link
+                    href={item.href}
+                    className="text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors duration-300"
+                  >
+                    {item.title}
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
-
         </div>
 
-        {/* Glowing Divider Line */}
         <div className="relative w-full h-[1px] bg-[var(--border)] mb-12 transition-colors duration-500">
-          {/* The glowing primary segment */}
           <div className="absolute left-[15%] top-0 h-[1px] w-64 bg-[var(--primary)] shadow-[0_0_20px_3px_rgba(0,102,255,0.4)] dark:shadow-[0_0_20px_3px_rgba(0,102,255,0.8)] transition-all duration-500" />
         </div>
 
-        {/* Bottom Section: Trust & Contact Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 relative z-10">
-          
-          {/* Trust Block */}
           <div className="flex gap-5">
             <div className="w-[52px] h-[52px] shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] flex items-center justify-center transition-colors duration-500">
-              <ShieldCheck className="w-6 h-6 text-[var(--secondary)] transition-colors duration-500" strokeWidth={1.5} />
+              <ShieldCheck
+                className="w-6 h-6 text-[var(--secondary)] transition-colors duration-500"
+                strokeWidth={1.5}
+              />
             </div>
+
             <div>
               <h5 className="text-[var(--foreground)] font-bold text-[15px] mb-2 leading-snug transition-colors duration-500">
-                Government Registered<br />Business
+                Government Registered
+                <br />
+                Business
               </h5>
+
               <p className="text-[var(--muted-foreground)] text-sm leading-relaxed pr-4 transition-colors duration-500">
-                We are a legally registered education and knowledge services company, operating in compliance with government regulations.
+                A legally registered education and knowledge services company,
+                operating with professional business standards.
               </p>
             </div>
           </div>
 
-          {/* Contact Block */}
           <div className="flex gap-5">
             <div className="w-[52px] h-[52px] shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] flex items-center justify-center transition-colors duration-500">
-              <Mail className="w-6 h-6 text-[var(--primary)] transition-colors duration-500" strokeWidth={1.5} />
+              <Mail
+                className="w-6 h-6 text-[var(--primary)] transition-colors duration-500"
+                strokeWidth={1.5}
+              />
             </div>
+
             <div>
-              <h5 className="text-[var(--foreground)] font-bold text-[15px] mb-3 transition-colors duration-500">Get In Touch</h5>
+              <h5 className="text-[var(--foreground)] font-bold text-[15px] mb-3 transition-colors duration-500">
+                Get In Touch
+              </h5>
+
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-sm text-[var(--muted-foreground)] transition-colors duration-500">
                   <Mail className="w-4 h-4 text-[var(--primary)] opacity-70 mt-0.5 shrink-0 transition-colors duration-500" />
-                  <a href="mailto:info@codepediasolutions.com" className="hover:text-[var(--primary)] transition-colors">
+                  <a
+                    href="mailto:info@codepediasolutions.com"
+                    className="hover:text-[var(--primary)] transition-colors"
+                  >
                     info@codepediasolutions.com
                   </a>
                 </li>
+
                 <li className="flex items-start gap-3 text-sm text-[var(--muted-foreground)] transition-colors duration-500">
                   <Phone className="w-4 h-4 text-[var(--primary)] opacity-70 mt-0.5 shrink-0 transition-colors duration-500" />
-                  <a href="tel:+13022002144" className="hover:text-[var(--primary)] transition-colors">
-                    +1 (302) 200-2144
+                  <a
+                    href="tel:+13022002144"
+                    className="hover:text-[var(--primary)] transition-colors"
+                  >
+                    +91 62876 72229
                   </a>
                 </li>
+
                 <li className="flex items-start gap-3 text-sm text-[var(--muted-foreground)] transition-colors duration-500">
                   <MapPin className="w-4 h-4 text-[var(--primary)] opacity-70 mt-0.5 shrink-0 transition-colors duration-500" />
-                  <span className="leading-snug">
-                    8 The Green, Suite A,<br />Dover, DE 19901, USA
-                  </span>
+                  <a
+                    href="https://maps.google.com/?q=8+The+Green,+Suite+A,+Dover,+DE+19901,+USA"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="leading-snug hover:text-[var(--primary)] transition-colors"
+                  >
+                    Vikash Nagar,
+                    <br />
+                    DHANBAD, 826007
+                  </a>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Office Hours Block */}
           <div className="flex gap-5">
             <div className="w-[52px] h-[52px] shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] flex items-center justify-center transition-colors duration-500">
-              <Clock className="w-6 h-6 text-[var(--primary)] transition-colors duration-500" strokeWidth={1.5} />
+              <Clock
+                className="w-6 h-6 text-[var(--primary)] transition-colors duration-500"
+                strokeWidth={1.5}
+              />
             </div>
+
             <div>
-              <h5 className="text-[var(--foreground)] font-bold text-[15px] mb-3 transition-colors duration-500">Office Hours</h5>
-              <p className="text-[var(--muted-foreground)] text-sm mb-1 transition-colors duration-500">Monday &ndash; Friday</p>
-              <p className="text-[var(--muted-foreground)] text-sm transition-colors duration-500">9:00 AM &ndash; 6:00 PM (EST)</p>
+              <h5 className="text-[var(--foreground)] font-bold text-[15px] mb-3 transition-colors duration-500">
+                Office Hours
+              </h5>
+              <p className="text-[var(--muted-foreground)] text-sm mb-1 transition-colors duration-500">
+                Monday – Saturday
+              </p>
+              <p className="text-[var(--muted-foreground)] text-sm transition-colors duration-500">
+                9:00 AM – 9:00 PM IST
+              </p>
             </div>
           </div>
-
         </div>
 
+        <div className="mt-14 pt-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[var(--muted-foreground)]">
+          <p>
+            © {new Date().getFullYear()} Codepedia Solutions. All Rights
+            Reserved.
+          </p>
+
+          <div className="flex items-center gap-5">
+            <Link
+              href="/privacy"
+              className="hover:text-[var(--primary)] transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-[var(--primary)] transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/contact"
+              className="hover:text-[var(--primary)] transition-colors"
+            >
+              Contact
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Subtle World Map Background (Bottom Area) */}
-      <div 
+      <div
         className="absolute bottom-0 left-0 w-full h-[350px] opacity-[0.04] dark:opacity-[0.03] mix-blend-normal dark:mix-blend-screen pointer-events-none bg-cover bg-bottom bg-no-repeat transition-all duration-500"
-        style={{ backgroundImage: 'url(/api/placeholder/1920/400)' }} 
+        style={{ backgroundImage: "url(/api/placeholder/1920/400)" }}
       />
-      
     </footer>
   );
 };
