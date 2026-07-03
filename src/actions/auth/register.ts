@@ -32,7 +32,7 @@ export async function registerUser(data: unknown) {
       10
     );
 
-    const employeeCode = await generateEmployeeCode(departmentId);
+    const employeeCode = await generateEmployeeCode(validatedData.departmentId);
 
     const user = await prisma.user.create({
       data: {
@@ -43,7 +43,7 @@ export async function registerUser(data: unknown) {
         passwordHash,
 
         departmentId: validatedData.departmentId,
-        employeecode,
+        employeeCode,
 
         role: "EMPLOYEE",
         status: "PENDING_APPROVAL",
