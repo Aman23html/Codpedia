@@ -33,7 +33,7 @@ export default function TermsAndConditions() {
           <ul className="list-disc pl-6 space-y-2 mt-4 mb-4">
             <li>Live online tutoring and academic support.</li>
             <li>Research assistance and academic writing guidance.</li>
-            <li>Language education and certification preparation.</li>
+            <li>Grades Bubby and certification preparation.</li>
             <li>Professional career growth and upskilling programs.</li>
           </ul>
           <p>

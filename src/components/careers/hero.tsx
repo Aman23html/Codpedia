@@ -103,6 +103,7 @@ export default function HeroSection() {
                     src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                     alt="Team collaboration"
                     className="h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+                    loading="lazy"
                   />
                   {/* Subtle overlay gradient for professional depth */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

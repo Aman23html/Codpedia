@@ -26,14 +26,14 @@ const brands = [
     accentRgb: "249, 115, 22",
   },
   {
-    title: "Language Education",
-    desc: "English, IELTS and global language learning programs.",
+    title: "Grades Bubby",
+    desc: "work on real-world projects across research, technology, engineering, management and more.",
     icon: MessageSquareText,
     accent: "#2dd4bf",
     accentRgb: "45, 212, 191",
   },
   {
-    title: "Infinite Solution",
+    title: "Infinite Solutions",
     desc: "Job support, resume building, interview preparation and upskilling for professionals.",
     icon: BriefcaseBusiness,
     accent: "#60a5fa",
@@ -120,8 +120,7 @@ export default function EcosystemSection() {
 
               <div className="absolute inset-0 overflow-hidden rounded-[24px] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 <div
-                  className="absolute left-1/2 top-1/2 aspect-square w-[200%] -translate-x-1/2 -translate-y-1/2 animate-[spin_1
-                  s_linear_infinite]"
+                  className="absolute left-1/2 top-1/2 aspect-square w-[200%] -translate-x-1/2 -translate-y-1/2 animate-[spin_1s_linear_infinite]"
                   style={{
                     background:
                       "conic-gradient(from 90deg at 50% 50%, transparent 60%, var(--card-accent) 100%)",

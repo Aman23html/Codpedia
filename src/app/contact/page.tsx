@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Phone, MapPin, Send, MessageSquare, ShieldCheck, Check, Loader2, Globe } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageSquare, Check, Loader2, Globe } from "lucide-react";
 
+// Clean display values for the UI
 const countryCodes = [
   { code: "+1", country: "US/CA" },
   { code: "+44", country: "UK" },
@@ -24,36 +25,47 @@ export default function Contact() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
-  // Human Verification States
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
 
-  const handleVerify = () => {
-    if (isVerified) return;
-    setIsVerifying(true);
-    // Simulate network delay for verification
-    setTimeout(() => {
-      setIsVerifying(false);
-      setIsVerified(true);
-    }, 1200);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isVerified) return; // Prevent submission if not verified
-
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      setFormData({ name: "", email: "", countryCode: "+1", phone: "", subject: "", message: "" });
-      setIsVerified(false); // Reset verification after sending
+
+    // FIX FOR GOOGLE SHEETS FORMULA ERROR:
+    // We append the apostrophe (') here programmatically so Google Sheets treats it as plain text.
+    const fullPhone = `'${formData.countryCode} ${formData.phone}`;
+
+    // Prepare data exactly as the Google Apps Script expects it
+    const submitData = new FormData();
+    submitData.append("Name", formData.name);
+    submitData.append("Email", formData.email);
+    submitData.append("Phone", fullPhone);
+    submitData.append("Subject", formData.subject);
+    submitData.append("Message", formData.message);
+
+    try {
+      const scriptURL = "https://script.google.com/macros/s/AKfycbwReCS-CGzqUNhXpH1R1FgrmCPriaoTlor6W5uL1zTV3hugL8cUcozxkMq5yapNRiZh/exec";
       
-      setTimeout(() => setIsSuccess(false), 3000);
-    }, 1500);
+      const response = await fetch(scriptURL, {
+        method: "POST",
+        body: submitData,
+      });
+
+      if (response.ok) {
+        setIsSuccess(true);
+        // Reset form
+        setFormData({ name: "", email: "", countryCode: "+1", phone: "", subject: "", message: "" });
+        
+        // Remove success message after 3 seconds
+        setTimeout(() => setIsSuccess(false), 3000);
+      } else {
+        throw new Error("Network response was not ok");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Something went wrong. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,8 +89,8 @@ export default function Contact() {
           transition={{ duration: 0.8 }}
           className="w-full lg:w-5/12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--secondary)]/10 text-[var(--secondary)] text-xs font-bold tracking-widest uppercase mb-6 border border-[var(--secondary)]/20">
-            <MessageSquare className="w-4 h-4" /> Get in Touch
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--secondary)]/10 text-[var(--secondary)] text-xs font-bold tracking-widest uppercase mb-6 border border-[var(--secondary)]/20">
+             Get in Touch
           </div>
           
           <h1 className="text-4xl lg:text-5xl font-black text-[var(--foreground)] leading-[1.1] mb-6 tracking-tight transition-colors duration-500">
@@ -95,8 +107,8 @@ export default function Contact() {
           <div className="space-y-6">
             {[
               { icon: Mail, title: "Email Us", detail: "info@codepediasolutions.com", link: "mailto:info@codepediasolutions.com" },
-              { icon: Phone, title: "Call Us", detail: "+91", link: "tel:+13022002144" },
-              { icon: MapPin, title: "Global HQ", detail: "8 The Green, Suite A, Dover, DE 19901, USA", link: "#" },
+              { icon: Phone, title: "Call Us", detail: "+91 6287672229", link: "tel:+916287672229" },
+              { icon: MapPin, title: "Global HQ", detail: "Jagjiwan Nagar, DHANBAD, 826007", link: "#" },
             ].map((item, i) => (
               <motion.div 
                 key={i}
@@ -194,30 +206,12 @@ export default function Contact() {
                 />
               </div>
 
-              {/* Smart Human Verification Widget */}
-              <div 
-                onClick={handleVerify}
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all duration-300 ${isVerified ? 'border-[#2ECC71]/30 bg-[#2ECC71]/5' : 'border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)]/50'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded border flex items-center justify-center transition-colors ${isVerified ? 'bg-[#2ECC71] border-[#2ECC71]' : 'border-[var(--muted-foreground)]/30 bg-[var(--card)]'}`}>
-                    {isVerifying && <Loader2 className="w-4 h-4 text-[var(--primary)] animate-spin" />}
-                    {isVerified && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
-                  </div>
-                  <span className={`text-sm font-semibold transition-colors ${isVerified ? 'text-[#2ECC71]' : 'text-[var(--foreground)]'}`}>
-                    {isVerified ? "Verification Complete" : "Verify you are human"}
-                  </span>
-                </div>
-                <ShieldCheck className={`w-6 h-6 transition-colors ${isVerified ? 'text-[#2ECC71]' : 'text-[var(--muted-foreground)]/40'}`} />
-              </div>
-
               {/* Submit Button */}
               <button 
                 type="submit" 
-                disabled={isSubmitting || !isVerified}
+                disabled={isSubmitting}
                 className={`w-full flex items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold text-white shadow-lg transition-all duration-300 overflow-hidden relative ${
                   isSuccess ? 'bg-[#2ECC71] shadow-[#2ECC71]/20' : 
-                  !isVerified ? 'bg-[var(--muted-foreground)]/40 cursor-not-allowed shadow-none' : 
                   'bg-[var(--primary)] shadow-[var(--primary)]/20 hover:opacity-90 hover:-translate-y-0.5'
                 }`}
               >

@@ -61,9 +61,9 @@ const Footer: React.FC = () => {
       href: "https://www.assignmentswallah.com/",
     },
     {
-      title: "Codepedia Languages",
-      subtitle: "(Language Education)",
-      href: "https://www.assignmentswallah.com/branch/languages-homework-help",
+      title: "Codepedia Experts",
+      subtitle: "(Grades Bubby)",
+      href: "https://gradesbuddy.com/",
     },
     {
       title: "Career Support",
@@ -85,7 +85,7 @@ const Footer: React.FC = () => {
   ];
 
   const supportLinks = [
-    { title: "Help Center", href: "/help" },
+    // { title: "Help Center", href: "/help" },
     { title: "Privacy Policy", href: "/privacy" },
     { title: "Terms of Use", href: "/terms" },
   ];
@@ -116,12 +116,7 @@ const Footer: React.FC = () => {
       className:
         "bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]",
     },
-    {
-      label: "YouTube",
-      href: "#",
-      icon: YoutubeIcon,
-      className: "bg-[#FF0000]",
-    },
+   
   ];
 
   return (
@@ -218,7 +213,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          <div className="lg:col-span-1">
+          {/* <div className="lg:col-span-1">
             <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">
               Quick Links
             </h4>
@@ -235,7 +230,7 @@ const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           <div className="lg:col-span-1">
             <h4 className="text-[var(--foreground)] text-sm font-bold tracking-wider mb-6 uppercase transition-colors duration-500">
@@ -321,12 +316,12 @@ const Footer: React.FC = () => {
                 <li className="flex items-start gap-3 text-sm text-[var(--muted-foreground)] transition-colors duration-500">
                   <MapPin className="w-4 h-4 text-[var(--primary)] opacity-70 mt-0.5 shrink-0 transition-colors duration-500" />
                   <a
-                    href="https://maps.google.com/?q=8+The+Green,+Suite+A,+Dover,+DE+19901,+USA"
+                    href="https://maps.app.goo.gl/cohNqip6C2KcgpLf7"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="leading-snug hover:text-[var(--primary)] transition-colors"
                   >
-                    Vikash Nagar,
+                    Jagjiwan Nagar,
                     <br />
                     DHANBAD, 826007
                   </a>

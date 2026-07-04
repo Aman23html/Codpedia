@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import React from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap, BookOpenText, Languages, BriefcaseBusiness, MonitorPlay } from 'lucide-react';
@@ -25,12 +25,12 @@ const AreasOfImpact: React.FC = () => {
       image: "/aw.png"
     },
     {
-      title: "Language Education",
-      description: "Language learning programs including English, IELTS, and other global languages.",
+      title: "Grades Bubby",
+      description: "work on real-world projects across research, technology, engineering, management and more.",
       icon: <Languages className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#F59E0B]",
       textClass: "text-[#F59E0B]",
-      href:"https://www.assignmentswallah.com/branch/languages-homework-help",
+      href:"https://gradesbuddy.com/",
       image: "/Lang.png"
     },
     {
@@ -55,7 +55,7 @@ const AreasOfImpact: React.FC = () => {
 
   return (
     <section className="py-24 bg-[var(--background)] px-6 md:px-12 lg:px-24 transition-colors duration-500">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-[1200px] mx-auto" id='ourbrands'>
         
         {/* Header Section */}
         <div className="text-center mb-16 flex flex-col items-center">
@@ -102,15 +102,21 @@ const ImpactCard = ({ item }: { item: any }) => {
       className="group flex flex-col h-[450px] rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-md hover:shadow-xl dark:shadow-none transition-all duration-500"
     >
       {/* 1. Top Image Section (Strictly defined height, no overlapping) */}
-      <div className="relative h-[250px] w-[400px] overflow-hidden shrink-0 bg-[var(--muted)]">
-        <img 
-          src={item.image} 
-          alt={item.title} 
-          className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 ease-out"
-        />
-        {/* Subtle inner shadow to blend the image border with the card */}
-        <div className="absolute inset-0 shadow-[inset_0_-10px_20px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)] pointer-events-none" />
-      </div>
+     
+
+<div className="relative h-[250px] w-full overflow-hidden shrink-0 bg-[var(--muted)]">
+  <Image
+    src={item.image}
+    alt={item.title}
+    fill
+    sizes="400px"
+    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+    quality={75}
+    priority={false}
+  />
+
+  <div className="absolute inset-0 shadow-[inset_0_-10px_20px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)] pointer-events-none" />
+</div>
 
       {/* 2. Bottom Content Section (Grows to fill remaining space) */}
       <div className="flex flex-col flex-grow p-6 relative">

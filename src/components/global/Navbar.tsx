@@ -10,7 +10,7 @@ import Logo from "./Logo";
 const ecosystemBrands = [
   { name: "Tutor4Study", icon: BookOpen, href: "https://www.tutor4study.com/" },
   { name: "Assignments wallah", icon: GraduationCap, href: "https://www.assignmentswallah.com/" },
-  { name: "Language Education", icon: Languages, href: "https://www.assignmentswallah.com/branch/languages-homework-help" },
+  { name: "Grades Bubby", icon: Languages, href: "https://www.assignmentswallah.com/branch/languages-homework-help" },
   { name: "Infinte Solution", icon: Briefcase, href: "https://www.assignmentswallah.com/job-support" },
   { name: "Gandharva School Of Music", icon: Music, href: "https://www.gandharvaschoolofmusic.com/" },
 ];
@@ -18,14 +18,14 @@ const ecosystemBrands = [
 // Reusable glowing flare component for the active/hover state
 const NavGlow = ({ isActive }: { isActive: boolean }) => (
   <span
-    className={`absolute -bottom-1.5 left-1/2 w-full -translate-x-1/2 flex items-center justify-center transition-all duration-300 pointer-events-none ${
-      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+    className={` absolute -bottom-1.5 left-1/2 w-full -translate-x-1/2 flex items-center justify-center transition-all duration-300 pointer-events-none ${
+      isActive ? "opacity-100 animate-pulse" : "opacity-0 group-hover:opacity-100 "
     }`}
   >
     {/* Soft wide gradient fade */}
     <span className="absolute h-[1px] w-[140%] bg-gradient-to-r from-transparent via-[var(--secondary)] to-transparent opacity-80" />
     {/* Intense bright center core */}
-    <span className="absolute h-[2px] w-[40%] bg-[var(--secondary)] shadow-[0_0_15px_3px_var(--secondary)] rounded-full" />
+    <span className="absolute h-[1px] w-[40%] bg-[var(--secondary)] shadow-[0_0_15px_3px_var(--secondary)] rounded-full " />
   </span>
 );
 
@@ -70,9 +70,11 @@ export default function Navbar() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
         
         {/* 1. Logo Section */}
-        <div className="flex-shrink-0 cursor-pointer z-50">
+        <a href="/">
+          <div className="flex-shrink-0 cursor-pointer z-50">
           <Logo />
         </div>
+        </a>
 
         {/* 2. Desktop Navigation Links */}
         <div className="hidden lg:flex items-center justify-center space-x-8 xl:space-x-12 flex-1 px-4">
@@ -120,6 +122,8 @@ export default function Navbar() {
                       <a
                         key={idx}
                         href={brand.href}
+                         target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--foreground)]/5 group transition-colors"
                       >
                         <div className="flex items-center justify-center w-8 h-8 rounded-md bg-[var(--foreground)]/5 group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)] text-[var(--foreground)]/60 transition-colors">
@@ -155,20 +159,6 @@ export default function Navbar() {
           <a
             href="/login"
             className="
-              px-4 py-2
-              text-sm font-medium 
-              text-[var(--foreground)]/80 hover:text-[var(--foreground)]
-              border border-[var(--border)] rounded-full
-              hover:bg-[var(--foreground)]/[0.03]
-              transition-all duration-200
-              whitespace-nowrap
-            "
-          >
-            Workspace
-          </a>
-          
-          <button
-            className="
               px-5 xl:px-6 py-2.5
               rounded-full
               text-sm font-semibold 
@@ -180,8 +170,10 @@ export default function Navbar() {
               whitespace-nowrap
             "
           >
-            Partner With Us
-          </button>
+            Codpedia Workspace
+          </a>
+          
+         
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -232,12 +224,10 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-3 rounded-xl text-center text-base font-semibold border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--foreground)]/[0.03] transition-colors"
                 >
-                  Workspace
+                  Codpedia Workspace
                 </a>
                 
-                <button className="w-full py-3.5 rounded-xl text-base font-semibold bg-[var(--foreground)] text-[var(--background)] active:scale-[0.98] transition-transform">
-                  Partner With Us
-                </button>
+                
               </div>
             </div>
           </motion.div>

@@ -74,12 +74,14 @@ export default function Hero() {
             
             <motion.div variants={springUp} className="flex flex-wrap items-center gap-5 pt-2">
               {/* Primary Button */}
-              <button className="group relative flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-sm font-semibold bg-[var(--primary)] text-white overflow-hidden shadow-lg dark:shadow-[0_0_30px_rgba(0,102,255,0.4)] hover:opacity-90 transition-all duration-300 hover:-translate-y-0.5">
+              <a href="#ourbrands">
+                <button className="group relative flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-sm font-semibold bg-[var(--primary)] text-white overflow-hidden shadow-lg dark:shadow-[0_0_30px_rgba(0,102,255,0.4)] hover:opacity-90 transition-all duration-300 hover:-translate-y-0.5">
                 <span className="relative z-10 flex items-center gap-2">
                   Explore Our Brands <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
               </button>
+              </a>
               
               {/* Secondary Button */}
               <button className="flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-sm font-semibold border border-[var(--border)] text-[var(--foreground)]/80 hover:bg-[var(--foreground)]/5 hover:border-[var(--foreground)]/30 transition-all duration-300 hover:-translate-y-0.5">
