@@ -1,131 +1,145 @@
-// "use server";
+"use server";
 
-// import { revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache";
 
-// import { prisma } from "@/lib/prisma-backup";
-// import { getCurrentUser } from "@/lib/current-user";
-// import { Role } from "@prisma/client";
+import { connectDB } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/current-user";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { Role } from "@/constants/enums";
 
-// type ReviewAction = "APPROVE" | "REJECT";
+type ReviewAction = "APPROVE" | "REJECT";
 
-// function getReviewStatus(action: ReviewAction) {
-//   return action === "APPROVE" ? "APPROVED" : "REJECTED";
-// }
+function getReviewStatus(action: ReviewAction) {
+  return action === "APPROVE" ? "APPROVED" : "REJECTED";
+}
 
-// function getReviewRemarks(action: ReviewAction, remarks?: string) {
-//   if (action === "APPROVE") return null;
-//   return remarks?.trim() || "Rejected by incharge.";
-// }
+function getReviewRemarks(action: ReviewAction, remarks?: string) {
+  if (action === "APPROVE") return null;
+  return remarks?.trim() || "Rejected by incharge.";
+}
 
-// export async function reviewReport(
-//   reportId: string,
-//   action: ReviewAction,
-//   remarks?: string
-// ) {
-//   const currentUser = await getCurrentUser();
+export async function reviewReport(
+  reportId: string,
+  action: ReviewAction,
+  remarks?: string
+) {
+  await connectDB();
 
-//   if (!currentUser || currentUser.role !== Role.INCHARGE) {
-//     return {
-//       success: false,
-//       message: "Unauthorized",
-//     };
-//   }
+  const currentUser = await getCurrentUser();
 
-//   const existingReport = await prisma.marketingReport.findFirst({
-//     where: {
-//       id: reportId,
-//       user: {
-//         departmentId: currentUser.departmentId,
-//       },
-//     },
-//     select: {
-//       id: true,
-//     },
-//   });
+  if (!currentUser || currentUser.role !== Role.INCHARGE) {
+    return {
+      success: false,
+      message: "Unauthorized",
+    };
+  }
 
-//   if (!existingReport) {
-//     return {
-//       success: false,
-//       message: "Report not found or not allowed.",
-//     };
-//   }
+  const users = await User.find({
+    department: currentUser.departmentId,
+  })
+    .select("_id")
+    .lean();
 
-//   const status = getReviewStatus(action);
+  const userIds = users.map((user: any) => user._id);
 
-//   await prisma.marketingReport.update({
-//     where: {
-//       id: reportId,
-//     },
-//     data: {
-//       status,
-//       remarks: getReviewRemarks(action, remarks),
-//       approvedById: currentUser.id,
-//     },
-//   });
+  const existingReport = await MarketingReport.findOne({
+    _id: reportId,
+    user: {
+      $in: userIds,
+    },
+  })
+    .select("_id")
+    .lean();
 
-//   revalidatePath("/incharge");
-//   revalidatePath("/incharge/analytics");
-//   revalidatePath("/incharge/reports");
-//   revalidatePath("/employee/marketing");
+  if (!existingReport) {
+    return {
+      success: false,
+      message: "Report not found or not allowed.",
+    };
+  }
 
-//   return {
-//     success: true,
-//     message: action === "APPROVE" ? "Report Approved" : "Report Rejected",
-//   };
-// }
+  const status = getReviewStatus(action);
 
-// export async function reviewMultipleReports(
-//   reportIds: string[],
-//   action: ReviewAction,
-//   remarks?: string
-// ) {
-//   const currentUser = await getCurrentUser();
+  await MarketingReport.findByIdAndUpdate(reportId, {
+    status,
+    remarks: getReviewRemarks(action, remarks),
+    approvedBy: currentUser.id,
+  });
 
-//   if (!currentUser || currentUser.role !== Role.INCHARGE) {
-//     return {
-//       success: false,
-//       message: "Unauthorized",
-//     };
-//   }
+  revalidatePath("/incharge");
+  revalidatePath("/incharge/analytics");
+  revalidatePath("/incharge/reports");
+  revalidatePath("/employee/marketing");
 
-//   const cleanReportIds = Array.from(new Set(reportIds.filter(Boolean)));
+  return {
+    success: true,
+    message: action === "APPROVE" ? "Report Approved" : "Report Rejected",
+  };
+}
 
-//   if (cleanReportIds.length === 0) {
-//     return {
-//       success: false,
-//       message: "No reports selected.",
-//     };
-//   }
+export async function reviewMultipleReports(
+  reportIds: string[],
+  action: ReviewAction,
+  remarks?: string
+) {
+  await connectDB();
 
-//   const status = getReviewStatus(action);
+  const currentUser = await getCurrentUser();
 
-//   const result = await prisma.marketingReport.updateMany({
-//     where: {
-//       id: {
-//         in: cleanReportIds,
-//       },
-//       user: {
-//         departmentId: currentUser.departmentId,
-//       },
-//     },
-//     data: {
-//       status,
-//       remarks: getReviewRemarks(action, remarks),
-//       approvedById: currentUser.id,
-//     },
-//   });
+  if (!currentUser || currentUser.role !== Role.INCHARGE) {
+    return {
+      success: false,
+      message: "Unauthorized",
+    };
+  }
 
-//   revalidatePath("/incharge");
-//   revalidatePath("/incharge/analytics");
-//   revalidatePath("/incharge/reports");
-//   revalidatePath("/employee/marketing");
+  const cleanReportIds = Array.from(new Set(reportIds.filter(Boolean)));
 
-//   return {
-//     success: true,
-//     message:
-//       action === "APPROVE"
-//         ? `${result.count} Report Approved`
-//         : `${result.count} Report Rejected`,
-//     updatedReports: result.count,
-//   };
-// }
+  if (cleanReportIds.length === 0) {
+    return {
+      success: false,
+      message: "No reports selected.",
+    };
+  }
+
+  const users = await User.find({
+    department: currentUser.departmentId,
+  })
+    .select("_id")
+    .lean();
+
+  const userIds = users.map((user: any) => user._id);
+
+  const status = getReviewStatus(action);
+
+  const result = await MarketingReport.updateMany(
+    {
+      _id: {
+        $in: cleanReportIds,
+      },
+      user: {
+        $in: userIds,
+      },
+    },
+    {
+      status,
+      remarks: getReviewRemarks(action, remarks),
+      approvedBy: currentUser.id,
+    }
+  );
+
+  revalidatePath("/incharge");
+  revalidatePath("/incharge/analytics");
+  revalidatePath("/incharge/reports");
+  revalidatePath("/employee/marketing");
+
+  return {
+    success: true,
+    message:
+      action === "APPROVE"
+        ? `${result.modifiedCount} Report Approved`
+        : `${result.modifiedCount} Report Rejected`,
+    updatedReports: result.modifiedCount,
+  };
+}
