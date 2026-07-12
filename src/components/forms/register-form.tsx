@@ -525,7 +525,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
 
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-[var(--foreground)]/70 uppercase tracking-widest ml-1">
-                            Firebase Login Email
+                             Login Email
                           </label>
 
                           <div className="relative group/input">
@@ -632,7 +632,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-[var(--foreground)]/70 uppercase tracking-widest ml-1">
-                              Firebase Password
+                               Password
                             </label>
 
                             <div className="relative group/input">
@@ -720,7 +720,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                             {isPending ? (
                               <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                CREATING FIREBASE IDENTITY...
+                                CREATING IDENTITY...
                               </>
                             ) : (
                               <>
@@ -813,7 +813,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                       className="flex items-center justify-center gap-2 text-sm text-[var(--muted-foreground)] font-medium mb-10 bg-[var(--background)]/50 px-4 py-2 rounded-full border border-[var(--border)]"
                     >
                       <Clock className="w-4 h-4 text-[var(--secondary)]" />
-                      Firebase identity created. Waiting for EMS approval.
+                      Identity created. Waiting for EMS approval.
                     </motion.div>
 
                     <motion.p
@@ -822,7 +822,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                       transition={{ delay: 0.7 }}
                       className="text-[13px] text-[var(--muted-foreground)] max-w-[300px] mb-12 leading-relaxed"
                     >
-                      Your Firebase login identity and EMS workspace request have
+                      Your login identity and EMS workspace request have
                       been submitted successfully. You can login only after your
                       administrator approves your EMS account.
                     </motion.p>

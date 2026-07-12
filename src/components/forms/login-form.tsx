@@ -44,7 +44,7 @@ function getFriendlyFirebaseError(error: any) {
   }
 
   if (code.includes("auth/user-not-found")) {
-    return "No Firebase account found with this email.";
+    return "No account found with this email.";
   }
 
   if (code.includes("auth/wrong-password")) {
@@ -91,7 +91,7 @@ export default function LoginForm() {
     }
 
     if (!email.includes("@")) {
-      setMessage("Firebase login requires email address, not username.");
+      setMessage("Login requires email address, not username.");
       return;
     }
 
@@ -115,7 +115,7 @@ export default function LoginForm() {
         if (!result.success) {
           setMessage(
             result.message ||
-              "Firebase login successful, but EMS access failed."
+              "Login successful, but EMS access failed."
           );
           return;
         }
@@ -135,7 +135,7 @@ export default function LoginForm() {
           router.refresh();
         }, 1000);
       } catch (error: any) {
-        console.error("Firebase login client error:", error);
+        console.error("Login client error:", error);
         setMessage(getFriendlyFirebaseError(error));
       }
     });
@@ -298,7 +298,7 @@ export default function LoginForm() {
                       </h2>
 
                       <p className="text-sm text-[var(--muted-foreground)] font-medium mt-2">
-                        Login securely with Firebase email and password
+                        Login securely with email and password
                       </p>
                     </div>
 
@@ -450,7 +450,7 @@ export default function LoginForm() {
                             className="flex items-center gap-2 text-[var(--foreground)] hover:text-[var(--primary)] transition-colors"
                           >
                             <Server className="w-4 h-4" />
-                            Request Workspace Provisioning
+                            Workspace Setup Request
                           </a>
                         </div>
                       </div>

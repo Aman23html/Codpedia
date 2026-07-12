@@ -11,11 +11,11 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-console.log("Firebase config check:", {
-  projectId: firebaseConfig.projectId,
-  authDomain: firebaseConfig.authDomain,
-  apiKeyEnd: firebaseConfig.apiKey?.slice(-6),
-});
+// console.log("Firebase config check:", {
+//   projectId: firebaseConfig.projectId,
+//   authDomain: firebaseConfig.authDomain,
+//   apiKeyEnd: firebaseConfig.apiKey?.slice(-6),
+// });
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 

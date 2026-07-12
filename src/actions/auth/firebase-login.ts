@@ -29,7 +29,7 @@ export async function firebaseLogin(idToken: string) {
     if (!email) {
       return {
         success: false,
-        message: "Firebase account email not found.",
+        message: "Account email not found.",
       };
     }
 
@@ -44,7 +44,7 @@ export async function firebaseLogin(idToken: string) {
       return {
         success: false,
         message:
-          "Firebase login successful, but EMS account was not found. Please contact admin.",
+          "Login successful, but EMS account was not found. Please contact admin.",
       };
     }
 
@@ -82,7 +82,7 @@ export async function firebaseLogin(idToken: string) {
       role: user.role,
     };
   } catch (error) {
-    console.error("Firebase login error:", error);
+    console.error("Login error:", error);
 
     return {
       success: false,

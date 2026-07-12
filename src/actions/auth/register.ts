@@ -135,16 +135,16 @@ export async function registerUser(data: RegisterInput) {
       if (existingFirebaseUser) {
         return {
           success: false,
-          message: "Firebase email already exists.",
+          message: "Email already exists.",
         };
       }
     } catch (error: any) {
       if (error?.code !== "auth/user-not-found") {
-        console.error("Firebase email check error:", error);
+        console.error("Email check error:", error);
 
         return {
           success: false,
-          message: "Firebase account check failed.",
+          message: "Account check failed.",
         };
       }
     }
@@ -202,21 +202,21 @@ export async function registerUser(data: RegisterInput) {
     if (error?.code === "auth/email-already-exists") {
       return {
         success: false,
-        message: "Firebase email already exists.",
+        message: "Email already exists.",
       };
     }
 
     if (error?.code === "auth/invalid-password") {
       return {
         success: false,
-        message: "Firebase password is invalid.",
+        message: "Password is invalid.",
       };
     }
 
     if (error?.code === "auth/invalid-email") {
       return {
         success: false,
-        message: "Firebase email is invalid.",
+        message: "EMSmail is invalid.",
       };
     }
 
