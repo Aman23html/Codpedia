@@ -46,6 +46,9 @@
     "tsx": "^4.23.0",
     "typescript": "^5"
   },
+  "overrides": {
+  "jose": "5.10.0"
+},
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   }
