@@ -7,7 +7,7 @@ import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import {
   reviewReport,
   reviewMultipleReports,
-} from "@/actions/marketing/review-multiple-reports";
+} from "@/actions/marketing/review-report";
 
 export default function ReviewActions({
   reportId,
