@@ -16,8 +16,21 @@ function getInitials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
 }
 
+type PendingEmployee = {
+  id: string;
+  fullName: string;
+  email: string;
+  department: {
+    name: string;
+  };
+  documents: Array<{
+    documentUrl: string;
+  }>;
+};
+
 export default async function PendingEmployeesPage() {
-  const employees = await getPendingEmployees();
+  const employees: PendingEmployee[] =
+  await getPendingEmployees();
 
   return (
     <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-16 lg:pt-32 lg:px-12 max-w-[1600px] mx-auto">

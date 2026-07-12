@@ -25,6 +25,27 @@ import {
   XCircle,
 } from "lucide-react";
 
+type MarketingReportItem = {
+  _id?: string;
+  createdAt: string | Date;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+
+  whatsappGroupsJoined?: number;
+  whatsappPostsDone?: number;
+
+  telegramGroupsJoined?: number;
+  telegramPostsDone?: number;
+
+  facebookGroupsJoined?: number;
+  facebookPostsDone?: number;
+
+  resourceLogin?: number;
+  accountClean?: number;
+
+  [key: string]: unknown;
+};
+
+
 export default async function AnalyticsPage({
   searchParams,
 }: {
@@ -42,7 +63,8 @@ export default async function AnalyticsPage({
 
   if (!user) return null;
 
-  let reports = await getEmployeeReportHistory(filter);
+  let reports: MarketingReportItem[] =
+  await getEmployeeReportHistory(filter);
 
   if (dateFilter) {
     reports = reports.filter((report) => {

@@ -62,7 +62,7 @@ function getEmployeeId(user: { employeeCode?: string | null }) {
   return user.employeeCode || "Not Generated";
 }
 
-function formatCountry(report: any) {
+function formatCountry(report: CombinedReport) {
   if (report.countryLabels) return report.countryLabels;
 
   if (!report.country) return "-";
@@ -104,6 +104,45 @@ function buildStatusHref({
   return `?${params.toString()}`;
 }
 
+type ReportUser = {
+  fullName: string;
+  employeeCode?: string | null;
+  profileImageUrl?: string | null;
+};
+
+type CombinedReport = {
+  id: string;
+  rowId?: string;
+  latestReportId?: string;
+  reportIds: string[];
+
+  userId: string;
+  combinedDateKey: string;
+  reportDate: string | Date;
+
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  remarks?: string | null;
+
+  country?: string | null;
+  countryLabels?: string | null;
+
+  totalGroupsJoined?: number;
+  whatsappGroupsJoined?: number;
+  telegramGroupsJoined?: number;
+  facebookGroupsJoined?: number;
+
+  totalPostsDone?: number;
+  whatsappPostsDone?: number;
+  telegramPostsDone?: number;
+  facebookPostsDone?: number;
+
+  resourceLogin?: number;
+  accountClean?: number;
+  totalReports: number;
+
+  user: ReportUser;
+};
+
 export default async function ReportsPage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
@@ -114,7 +153,8 @@ export default async function ReportsPage(props: {
   const from = (searchParams?.from as string) || "";
   const to = (searchParams?.to as string) || "";
 
-  const reports = await getAllReports(searchParams);
+  const reports: CombinedReport[] =
+  await getAllReports(searchParams);
 
   return (
     <div className="relative z-0 min-h-screen w-full overflow-x-hidden bg-[var(--background)] font-sans text-[var(--foreground)] selection:bg-[var(--primary)]/20">
@@ -408,7 +448,7 @@ export default async function ReportsPage(props: {
                                 reportId={report.latestReportId || report.id}
                                 reportIds={report.reportIds}
                                 currentStatus={report.status}
-                                currentRemarks={report.remarks}
+                                currentRemarks={report.remarks ?? null}
                               />
                             </div>
                           </td>

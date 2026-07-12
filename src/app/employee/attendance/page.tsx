@@ -44,8 +44,17 @@ function isWindowActive(checkIn: Date | string | null) {
   return new Date() <= windowEnd;
 }
 
+type AttendanceRecord = {
+  id: string;
+  attendanceDate: string | Date;
+  checkIn: string | Date | null;
+  checkOut: string | Date | null;
+  status: "PRESENT" | "HALF_DAY" | "ABSENT";
+};
+
 export default async function AttendancePage() {
-  const records = await getAttendanceHistory();
+  const records: AttendanceRecord[] =
+  await getAttendanceHistory();
 
   const totalDays = records.length;
   const presentDays = records.filter((record) => record.status === "PRESENT").length;
