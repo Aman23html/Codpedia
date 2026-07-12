@@ -16,7 +16,7 @@ import { getOperationEmployeeAnalytics } from "@/actions/incharge/operations/get
 import OperationAnalyticsLineChart from "@/components/incharge/operations/operation-analytics-line-chart";
 import OperationEmployeeAnalyticsFilter from "@/components/incharge/operations/operation-employee-analytics-filter";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export default async function OperationEmployeeAnalyticsPage({
   params,
@@ -82,8 +82,10 @@ export default async function OperationEmployeeAnalyticsPage({
           </h1>
 
           <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-            EMP-{data.employee.id.substring(0, 6).toUpperCase()} •{" "}
-            {data.employee.email} • {data.employee.phone || "No phone"}
+            {data.employee.employeeCode ||
+  `EMP-${String(data.employee.id || data.employee._id)
+    .substring(0, 6)
+    .toUpperCase()}`}{" "}•{data.employee.email} • {data.employee.phone || "No phone"}
           </p>
         </div>
 

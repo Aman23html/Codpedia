@@ -68,8 +68,11 @@ export default async function EmployeeLeavePage() {
               {leaves.length === 0 ? (
                 <tr><td colSpan={3} className="px-10 py-12 text-center text-[var(--muted-foreground)]">No records found.</td></tr>
               ) : (
-                leaves.map((leave) => (
-                  <tr key={leave.id} className="hover:bg-[var(--card)]/50 transition-colors">
+                leaves.map((leave: any) => (
+                  <tr
+                    key={String(leave.id || leave._id)}
+                    className="hover:bg-[var(--card)]/50 transition-colors"
+                  >
                     <td className="px-10 py-6 font-bold">
                       {new Date(leave.fromDate).toLocaleDateString("en-IN", {day:'2-digit', month:'short'})} 
                       <span className="text-[var(--muted-foreground)] px-2">→</span>

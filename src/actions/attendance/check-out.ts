@@ -1,11 +1,14 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { Attendance } from "@/models/Attendance";
+import { Role } from "@/constants/enums";
 import { getAttendanceWindowEnd } from "@/lib/attendance/attendance-window";
 
 export async function checkOut() {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.EMPLOYEE) {
@@ -14,13 +17,10 @@ export async function checkOut() {
 
   const now = new Date();
 
-  const attendance = await prisma.attendance.findFirst({
-    where: {
-      userId: currentUser.id,
-    },
-    orderBy: {
-      checkIn: "desc",
-    },
+  const attendance: any = await Attendance.findOne({
+    user: currentUser.id,
+  }).sort({
+    checkIn: -1,
   });
 
   if (!attendance || !attendance.checkIn) {
@@ -39,13 +39,8 @@ export async function checkOut() {
     throw new Error("Already checked out");
   }
 
-  await prisma.attendance.update({
-    where: {
-      id: attendance.id,
-    },
-    data: {
-      checkOut: now,
-    },
+  await Attendance.findByIdAndUpdate(attendance._id, {
+    checkOut: now,
   });
 
   return {

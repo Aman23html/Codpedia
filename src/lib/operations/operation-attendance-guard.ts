@@ -1,14 +1,16 @@
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
+import { Attendance } from "@/models/Attendance";
 
 export async function assertActiveAttendanceWindow(userId: string) {
-  const latestAttendance = await prisma.attendance.findFirst({
-    where: {
-      userId,
-    },
-    orderBy: {
-      checkIn: "desc",
-    },
-  });
+  await connectDB();
+
+  const latestAttendance: any = await Attendance.findOne({
+    user: userId,
+  })
+    .sort({
+      checkIn: -1,
+    })
+    .lean();
 
   if (!latestAttendance?.checkIn) {
     throw new Error("Please check in first before submitting operations work.");

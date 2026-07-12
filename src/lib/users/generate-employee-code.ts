@@ -1,49 +1,31 @@
-import { prisma } from "@/lib/prisma";
-import { DepartmentType } from "@prisma/client";
-
-const DEPARTMENT_CODE_PREFIX: Record<DepartmentType, string> = {
-  MARKETING: "MKT",
-  OPERATIONS: "OPS",
-  TUTOR: "TUT",
-  ACCOUNTS: "ACC",
-  DIGITAL_MARKETING: "DMK",
-};
+import { connectDB } from "@/lib/mongodb";
+import { Department } from "@/models/Department";
+import { User } from "@/models/User";
+import { COMPANY_CONFIG } from "@/constants/company";
 
 export async function generateEmployeeCode(departmentId: string) {
-  const department = await prisma.department.findUnique({
-    where: {
-      id: departmentId,
-    },
-    select: {
-      type: true,
-    },
-  });
+  await connectDB();
+
+  const department = await Department.findById(departmentId)
+    .select("shortCode")
+    .lean();
 
   if (!department) {
     throw new Error("Department not found.");
   }
 
-  const prefix = DEPARTMENT_CODE_PREFIX[department.type];
+  const codePrefix = `${COMPANY_CONFIG.COMPANY_CODE}-${department.shortCode}-${COMPANY_CONFIG.EMPLOYEE_CODE_PREFIX}-`;
 
-  if (!prefix) {
-    throw new Error("Invalid department type.");
-  }
-
-  const codePrefix = `CPS-${prefix}-`;
-
-  const lastUser = await prisma.user.findFirst({
-    where: {
-      employeeCode: {
-        startsWith: codePrefix,
-      },
+  const lastUser = await User.findOne({
+    employeeCode: {
+      $regex: `^${codePrefix}`,
     },
-    orderBy: {
-      employeeCode: "desc",
-    },
-    select: {
-      employeeCode: true,
-    },
-  });
+  })
+    .sort({
+      employeeCode: -1,
+    })
+    .select("employeeCode")
+    .lean();
 
   let nextNumber = 1;
 
@@ -55,7 +37,10 @@ export async function generateEmployeeCode(departmentId: string) {
     }
   }
 
-  const paddedNumber = String(nextNumber).padStart(3, "0");
+  const paddedNumber = String(nextNumber).padStart(
+    COMPANY_CONFIG.EMPLOYEE_NUMBER_LENGTH,
+    "0"
+  );
 
   return `${codePrefix}${paddedNumber}`;
 }

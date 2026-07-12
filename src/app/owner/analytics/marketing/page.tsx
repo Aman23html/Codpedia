@@ -42,6 +42,9 @@ export default async function OwnerMarketingAnalyticsPage({
 
   const filters = ["TODAY", "7_DAYS", "30_DAYS", "ALL"];
 
+  const encodedStatus = encodeURIComponent(status);
+  const encodedSearch = encodeURIComponent(search);
+
   return (
     <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-20 lg:pt-32 lg:px-12 max-w-[1700px] mx-auto space-y-10">
       <header className="relative overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)]/45 p-8 shadow-sm backdrop-blur-xl lg:p-10">
@@ -103,7 +106,7 @@ export default async function OwnerMarketingAnalyticsPage({
             {filters.map((item) => (
               <Link
                 key={item}
-                href={`/owner/analytics/marketing?filter=${item}&status=${status}&search=${search}`}
+                href={`/owner/analytics/marketing?filter=${item}&status=${encodedStatus}&search=${encodedSearch}`}
                 className={`rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-widest transition ${
                   filter === item
                     ? "bg-[var(--primary)] text-white shadow-lg"
@@ -274,79 +277,121 @@ export default async function OwnerMarketingAnalyticsPage({
                   </td>
                 </tr>
               ) : (
-                data.employees.map((employee: any) => (
-                  <tr
-                    key={employee.employeeCode ||  "Not Generated"}
-                    className="transition hover:bg-[var(--background)]/60"
-                  >
-                    <td className="whitespace-nowrap px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--background)] text-sm font-black text-[var(--foreground)]">
-                          {employee.fullName.substring(0, 2).toUpperCase()}
-                        </div>
+                data.employees.map((employee: any) => {
+                  const employeeId = String(
+                    employee.userId || employee.id || employee._id || ""
+                  );
 
-                        <div>
-                          <Link
-                            href={`/owner/analytics/marketing/${employee.employeeCode ||  "Not Generated"}`}
-                            className="font-black text-[var(--foreground)] transition hover:text-[var(--primary)]"
-                          >
-                            {employee.fullName}
-                          </Link>
+                  const employeeKey =
+                    employeeId ||
+                    employee.employeeCode ||
+                    employee.email ||
+                    employee.fullName;
 
-                          <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
-                            {employee.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
+                  const employeeCode =
+                    employee.employeeCode || "Not Generated";
 
-                    <td className="whitespace-nowrap px-8 py-5 text-sm font-semibold text-[var(--muted-foreground)]">
-                      {new Date(employee.lastReportDate).toLocaleDateString(
+                  const lastReportDate = employee.lastReportDate
+                    ? new Date(employee.lastReportDate).toLocaleDateString(
                         "en-IN",
                         {
                           day: "2-digit",
                           month: "short",
                           year: "numeric",
                         }
-                      )}
-                    </td>
+                      )
+                    : "No report yet";
 
-                    <td className="whitespace-nowrap px-8 py-5 text-sm font-bold text-[var(--muted-foreground)]">
-                      {employee.countries}
-                    </td>
+                  const initials =
+                    employee.fullName?.substring(0, 2).toUpperCase() || "NA";
 
-                    <TableValue value={employee.totalGroups} />
-                    <TableValue value={employee.totalPosts} />
-                    <TableValue value={employee.totalResourceLogin} />
-                    <TableValue value={employee.totalAccountClean} />
+                  return (
+                    <tr
+                      key={employeeKey}
+                      className="transition hover:bg-[var(--background)]/60"
+                    >
+                      <td className="whitespace-nowrap px-8 py-5">
+                        <div className="flex items-center gap-4">
+                              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)] text-sm font-black text-[var(--foreground)]">
+                                {employee.profileImageUrl ? (
+                                  <img
+                                    src={employee.profileImageUrl}
+                                    alt={employee.fullName || "Employee"}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  initials
+                                )}
+                              </div>
 
-                    <td className="whitespace-nowrap px-8 py-5">
-                      <div className="flex flex-wrap gap-2">
-                        <StatusMini
-                          label="A"
-                          value={employee.approved}
-                          tone="emerald"
-                        />
-                        <StatusMini
-                          label="P"
-                          value={employee.pending}
-                          tone="amber"
-                        />
-                        <StatusMini
-                          label="R"
-                          value={employee.rejected}
-                          tone="red"
-                        />
-                      </div>
-                    </td>
+                          <div>
+                            {employeeId ? (
+                              <Link
+                                href={`/owner/analytics/marketing/${employeeId}`}
+                                className="font-black text-[var(--foreground)] transition hover:text-[var(--primary)]"
+                              >
+                                {employee.fullName}
+                              </Link>
+                            ) : (
+                              <span className="font-black text-[var(--foreground)]">
+                                {employee.fullName}
+                              </span>
+                            )}
 
-                    <td className="whitespace-nowrap px-8 py-5 text-right">
-                      <span className="inline-flex rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500">
-                        {employee.totalReports} Entries
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                            <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
+                              {employee.email}
+                            </p>
+
+                            <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--primary)]/80">
+                              {employeeCode}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-8 py-5 text-sm font-semibold text-[var(--muted-foreground)]">
+                        {lastReportDate}
+                      </td>
+
+                      <td className="whitespace-nowrap px-8 py-5 text-sm font-bold text-[var(--muted-foreground)]">
+                        {employee.countries || 0}
+                      </td>
+
+                      <TableValue value={employee.totalGroups || 0} />
+                      <TableValue value={employee.totalPosts || 0} />
+                      <TableValue value={employee.totalResourceLogin || 0} />
+                      <TableValue value={employee.totalAccountClean || 0} />
+
+                      <td className="whitespace-nowrap px-8 py-5">
+                        <div className="flex flex-wrap gap-2">
+                          <StatusMini
+                            label="A"
+                            value={employee.approved || 0}
+                            tone="emerald"
+                          />
+
+                          <StatusMini
+                            label="P"
+                            value={employee.pending || 0}
+                            tone="amber"
+                          />
+
+                          <StatusMini
+                            label="R"
+                            value={employee.rejected || 0}
+                            tone="red"
+                          />
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-8 py-5 text-right">
+                        <span className="inline-flex rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500">
+                          {employee.totalReports || 0} Entries
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -448,9 +493,7 @@ function MetricSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {children}
-      </div>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">{children}</div>
     </div>
   );
 }

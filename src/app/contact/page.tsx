@@ -30,15 +30,18 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // FIX FOR GOOGLE SHEETS FORMULA ERROR:
-    // We append the apostrophe (') here programmatically so Google Sheets treats it as plain text.
-    const fullPhone = `'${formData.countryCode} ${formData.phone}`;
+    // 1. Smart Phone Formatting: Only format if they actually typed a number
+    let fullPhone = "";
+    if (formData.phone.trim() !== "") {
+      // We append the apostrophe (') here so Google Sheets treats it as plain text.
+      fullPhone = `'${formData.countryCode} ${formData.phone}`;
+    }
 
     // Prepare data exactly as the Google Apps Script expects it
     const submitData = new FormData();
     submitData.append("Name", formData.name);
     submitData.append("Email", formData.email);
-    submitData.append("Phone", fullPhone);
+    submitData.append("Phone", fullPhone); 
     submitData.append("Subject", formData.subject);
     submitData.append("Message", formData.message);
 

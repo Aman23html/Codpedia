@@ -12,31 +12,46 @@ import { getAttendanceStats } from "@/actions/incharge/get-attendance-stats";
 
 // --- Types ---
 type AttendanceRecord = {
-  id: string;
-  user: { 
-    id: string; 
-    fullName: string; 
-    employeeCode?: string | null; 
+  id?: string;
+  _id?: string;
+  user: {
+    id?: string;
+    _id?: string;
+    fullName: string;
+    employeeCode?: string | null;
     avatar?: string;
     department?: { name: string };
   };
-  date?: Date;
-  checkIn: Date | null;
-  checkOut: Date | null;
+  date?: Date | string;
+  attendanceDate?: Date | string;
+  checkIn: Date | string | null;
+  checkOut: Date | string | null;
   status: "PRESENT" | "ABSENT" | "LATE" | "LEAVE" | "HALF_DAY";
 };
 
 // --- Helper Functions ---
-function getWorkHours(checkIn: Date | null, checkOut: Date | null) {
+function getWorkHours(
+  checkIn: Date | string | null,
+  checkOut: Date | string | null
+) {
   if (!checkIn || !checkOut) return "-";
-  const diff = checkOut.getTime() - checkIn.getTime();
+
+  const checkInDate = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
+
+  const diff = checkOutDate.getTime() - checkInDate.getTime();
+
+  if (!Number.isFinite(diff) || diff < 0) return "-";
+
   const hours = Math.floor(diff / 1000 / 60 / 60);
   const minutes = Math.floor(diff / 1000 / 60) % 60;
+
   return `${hours}h ${minutes}m`;
 }
 
-function formatTime(date: Date | null) {
+function formatTime(date: Date | string | null) {
   if (!date) return null;
+
   return new Date(date).toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
@@ -70,7 +85,7 @@ export default async function AttendancePage(props: {
   const searchParams = await props.searchParams;
 
   // 2. Pass searchParams to the backend function
-  // Make sure your `getAttendance` action accepts and uses these params in its Prisma query
+  // Make sure your `getAttendance` action accepts and uses these params in its 
   const records: AttendanceRecord[] = await getAttendance(searchParams);
   const stats = await getAttendanceStats();
 
@@ -179,7 +194,7 @@ export default async function AttendancePage(props: {
             </thead>
             <tbody className="divide-y divide-[var(--border)]/40">
               {records.length > 0 ? records.map((record) => (
-                <tr key={record.id} className="hover:bg-[var(--primary)]/5 transition-colors group">
+                <tr key={record.id || record._id} className="hover:bg-[var(--primary)]/5 transition-colors group">
                   <td className="px-8 py-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 font-black flex items-center justify-center text-sm border border-blue-500/20">
@@ -281,7 +296,7 @@ export default async function AttendancePage(props: {
       {/* 5. Mobile View (Cards) */}
       <div className="lg:hidden flex flex-col gap-4">
         {records.length > 0 ? records.map((record) => (
-          <div key={record.id} className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/50 backdrop-blur-xl shadow-sm relative overflow-hidden">
+          <div key={record.id || record._id} className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/50 backdrop-blur-xl shadow-sm relative overflow-hidden">
             <div className="flex justify-between items-start mb-5">
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 font-black flex items-center justify-center text-sm border border-blue-500/20">

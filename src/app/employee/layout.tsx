@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/current-user";
 import EmployeeSidebar from "@/components/employee/employee-sidebar";
-import { Role } from "@prisma/client";
+import { Role } from "@/constants/enums";
 
 export default async function EmployeeLayout({
   children,

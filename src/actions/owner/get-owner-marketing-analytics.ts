@@ -1,8 +1,13 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+
+import { User } from "@/models/User";
+import { Department } from "@/models/Department";
+import { MarketingReport } from "@/models/MarketingReport";
+
+import { DepartmentType, Role } from "@/constants/enums";
 
 function getDateRange(filter?: string) {
   const now = new Date();
@@ -14,7 +19,7 @@ function getDateRange(filter?: string) {
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
-    return { gte: start, lte: end };
+    return { $gte: start, $lte: end };
   }
 
   if (filter === "7_DAYS") {
@@ -22,7 +27,7 @@ function getDateRange(filter?: string) {
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "30_DAYS") {
@@ -30,7 +35,7 @@ function getDateRange(filter?: string) {
     start.setDate(now.getDate() - 30);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   return undefined;
@@ -57,6 +62,8 @@ export async function getOwnerMarketingAnalytics(searchParams?: {
   search?: string;
   status?: string;
 }) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.OWNER) {
@@ -64,107 +71,104 @@ export async function getOwnerMarketingAnalytics(searchParams?: {
   }
 
   const filter = searchParams?.filter ?? "ALL";
-  const search = searchParams?.search ?? "";
+  const search = searchParams?.search?.trim() ?? "";
   const status = searchParams?.status ?? "ALL";
 
   const dateRange = getDateRange(filter);
 
-  const where: any = {
+  const marketingDepartment = await Department.findOne({
+    type: DepartmentType.MARKETING,
+  }).lean();
+
+  if (!marketingDepartment) {
+    return {
+      totalEmployees: 0,
+      totalReports: 0,
+      approvedReports: 0,
+      pendingReports: 0,
+      rejectedReports: 0,
+      approvalRate: 0,
+      northAmerica: 0,
+      europe: 0,
+      australia: 0,
+      totalGroupsJoined: 0,
+      totalPostsDone: 0,
+      totalResourceLogin: 0,
+      totalAccountClean: 0,
+      employees: [],
+    };
+  }
+
+  const userQuery: any = {
+    role: Role.EMPLOYEE,
+    department: marketingDepartment._id,
+  };
+
+  if (search) {
+    userQuery.$or = [
+      { employeeCode: { $regex: search, $options: "i" } },
+      { fullName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { username: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const marketingUsers = await User.find(userQuery)
+    .select("employeeCode profileImageUrl fullName email username phone")
+    .lean();
+
+  const userIds = marketingUsers.map((user: any) => user._id);
+
+  const reportQuery: any = {
     user: {
-      department: {
-        type: DepartmentType.MARKETING,
-      },
+      $in: userIds,
     },
   };
 
   if (dateRange) {
-    where.reportDate = dateRange;
+    reportQuery.reportDate = dateRange;
   }
 
   if (status !== "ALL") {
-    where.status = status;
-  }
-
-  if (search) {
-    where.user.OR = [
-      {
-        employeeCode: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        fullName: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        email: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        username: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        phone: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-    ];
+    reportQuery.status = status;
   }
 
   const [reports, totalEmployees] = await Promise.all([
-    prisma.marketingReport.findMany({
-      where,
+    MarketingReport.find(reportQuery)
+      .populate({
+        path: "user",
+        select: "employeeCode profileImageUrl fullName email username phone",
+      })
+      .sort({
+        reportDate: -1,
+      })
+      .lean(),
 
-      include: {
-        user: {
-          select: {
-            id: true,
-            employeeCode: true,
-            profileImageUrl: true,
-            fullName: true,
-            email: true,
-            username: true,
-            phone: true,
-          },
-        },
-      },
-
-      orderBy: {
-        reportDate: "desc",
-      },
-    }),
-
-    prisma.user.count({
-      where: {
-        role: Role.EMPLOYEE,
-        department: {
-          type: DepartmentType.MARKETING,
-        },
-      },
+    User.countDocuments({
+      role: Role.EMPLOYEE,
+      department: marketingDepartment._id,
     }),
   ]);
 
   const employeeMap = new Map<string, any>();
 
-  for (const report of reports) {
-    if (!employeeMap.has(report.userId)) {
-      employeeMap.set(report.userId, {
-        userId: report.userId,
-        employeeCode: report.user.employeeCode,
-        profileImageUrl: report.user.profileImageUrl,
-        fullName: report.user.fullName,
-        email: report.user.email,
-        username: report.user.username,
-        phone: report.user.phone,
+  for (const report of reports as any[]) {
+    const reportUser = report.user;
+
+    if (!reportUser) continue;
+
+    const userId = reportUser._id.toString();
+
+    if (!employeeMap.has(userId)) {
+      employeeMap.set(userId, {
+        userId,
+        employeeCode: reportUser.employeeCode,
+        profileImageUrl: reportUser.profileImageUrl || null,
+        fullName: reportUser.fullName,
+        email: reportUser.email,
+        username: reportUser.username,
+        phone: reportUser.phone,
         totalReports: 0,
         approved: 0,
         pending: 0,
@@ -178,7 +182,7 @@ export async function getOwnerMarketingAnalytics(searchParams?: {
       });
     }
 
-    const row = employeeMap.get(report.userId);
+    const row = employeeMap.get(userId);
 
     row.totalReports += 1;
     row.totalGroups += getTotalGroups(report);
@@ -202,20 +206,23 @@ export async function getOwnerMarketingAnalytics(searchParams?: {
   const employeeRows = Array.from(employeeMap.values()).map((row) => ({
     ...row,
     countries: Array.from(row.countries).join(", ") || "-",
+    lastReportDate: row.lastReportDate
+      ? new Date(row.lastReportDate).toISOString()
+      : null,
   }));
 
   const totalReports = reports.length;
 
   const approvedReports = reports.filter(
-    (report) => report.status === "APPROVED"
+    (report: any) => report.status === "APPROVED"
   ).length;
 
   const pendingReports = reports.filter(
-    (report) => report.status === "PENDING"
+    (report: any) => report.status === "PENDING"
   ).length;
 
   const rejectedReports = reports.filter(
-    (report) => report.status === "REJECTED"
+    (report: any) => report.status === "REJECTED"
   ).length;
 
   const approvalRate =
@@ -230,31 +237,32 @@ export async function getOwnerMarketingAnalytics(searchParams?: {
     approvalRate,
 
     northAmerica: reports.filter(
-      (report) => report.country === "NORTH_AMERICA"
+      (report: any) => report.country === "NORTH_AMERICA"
     ).length,
 
-    europe: reports.filter((report) => report.country === "EUROPE").length,
+    europe: reports.filter((report: any) => report.country === "EUROPE").length,
 
-    australia: reports.filter((report) => report.country === "AUSTRALIA")
-      .length,
+    australia: reports.filter(
+      (report: any) => report.country === "AUSTRALIA"
+    ).length,
 
     totalGroupsJoined: reports.reduce(
-      (sum, report) => sum + getTotalGroups(report),
+      (sum: number, report: any) => sum + getTotalGroups(report),
       0
     ),
 
     totalPostsDone: reports.reduce(
-      (sum, report) => sum + getTotalPosts(report),
+      (sum: number, report: any) => sum + getTotalPosts(report),
       0
     ),
 
     totalResourceLogin: reports.reduce(
-      (sum, report) => sum + (report.resourceLogin ?? 0),
+      (sum: number, report: any) => sum + (report.resourceLogin ?? 0),
       0
     ),
 
     totalAccountClean: reports.reduce(
-      (sum, report) => sum + (report.accountClean ?? 0),
+      (sum: number, report: any) => sum + (report.accountClean ?? 0),
       0
     ),
 

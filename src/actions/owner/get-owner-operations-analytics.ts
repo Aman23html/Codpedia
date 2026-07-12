@@ -1,8 +1,17 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, OperationReportStatus, Role } from "@prisma/client";
+
+import { Department } from "@/models/Department";
+import { User } from "@/models/User";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import {
+  DepartmentType,
+  OperationReportStatus,
+  Role,
+} from "@/constants/enums";
 
 function getDateRange(filter?: string) {
   const now = new Date();
@@ -14,7 +23,7 @@ function getDateRange(filter?: string) {
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
-    return { gte: start, lte: end };
+    return { $gte: start, $lte: end };
   }
 
   if (filter === "7_DAYS") {
@@ -22,7 +31,7 @@ function getDateRange(filter?: string) {
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "30_DAYS") {
@@ -30,7 +39,7 @@ function getDateRange(filter?: string) {
     start.setDate(now.getDate() - 30);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   return undefined;
@@ -41,6 +50,8 @@ export async function getOwnerOperationsAnalytics(searchParams?: {
   status?: string;
   search?: string;
 }) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.OWNER) {
@@ -49,88 +60,100 @@ export async function getOwnerOperationsAnalytics(searchParams?: {
 
   const filter = searchParams?.filter ?? "ALL";
   const status = searchParams?.status ?? "ALL";
-  const search = searchParams?.search ?? "";
+  const search = searchParams?.search?.trim() ?? "";
 
   const dateRange = getDateRange(filter);
 
-  const where: any = {
+  const operationsDepartment = await Department.findOne({
+    type: DepartmentType.OPERATIONS,
+  }).lean();
+
+  if (!operationsDepartment) {
+    return {
+      totalEmployees: 0,
+      totalReports: 0,
+      approvedReports: 0,
+      pendingReports: 0,
+      rejectedReports: 0,
+      draftReports: 0,
+      approvalRate: 0,
+      totalQueryGenerated: 0,
+      totalDealsDone: 0,
+      totalTutorAssigned: 0,
+      totalDealsDoneAmount: 0,
+      employees: [],
+    };
+  }
+
+  const userQuery: any = {
+    role: Role.EMPLOYEE,
+    department: operationsDepartment._id,
+  };
+
+  if (search) {
+    userQuery.$or = [
+      { fullName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { username: { $regex: search, $options: "i" } },
+      { employeeCode: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const operationsUsers = await User.find(userQuery)
+    .select("employeeCode fullName email username phone")
+    .lean();
+
+  const userIds = operationsUsers.map((user: any) => user._id);
+
+  const reportQuery: any = {
     user: {
-      department: {
-        type: DepartmentType.OPERATIONS,
-      },
+      $in: userIds,
     },
   };
 
   if (dateRange) {
-    where.reportDate = dateRange;
+    reportQuery.reportDate = dateRange;
   }
 
   if (status !== "ALL") {
-    where.status = status;
-  }
-
-  if (search) {
-    where.user.OR = [
-      {
-        fullName: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        email: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        username: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-    ];
+    reportQuery.status = status;
   }
 
   const [reports, totalEmployees] = await Promise.all([
-    prisma.employeeOperationReport.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            employeeCode: true,
-            fullName: true,
-            email: true,
-            username: true,
-          },
-        },
-      },
-      orderBy: {
-        reportDate: "desc",
-      },
-    }),
+    EmployeeOperationReport.find(reportQuery)
+      .populate({
+        path: "user",
+        select: "employeeCode fullName email username phone",
+      })
+      .sort({
+        reportDate: -1,
+      })
+      .lean(),
 
-    prisma.user.count({
-      where: {
-        role: Role.EMPLOYEE,
-        department: {
-          type: DepartmentType.OPERATIONS,
-        },
-      },
+    User.countDocuments({
+      role: Role.EMPLOYEE,
+      department: operationsDepartment._id,
     }),
   ]);
 
   const employeeMap = new Map<string, any>();
 
-  for (const report of reports) {
-    if (!employeeMap.has(report.userId)) {
-      employeeMap.set(report.userId, {
-        userId: report.userId,
-        employeeCode: report.user.employeeCode,
-        fullName: report.user.fullName,
-        email: report.user.email,
-        username: report.user.username,
+  for (const report of reports as any[]) {
+    const reportUser = report.user;
+
+    if (!reportUser) continue;
+
+    const userId = reportUser._id.toString();
+
+    if (!employeeMap.has(userId)) {
+      employeeMap.set(userId, {
+        userId,
+        employeeCode: reportUser.employeeCode,
+        fullName: reportUser.fullName,
+        email: reportUser.email,
+        username: reportUser.username,
+        phone: reportUser.phone,
 
         totalReports: 0,
         approved: 0,
@@ -147,7 +170,7 @@ export async function getOwnerOperationsAnalytics(searchParams?: {
       });
     }
 
-    const row = employeeMap.get(report.userId);
+    const row = employeeMap.get(userId);
 
     row.totalReports += 1;
 
@@ -166,24 +189,30 @@ export async function getOwnerOperationsAnalytics(searchParams?: {
     }
   }
 
-  const employeeRows = Array.from(employeeMap.values());
+  const employeeRows = Array.from(employeeMap.values()).map((row) => ({
+    ...row,
+    lastReportDate: row.lastReportDate
+      ? new Date(row.lastReportDate).toISOString()
+      : null,
+  }));
 
   const totalReports = reports.length;
 
   const approvedReports = reports.filter(
-    (report) => report.status === OperationReportStatus.VERIFIED
+    (report: any) => report.status === OperationReportStatus.VERIFIED
   ).length;
 
   const pendingReports = reports.filter(
-    (report) => report.status === OperationReportStatus.SUBMITTED
+    (report: any) => report.status === OperationReportStatus.SUBMITTED
   ).length;
 
   const rejectedReports = reports.filter(
-    (report) => report.status === OperationReportStatus.REJECTED
+    (report: any) => report.status === OperationReportStatus.REJECTED
   ).length;
 
-  const draftReports = reports.filter((report) => report.status === "DRAFT")
-    .length;
+  const draftReports = reports.filter(
+    (report: any) => report.status === OperationReportStatus.DRAFT
+  ).length;
 
   const approvalRate =
     totalReports > 0 ? Math.round((approvedReports / totalReports) * 100) : 0;
@@ -198,22 +227,22 @@ export async function getOwnerOperationsAnalytics(searchParams?: {
     approvalRate,
 
     totalQueryGenerated: reports.reduce(
-      (sum, report) => sum + (report.queryGenerated ?? 0),
+      (sum: number, report: any) => sum + (report.queryGenerated ?? 0),
       0
     ),
 
     totalDealsDone: reports.reduce(
-      (sum, report) => sum + (report.dealsDone ?? 0),
+      (sum: number, report: any) => sum + (report.dealsDone ?? 0),
       0
     ),
 
     totalTutorAssigned: reports.reduce(
-      (sum, report) => sum + (report.tutorAssigned ?? 0),
+      (sum: number, report: any) => sum + (report.tutorAssigned ?? 0),
       0
     ),
 
     totalDealsDoneAmount: reports.reduce(
-      (sum, report) => sum + (report.dealsDoneAmount ?? 0),
+      (sum: number, report: any) => sum + (report.dealsDoneAmount ?? 0),
       0
     ),
 

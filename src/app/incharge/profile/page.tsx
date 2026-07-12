@@ -6,7 +6,7 @@ import { getMyProfile } from "@/actions/profile/get-my-profile";
 import ProfileMediaEditor from "@/components/profile/profile-media-editor";
 import ProfileDetailsEditor from "@/components/profile/profile-details-editor";
 import LogoutButton from "@/components/auth/logout-button";
-import { Role } from "@prisma/client";
+import { Role } from "@/constants/enums";
 
 export default async function InchargeProfilePage() {
   const currentUser = await getCurrentUser();

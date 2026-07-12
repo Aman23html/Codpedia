@@ -1,14 +1,17 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { AttendanceStatus, Role } from "@prisma/client";
+import { Attendance } from "@/models/Attendance";
+import { AttendanceStatus, Role } from "@/constants/enums";
 import {
   getAttendanceDateFromCheckIn,
   getAttendanceWindowEnd,
 } from "@/lib/attendance/attendance-window";
 
 export async function checkIn() {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.EMPLOYEE) {
@@ -17,14 +20,13 @@ export async function checkIn() {
 
   const now = new Date();
 
-  const latestAttendance = await prisma.attendance.findFirst({
-    where: {
-      userId: currentUser.id,
-    },
-    orderBy: {
-      checkIn: "desc",
-    },
-  });
+  const latestAttendance = await Attendance.findOne({
+    user: currentUser.id,
+  })
+    .sort({
+      checkIn: -1,
+    })
+    .lean();
 
   if (latestAttendance?.checkIn) {
     const windowEnd = getAttendanceWindowEnd(latestAttendance.checkIn);
@@ -43,13 +45,11 @@ export async function checkIn() {
   const status =
     hour >= 13 ? AttendanceStatus.HALF_DAY : AttendanceStatus.PRESENT;
 
-  await prisma.attendance.create({
-    data: {
-      userId: currentUser.id,
-      attendanceDate,
-      checkIn: now,
-      status,
-    },
+  await Attendance.create({
+    user: currentUser.id,
+    attendanceDate,
+    checkIn: now,
+    status,
   });
 
   return {

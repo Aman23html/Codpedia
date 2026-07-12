@@ -1,8 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export type OperationAnalyticsFilter = "TODAY" | "7_DAYS" | "30_DAYS" | "ALL";
 
@@ -21,8 +22,8 @@ function getDateRange(filter: OperationAnalyticsFilter) {
     end.setDate(end.getDate() + 1);
 
     return {
-      gte: start,
-      lt: end,
+      $gte: start,
+      $lt: end,
     };
   }
 
@@ -30,8 +31,8 @@ function getDateRange(filter: OperationAnalyticsFilter) {
     start.setDate(now.getDate() - 6);
 
     return {
-      gte: start,
-      lte: now,
+      $gte: start,
+      $lte: now,
     };
   }
 
@@ -39,8 +40,8 @@ function getDateRange(filter: OperationAnalyticsFilter) {
     start.setDate(now.getDate() - 29);
 
     return {
-      gte: start,
-      lte: now,
+      $gte: start,
+      $lte: now,
     };
   }
 
@@ -50,6 +51,8 @@ function getDateRange(filter: OperationAnalyticsFilter) {
 export async function getOperationAnalytics(
   filter: OperationAnalyticsFilter = "7_DAYS"
 ) {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user || user.role !== Role.EMPLOYEE) {
@@ -62,37 +65,29 @@ export async function getOperationAnalytics(
 
   const dateRange = getDateRange(filter);
 
-  const where: any = {
-    userId: user.id,
+  const query: any = {
+    user: user.id,
   };
 
   if (dateRange) {
-    where.reportDate = dateRange;
+    query.reportDate = dateRange;
   }
 
-  const reports = await prisma.employeeOperationReport.findMany({
-    where,
-    orderBy: {
-      reportDate: "asc",
-    },
-    select: {
-      id: true,
-      reportDate: true,
-      queryGenerated: true,
-      dealsDone: true,
-      tutorAssigned: true,
-      dealsDoneAmount: true,
-      status: true,
-      submittedAt: true,
-    },
-  });
+  const reports = await EmployeeOperationReport.find(query)
+    .sort({
+      reportDate: 1,
+    })
+    .select(
+      "reportDate queryGenerated dealsDone tutorAssigned dealsDoneAmount status submittedAt"
+    )
+    .lean();
 
   const totals = reports.reduce(
-    (acc, report) => {
-      acc.queryGenerated += report.queryGenerated;
-      acc.dealsDone += report.dealsDone;
-      acc.tutorAssigned += report.tutorAssigned;
-      acc.dealsDoneAmount += report.dealsDoneAmount;
+    (acc, report: any) => {
+      acc.queryGenerated += report.queryGenerated ?? 0;
+      acc.dealsDone += report.dealsDone ?? 0;
+      acc.tutorAssigned += report.tutorAssigned ?? 0;
+      acc.dealsDoneAmount += report.dealsDoneAmount ?? 0;
 
       if (report.status === "SUBMITTED") acc.submitted += 1;
       if (report.status === "VERIFIED") acc.approved += 1;
@@ -115,19 +110,19 @@ export async function getOperationAnalytics(
     }
   );
 
-  const chartData = reports.map((report) => ({
-    date: report.reportDate.toLocaleDateString("en-IN", {
+  const chartData = reports.map((report: any) => ({
+    date: new Date(report.reportDate).toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
     }),
-    fullDate: report.reportDate.toLocaleDateString("en-IN", {
+    fullDate: new Date(report.reportDate).toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     }),
-    queryGenerated: report.queryGenerated,
-    dealsDone: report.dealsDone,
-    tutorAssigned: report.tutorAssigned,
+    queryGenerated: report.queryGenerated ?? 0,
+    dealsDone: report.dealsDone ?? 0,
+    tutorAssigned: report.tutorAssigned ?? 0,
   }));
 
   const average =

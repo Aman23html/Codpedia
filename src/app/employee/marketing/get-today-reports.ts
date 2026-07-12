@@ -1,9 +1,12 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { MarketingReport } from "@/models/MarketingReport";
 
 export async function getTodayReports() {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user) {
@@ -11,16 +14,22 @@ export async function getTodayReports() {
   }
 
   const today = new Date();
-
   today.setHours(0, 0, 0, 0);
 
-  return prisma.marketingReport.findMany({
-    where: {
-      userId: user.id,
-      reportDate: today,
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const reports = await MarketingReport.find({
+    user: user.id,
+    reportDate: {
+      $gte: today,
+      $lt: tomorrow,
     },
-    orderBy: {
-      country: "asc",
-    },
-  });
+  })
+    .sort({
+      country: 1,
+    })
+    .lean();
+
+  return JSON.parse(JSON.stringify(reports));
 }

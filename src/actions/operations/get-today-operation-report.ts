@@ -1,8 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { DepartmentType, Role } from "@/constants/enums";
 
 function getTodayRange() {
   const start = new Date();
@@ -15,6 +16,8 @@ function getTodayRange() {
 }
 
 export async function getTodayOperationReport() {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user || user.role !== Role.EMPLOYEE) {
@@ -27,16 +30,17 @@ export async function getTodayOperationReport() {
 
   const { start, end } = getTodayRange();
 
-  return prisma.employeeOperationReport.findFirst({
-    where: {
-      userId: user.id,
-      reportDate: {
-        gte: start,
-        lt: end,
-      },
+  const report = await EmployeeOperationReport.findOne({
+    user: user.id,
+    reportDate: {
+      $gte: start,
+      $lt: end,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
+
+  return JSON.parse(JSON.stringify(report));
 }

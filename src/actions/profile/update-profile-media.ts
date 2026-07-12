@@ -4,13 +4,18 @@ import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { Role } from "@/constants/enums";
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024;
 
-async function saveImageFile(file: File, userId: string, type: "profile" | "cover") {
+async function saveImageFile(
+  file: File,
+  userId: string,
+  type: "profile" | "cover"
+) {
   if (!file || file.size === 0) {
     return null;
   }
@@ -27,7 +32,12 @@ async function saveImageFile(file: File, userId: string, type: "profile" | "cove
 
   const fileName = `${userId}-${type}-${Date.now()}.${extension}`;
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
+  const uploadDir = path.join(
+    process.cwd(),
+    "public",
+    "uploads",
+    "profiles"
+  );
 
   await fs.mkdir(uploadDir, {
     recursive: true,
@@ -44,6 +54,8 @@ async function saveImageFile(file: File, userId: string, type: "profile" | "cove
 }
 
 export async function updateProfileMedia(formData: FormData) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -93,11 +105,8 @@ export async function updateProfileMedia(formData: FormData) {
     throw new Error("Please select at least one image.");
   }
 
-  await prisma.user.update({
-    where: {
-      id: currentUser.id,
-    },
-    data,
+  await User.findByIdAndUpdate(currentUser.id, data, {
+    returnDocument: "after",
   });
 
   revalidatePath("/employee/profile");

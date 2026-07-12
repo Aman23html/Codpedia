@@ -5,9 +5,9 @@ import { getTodayAttendance } from "@/actions/attendance/get-today-attendance";
 import { getTodayReports } from "@/actions/marketing/get-today-reports";
 import MarketingClient from "./marketing-client";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
-function getWindowInfo(checkIn?: Date | null) {
+function getWindowInfo(checkIn?: Date | string | null) {
   if (!checkIn) {
     return {
       isActive: false,
@@ -66,10 +66,10 @@ export default async function MarketingPage() {
       canSubmitWork={windowInfo.isActive}
       attendanceInfo={{
         checkIn: attendance?.checkIn
-          ? attendance.checkIn.toISOString()
+          ? new Date(attendance.checkIn).toISOString()
           : null,
         checkOut: attendance?.checkOut
-          ? attendance.checkOut.toISOString()
+          ? new Date(attendance.checkOut).toISOString()
           : null,
         windowEnd: windowInfo.windowEnd
           ? windowInfo.windowEnd.toISOString()

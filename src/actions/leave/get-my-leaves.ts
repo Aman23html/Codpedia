@@ -1,23 +1,25 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { Leave } from "@/models/Leave";
 
 export async function getMyLeaves() {
-  const currentUser =
-    await getCurrentUser();
+  await connectDB();
+
+  const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     throw new Error("Unauthorized");
   }
 
-  return prisma.leave.findMany({
-    where: {
-      userId: currentUser.id,
-    },
+  const leaves = await Leave.find({
+    user: currentUser.id,
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  return JSON.parse(JSON.stringify(leaves));
 }

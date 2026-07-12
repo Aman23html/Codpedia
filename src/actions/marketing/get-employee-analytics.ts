@@ -1,7 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { MarketingReport } from "@/models/MarketingReport";
 
 type FilterType = "ALL" | "TODAY" | "7_DAYS" | "30_DAYS";
 
@@ -11,55 +12,50 @@ function getDateFilter(filter: FilterType) {
   if (filter === "TODAY") {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "7_DAYS") {
     const start = new Date();
     start.setDate(now.getDate() - 7);
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "30_DAYS") {
     const start = new Date();
     start.setDate(now.getDate() - 30);
-    return { gte: start };
+    return { $gte: start };
   }
 
   return undefined;
 }
 
 export async function getEmployeeAnalytics(filter: FilterType = "ALL") {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user) throw new Error("Unauthorized");
 
   const dateFilter = getDateFilter(filter);
 
-  const reports = await prisma.marketingReport.findMany({
-    where: {
-      userId: user.id,
-      ...(dateFilter ? { createdAt: dateFilter } : {}),
-    },
+  const query: any = {
+    user: user.id,
+  };
 
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-        },
-      },
-    },
+  if (dateFilter) {
+    query.createdAt = dateFilter;
+  }
 
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const reports = await MarketingReport.find(query)
+    .populate({
+      path: "user",
+      select: "employeeCode profileImageUrl fullName username email phone",
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 
   if (!reports.length) {
     return {
@@ -80,7 +76,7 @@ export async function getEmployeeAnalytics(filter: FilterType = "ALL") {
   }
 
   const summary = reports.reduce(
-    (acc, r) => {
+    (acc, r: any) => {
       acc.totalReports += 1;
 
       acc.whatsappGroups += r.whatsappGroupsJoined || 0;
@@ -111,7 +107,7 @@ export async function getEmployeeAnalytics(filter: FilterType = "ALL") {
   );
 
   return {
-    reports,
+    reports: JSON.parse(JSON.stringify(reports)),
     summary,
     filter,
   };

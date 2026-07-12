@@ -1,10 +1,16 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import mongoose from "mongoose";
+
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export async function getOperationReportDetails(reportId: string) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
@@ -18,41 +24,35 @@ export async function getOperationReportDetails(reportId: string) {
     throw new Error("Only operations incharge can view this report.");
   }
 
-  return prisma.employeeOperationReport.findFirst({
-    where: {
-      id: reportId,
-      user: {
-        departmentId: currentUser.departmentId,
-        department: {
-          type: DepartmentType.OPERATIONS,
-        },
-      },
+  if (!mongoose.Types.ObjectId.isValid(reportId)) {
+    return null;
+  }
+
+  const departmentUsers = await User.find({
+    department: currentUser.departmentId,
+    role: Role.EMPLOYEE,
+  })
+    .select("_id")
+    .lean();
+
+  const userIds = departmentUsers.map((user: any) => user._id);
+
+  const report = await EmployeeOperationReport.findOne({
+    _id: reportId,
+    user: {
+      $in: userIds,
     },
-
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          coverImageUrl: true,
-
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-          status: true,
-          createdAt: true,
-
-          department: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
+  })
+    .populate({
+      path: "user",
+      select:
+        "employeeCode profileImageUrl coverImageUrl fullName username email phone status createdAt department",
+      populate: {
+        path: "department",
+        select: "name type departmentCode shortCode",
       },
-    },
-  });
+    })
+    .lean();
+
+  return report ? JSON.parse(JSON.stringify(report)) : null;
 }

@@ -2,11 +2,22 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import type { EmployeeOperationReport } from "@prisma/client";
+
 
 import { saveOperationDraft } from "@/actions/operations/save-operation-draft";
 import { submitOperationReport } from "@/actions/operations/submit-operation-report";
 import { Lock, Save, Send } from "lucide-react";
+
+type EmployeeOperationReport = {
+  id?: string;
+  _id?: string;
+  queryGenerated: number;
+  dealsDone: number;
+  tutorAssigned: number;
+  dealsDoneAmount: number;
+  workNotes?: string | null;
+  status: string;
+};
 
 export default function OperationsForm({
   report,

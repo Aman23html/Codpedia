@@ -15,7 +15,7 @@ import OperationAnalyticsFilter from "@/components/incharge/operations/operation
 import OperationAnalyticsLineChart from "@/components/incharge/operations/operation-analytics-line-chart";
 import OperationAnalyticsEmployeeTable from "@/components/incharge/operations/operation-analytics-employee-table";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export default async function InchargeOperationAnalyticsPage({
   searchParams,
@@ -66,7 +66,8 @@ export default async function InchargeOperationAnalyticsPage({
           </h1>
 
           <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-            Analyze operations performance across queries, deals, tutors and deal amount.
+            Analyze operations performance across queries, deals, tutors and
+            deal amount.
           </p>
         </div>
 
@@ -211,13 +212,7 @@ function SummaryCard({
   );
 }
 
-function StatusCard({
-  title,
-  value,
-}: {
-  title: string;
-  value: number;
-}) {
+function StatusCard({ title, value }: { title: string; value: number }) {
   return (
     <div className="rounded-[24px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl">
       <div className="mb-3 flex items-center gap-2 text-[var(--primary)]">

@@ -1,8 +1,13 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, OperationReportStatus, Role } from "@prisma/client";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import {
+  DepartmentType,
+  OperationReportStatus,
+  Role,
+} from "@/constants/enums";
 
 type Filter = {
   status?: string;
@@ -10,6 +15,8 @@ type Filter = {
 };
 
 export async function getOperationHistory(filter: Filter = {}) {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user || user.role !== Role.EMPLOYEE) {
@@ -20,18 +27,16 @@ export async function getOperationHistory(filter: Filter = {}) {
     throw new Error("Only Operations employees can access this module");
   }
 
-  const where: any = {
-    userId: user.id,
+  const query: any = {
+    user: user.id,
   };
 
   if (
     filter.status &&
     filter.status !== "ALL" &&
-    Object.values(OperationReportStatus).includes(
-      filter.status as OperationReportStatus
-    )
+    Object.values(OperationReportStatus).includes(filter.status as any)
   ) {
-    where.status = filter.status;
+    query.status = filter.status;
   }
 
   if (filter.date) {
@@ -41,17 +46,18 @@ export async function getOperationHistory(filter: Filter = {}) {
     const end = new Date(start);
     end.setDate(end.getDate() + 1);
 
-    where.reportDate = {
-      gte: start,
-      lt: end,
+    query.reportDate = {
+      $gte: start,
+      $lt: end,
     };
   }
 
-  return prisma.employeeOperationReport.findMany({
-    where,
-    orderBy: {
-      reportDate: "desc",
-    },
-    take: 30,
-  });
+  const reports = await EmployeeOperationReport.find(query)
+    .sort({
+      reportDate: -1,
+    })
+    .limit(30)
+    .lean();
+
+  return JSON.parse(JSON.stringify(reports));
 }

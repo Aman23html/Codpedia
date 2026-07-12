@@ -1,19 +1,30 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
+import { Attendance } from "@/models/Attendance";
 
 export async function getAttendance() {
-  return prisma.attendance.findMany({
-    include: {
-      user: {
-        include: {
-          department: true,
-        },
-      },
-    },
+  try {
+    await connectDB();
 
-    orderBy: {
-      attendanceDate: "desc",
-    },
-  });
+    const attendance = await Attendance.find()
+      .populate({
+        path: "user",
+        select:
+          "employeeCode fullName username email phone role status department",
+        populate: {
+          path: "department",
+          select: "name type departmentCode shortCode",
+        },
+      })
+      .sort({
+        attendanceDate: -1,
+      })
+      .lean();
+
+    return JSON.parse(JSON.stringify(attendance));
+  } catch (error) {
+    console.error("Get attendance error:", error);
+    return [];
+  }
 }

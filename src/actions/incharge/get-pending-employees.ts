@@ -1,30 +1,53 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role, UserStatus } from "@prisma/client";
+import { User } from "@/models/User";
+import { VerificationDocument } from "@/models/VerificationDocument";
+import { Role, UserStatus } from "@/constants/enums";
 
 export async function getPendingEmployees() {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
   }
 
-  return prisma.user.findMany({
-    where: {
-      departmentId: currentUser.departmentId,
-      role: Role.EMPLOYEE,
-      status: UserStatus.PENDING_APPROVAL,
-    },
+  const employees: any[] = await User.find({
+    department: currentUser.departmentId,
+    role: Role.EMPLOYEE,
+    status: UserStatus.PENDING_APPROVAL,
+  })
+    .populate({
+      path: "department",
+      select: "name type departmentCode shortCode",
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 
-    include: {
-      department: true,
-      documents: true,
-    },
+  const employeeIds = employees.map((employee: any) => employee._id);
 
-    orderBy: {
-      createdAt: "desc",
+  const documents = await VerificationDocument.find({
+    user: {
+      $in: employeeIds,
     },
-  });
+  }).lean();
+
+  const documentMap = new Map(
+    documents.map((doc: any) => [doc.user.toString(), doc])
+  );
+
+  const result = employees.map((employee: any) => ({
+    ...employee,
+    id: employee._id.toString(),
+    documents: documentMap.get(employee._id.toString())
+      ? [documentMap.get(employee._id.toString())]
+      : [],
+  }));
+
+  return JSON.parse(JSON.stringify(result));
 }

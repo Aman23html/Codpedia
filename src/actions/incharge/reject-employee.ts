@@ -1,43 +1,38 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/current-user";
-import { Role, UserStatus } from "@prisma/client";
+import mongoose from "mongoose";
 
-export async function rejectEmployee(
-  employeeId: string
-) {
+import { connectDB } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/current-user";
+import { User } from "@/models/User";
+import { Role, UserStatus } from "@/constants/enums";
+
+export async function rejectEmployee(employeeId: string) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
   }
 
-  const employee = await prisma.user.findUnique({
-    where: {
-      id: employeeId,
-    },
-  });
+  if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+    throw new Error("Invalid employee ID");
+  }
+
+  const employee: any = await User.findById(employeeId).lean();
 
   if (!employee) {
     throw new Error("Employee not found");
   }
 
-  if (
-    employee.departmentId !== currentUser.departmentId
-  ) {
+  if (employee.department?.toString() !== currentUser.departmentId) {
     throw new Error("Forbidden");
   }
 
-  await prisma.user.update({
-    where: {
-      id: employeeId,
-    },
-
-    data: {
-      status: UserStatus.REJECTED,
-      approvedById: currentUser.id,
-    },
+  await User.findByIdAndUpdate(employeeId, {
+    status: UserStatus.REJECTED,
+    approvedBy: currentUser.id,
   });
 
   return {

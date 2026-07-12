@@ -3,13 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { assertActiveAttendanceWindow } from "@/lib/operations/operation-attendance-guard";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
 import {
   DepartmentType,
   OperationReportStatus,
   Role,
-} from "@prisma/client";
+} from "@/constants/enums";
 
 function getTodayRange() {
   const start = new Date();
@@ -27,6 +29,8 @@ function toNumber(value: FormDataEntryValue | null) {
 }
 
 export async function submitOperationReport(formData: FormData) {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user || user.role !== Role.EMPLOYEE) {
@@ -47,52 +51,47 @@ export async function submitOperationReport(formData: FormData) {
   const dealsDoneAmount = toNumber(formData.get("dealsDoneAmount"));
   const workNotes = String(formData.get("workNotes") || "").trim();
 
-  const existingReport = await prisma.employeeOperationReport.findFirst({
-    where: {
-      userId: user.id,
-      reportDate: {
-        gte: start,
-        lt: end,
-      },
+  const existingReport = await EmployeeOperationReport.findOne({
+    user: user.id,
+    reportDate: {
+      $gte: start,
+      $lt: end,
     },
   });
 
   if (existingReport) {
-    await prisma.employeeOperationReport.update({
-      where: {
-        id: existingReport.id,
-      },
-      data: {
+    await EmployeeOperationReport.findByIdAndUpdate(
+      existingReport._id,
+      {
         queryGenerated,
         dealsDone,
         tutorAssigned,
         dealsDoneAmount,
         workNotes,
 
-        // Any same-day resubmission returns to incharge review
         status: OperationReportStatus.SUBMITTED,
         submittedAt: new Date(),
         lockedAt: null,
 
-        // Clear old approval/rejection/correction because employee changed data
         reviewRemarks: null,
-        reviewedById: null,
+        reviewedBy: null,
         reviewedAt: null,
       },
-    });
+      {
+        returnDocument: "after",
+      }
+    );
   } else {
-    await prisma.employeeOperationReport.create({
-      data: {
-        userId: user.id,
-        reportDate: start,
-        queryGenerated,
-        dealsDone,
-        tutorAssigned,
-        dealsDoneAmount,
-        workNotes,
-        status: OperationReportStatus.SUBMITTED,
-        submittedAt: new Date(),
-      },
+    await EmployeeOperationReport.create({
+      user: user.id,
+      reportDate: start,
+      queryGenerated,
+      dealsDone,
+      tutorAssigned,
+      dealsDoneAmount,
+      workNotes,
+      status: OperationReportStatus.SUBMITTED,
+      submittedAt: new Date(),
     });
   }
 

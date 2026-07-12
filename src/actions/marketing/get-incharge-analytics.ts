@@ -1,56 +1,50 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { Role } from "@/constants/enums";
 
 export async function getInchargeAnalytics() {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user || user.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
   }
 
-  const employees = await prisma.user.findMany({
-    where: {
-      departmentId: user.departmentId,
-      role: Role.EMPLOYEE,
-    },
-    select: {
-      id: true,
-      employeeCode: true,
-      fullName: true,
-      profileImageUrl: true,
-    },
-  });
+  const employees = await User.find({
+    department: user.departmentId,
+    role: Role.EMPLOYEE,
+  })
+    .select("employeeCode fullName profileImageUrl")
+    .lean();
 
   if (employees.length === 0) {
     return {
       totalEmployees: 0,
       totalReports: 0,
-
       pendingReports: 0,
       approvedReports: 0,
       rejectedReports: 0,
       todayReports: 0,
-
       northAmerica: 0,
       europe: 0,
       australia: 0,
-
       totalGroupsJoined: 0,
       totalPostsDone: 0,
       totalResourceLogin: 0,
       totalAccountClean: 0,
-
       topPerformer: null,
       employeePerformance: [],
     };
   }
 
   const employeeMap = new Map(
-    employees.map((employee) => [
-      employee.id,
+    employees.map((employee: any) => [
+      employee._id.toString(),
       {
         employeeCode: employee.employeeCode,
         employeeName: employee.fullName,
@@ -59,31 +53,17 @@ export async function getInchargeAnalytics() {
     ])
   );
 
-  const reports = await prisma.marketingReport.findMany({
-    where: {
-      user: {
-        departmentId: user.departmentId,
-      },
+  const employeeIds = employees.map((employee: any) => employee._id);
+
+  const reports = await MarketingReport.find({
+    user: {
+      $in: employeeIds,
     },
-
-    select: {
-      userId: true,
-      status: true,
-      createdAt: true,
-      country: true,
-
-      whatsappGroupsJoined: true,
-      telegramGroupsJoined: true,
-      facebookGroupsJoined: true,
-
-      whatsappPostsDone: true,
-      telegramPostsDone: true,
-      facebookPostsDone: true,
-
-      resourceLogin: true,
-      accountClean: true,
-    },
-  });
+  })
+    .select(
+      "user status createdAt country whatsappGroupsJoined telegramGroupsJoined facebookGroupsJoined whatsappPostsDone telegramPostsDone facebookPostsDone resourceLogin accountClean"
+    )
+    .lean();
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -102,27 +82,14 @@ export async function getInchargeAnalytics() {
   let totalResourceLogin = 0;
   let totalAccountClean = 0;
 
-  const performanceMap: Record<
-    string,
-    {
-      employeeId: string;
-      employeeCode: string | null;
-      employeeName: string;
-      profileImageUrl: string | null;
-      total: number;
-      approved: number;
-      pending: number;
-      rejected: number;
-      approvalRate: number;
-    }
-  > = {};
+  const performanceMap: Record<string, any> = {};
 
-  for (const r of reports) {
+  for (const r of reports as any[]) {
     if (r.status === "PENDING") pendingReports++;
     if (r.status === "APPROVED") approvedReports++;
     if (r.status === "REJECTED") rejectedReports++;
 
-    if (r.createdAt >= startOfDay) {
+    if (new Date(r.createdAt) >= startOfDay) {
       todayReports++;
     }
 
@@ -143,11 +110,12 @@ export async function getInchargeAnalytics() {
     totalResourceLogin += r.resourceLogin ?? 0;
     totalAccountClean += r.accountClean ?? 0;
 
-    const employee = employeeMap.get(r.userId);
+    const userId = r.user?.toString();
+    const employee = employeeMap.get(userId);
 
-    if (!performanceMap[r.userId]) {
-      performanceMap[r.userId] = {
-        employeeId: r.userId,
+    if (!performanceMap[userId]) {
+      performanceMap[userId] = {
+        employeeId: userId,
         employeeCode: employee?.employeeCode ?? null,
         employeeName: employee?.employeeName || "Unknown",
         profileImageUrl: employee?.profileImageUrl ?? null,
@@ -159,7 +127,7 @@ export async function getInchargeAnalytics() {
       };
     }
 
-    const emp = performanceMap[r.userId];
+    const emp = performanceMap[userId];
 
     emp.total++;
 
@@ -168,13 +136,13 @@ export async function getInchargeAnalytics() {
     if (r.status === "REJECTED") emp.rejected++;
   }
 
-  const employeePerformance = Object.values(performanceMap).map((emp) => ({
+  const employeePerformance = Object.values(performanceMap).map((emp: any) => ({
     ...emp,
     approvalRate:
       emp.total > 0 ? Math.round((emp.approved / emp.total) * 100) : 0,
   }));
 
-  employeePerformance.sort((a, b) => b.approved - a.approved);
+  employeePerformance.sort((a: any, b: any) => b.approved - a.approved);
 
   const topPerformer =
     employeePerformance.length > 0 ? employeePerformance[0] : null;
@@ -182,21 +150,17 @@ export async function getInchargeAnalytics() {
   return {
     totalEmployees: employees.length,
     totalReports: reports.length,
-
     pendingReports,
     approvedReports,
     rejectedReports,
     todayReports,
-
     northAmerica,
     europe,
     australia,
-
     totalGroupsJoined,
     totalPostsDone,
     totalResourceLogin,
     totalAccountClean,
-
     topPerformer,
     employeePerformance,
   };

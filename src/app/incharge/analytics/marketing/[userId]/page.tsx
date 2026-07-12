@@ -31,7 +31,7 @@ import {
 
 import { getCurrentUser } from "@/lib/current-user";
 import { getInchargeMarketingUserAnalytics } from "@/actions/marketing/get-incharge-marketing-user-analytics";
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 function getStringValue(value: string | string[] | undefined) {
   return typeof value === "string" ? value : "";
@@ -603,7 +603,7 @@ export default async function InchargeMarketingUserAnalyticsPage({
 
                       return (
                         <tr
-                          key={report.id}
+                          key={report.id || report._id}
                           className="transition hover:bg-[var(--background)]/60"
                         >
                           <td className="whitespace-nowrap px-8 py-5 text-sm font-black text-[var(--foreground)]">

@@ -1,52 +1,56 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { MarketingReport } from "@/models/MarketingReport";
 
 export async function getEmployeeReportHistory(filter: string = "ALL") {
+  await connectDB();
+
   const user = await getCurrentUser();
 
-  if (!user) throw new Error("Unauthorized");
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
 
   const today = new Date();
 
-  const where: any = {
-    userId: user.id,
+  const query: any = {
+    user: user.id,
   };
 
   if (filter === "TODAY") {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    where.createdAt = { gte: start };
+
+    query.createdAt = {
+      $gte: start,
+    };
   } else if (filter === "7_DAYS") {
     const start = new Date();
     start.setDate(today.getDate() - 7);
-    where.createdAt = { gte: start };
+
+    query.createdAt = {
+      $gte: start,
+    };
   } else if (filter === "30_DAYS") {
     const start = new Date();
     start.setDate(today.getDate() - 30);
-    where.createdAt = { gte: start };
+
+    query.createdAt = {
+      $gte: start,
+    };
   }
 
-  return prisma.marketingReport.findMany({
-    where,
+  const reports = await MarketingReport.find(query)
+    .populate({
+      path: "user",
+      select: "employeeCode profileImageUrl fullName username email phone",
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-        },
-      },
-    },
-
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  return JSON.parse(JSON.stringify(reports));
 }

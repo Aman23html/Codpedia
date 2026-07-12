@@ -1,6 +1,6 @@
-import { DepartmentType } from "@prisma/client";
+import { DepartmentType } from "@/constants/enums";
 
-export function getEmployeeWorkspace(department?: DepartmentType | null) {
+export function getEmployeeWorkspace(department?: string | null) {
   switch (department) {
     case DepartmentType.OPERATIONS:
       return {

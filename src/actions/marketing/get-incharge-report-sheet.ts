@@ -1,13 +1,27 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { Role } from "@/constants/enums";
 import {
   getMarketingDateRange,
   parseMarketingFilters,
   MarketingAnalyticsSearchParams,
 } from "@/lib/marketing/marketing-filter";
+
+function toMongoDateFilter(dateFilter: any) {
+  if (!dateFilter) return undefined;
+
+  const mongoFilter: any = {};
+
+  if (dateFilter.gte) mongoFilter.$gte = dateFilter.gte;
+  if (dateFilter.lte) mongoFilter.$lte = dateFilter.lte;
+  if (dateFilter.lt) mongoFilter.$lt = dateFilter.lt;
+
+  return mongoFilter;
+}
 
 function totalGroups(report: any) {
   return (
@@ -26,12 +40,14 @@ function totalPosts(report: any) {
 }
 
 function getDateKey(date: Date) {
-  return date.toLocaleDateString("en-CA");
+  return new Date(date).toLocaleDateString("en-CA");
 }
 
 export async function getInchargeReportSheet(
   searchParams?: MarketingAnalyticsSearchParams
 ) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
@@ -40,103 +56,73 @@ export async function getInchargeReportSheet(
 
   const filters = parseMarketingFilters(searchParams);
 
-  const where: any = {
-    user: {
-      departmentId: currentUser.departmentId,
-    },
+  const userQuery: any = {
+    department: currentUser.departmentId,
   };
 
-  const dateFilter = getMarketingDateRange(filters);
-
-  if (dateFilter) {
-    where.reportDate = dateFilter;
-  }
-
   if (filters.search) {
-    where.user.OR = [
-      {
-        employeeCode: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        fullName: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        email: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        username: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        phone: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
+    userQuery.$or = [
+      { employeeCode: { $regex: filters.search, $options: "i" } },
+      { fullName: { $regex: filters.search, $options: "i" } },
+      { email: { $regex: filters.search, $options: "i" } },
+      { username: { $regex: filters.search, $options: "i" } },
+      { phone: { $regex: filters.search, $options: "i" } },
     ];
   }
 
+  const users = await User.find(userQuery).select("_id").lean();
+  const userIds = users.map((user: any) => user._id);
+
+  const query: any = {
+    user: {
+      $in: userIds,
+    },
+  };
+
+  const dateFilter = toMongoDateFilter(getMarketingDateRange(filters));
+
+  if (dateFilter) {
+    query.reportDate = dateFilter;
+  }
+
   if (filters.status && filters.status !== "ALL") {
-    where.status = filters.status;
+    query.status = filters.status;
   }
 
   if (filters.country && filters.country !== "ALL") {
-    where.country = filters.country;
+    query.country = filters.country;
   }
 
   if (filters.platform && filters.platform !== "ALL") {
-    where.platform = filters.platform;
+    query.platform = filters.platform;
   }
 
-  const reports = await prisma.marketingReport.findMany({
-    where,
-
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          fullName: true,
-          email: true,
-          username: true,
-          phone: true,
-        },
-      },
-    },
-
-    orderBy: [
-      {
-        reportDate: "desc",
-      },
-      {
-        updatedAt: "desc",
-      },
-    ],
-  });
+  const reports: any[] = await MarketingReport.find(query)
+    .populate({
+      path: "user",
+      select: "employeeCode profileImageUrl fullName email username phone",
+    })
+    .sort({
+      reportDate: -1,
+      updatedAt: -1,
+    })
+    .lean();
 
   const dateWiseMap = new Map<string, any>();
 
   for (const report of reports) {
+    if (!report.user) continue;
+
+    const userId = report.user._id.toString();
+    const reportId = report._id.toString();
     const dateKey = getDateKey(report.reportDate);
-    const mapKey = `${report.userId}-${dateKey}`;
+    const mapKey = `${userId}-${dateKey}`;
 
     if (!dateWiseMap.has(mapKey)) {
       dateWiseMap.set(mapKey, {
         rowId: mapKey,
 
-        userId: report.userId,
+        userId,
         employeeCode: report.user.employeeCode,
         employeeName: report.user.fullName,
         email: report.user.email,
@@ -149,7 +135,7 @@ export async function getInchargeReportSheet(
         lastUpdatedAt: report.updatedAt,
 
         countriesSet: new Set<string>(),
-        reportIds: [report.id],
+        reportIds: [reportId],
 
         totalGroupsJoined: 0,
         totalPostsDone: 0,
@@ -179,7 +165,7 @@ export async function getInchargeReportSheet(
       row.countriesSet.add(report.country);
     }
 
-    if (report.updatedAt > row.lastUpdatedAt) {
+    if (new Date(report.updatedAt) > new Date(row.lastUpdatedAt)) {
       row.lastUpdatedAt = report.updatedAt;
       row.lastReportDate = report.reportDate;
     }
@@ -187,6 +173,9 @@ export async function getInchargeReportSheet(
 
   let rows = Array.from(dateWiseMap.values()).map((row) => ({
     ...row,
+    reportDate: row.reportDate?.toISOString(),
+    lastReportDate: row.lastReportDate?.toISOString(),
+    lastUpdatedAt: row.lastUpdatedAt?.toISOString(),
     countries: Array.from(row.countriesSet).join(", ") || "-",
   }));
 

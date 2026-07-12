@@ -2,15 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ReportStatus } from "@prisma/client";
 import { Loader2, Save } from "lucide-react";
 
+import { ReportStatus } from "@/constants/enums";
 import { updateReportStatus } from "@/actions/incharge/update-report-status";
+
+type ReportStatusValue = (typeof ReportStatus)[keyof typeof ReportStatus];
 
 interface Props {
   reportId: string;
   reportIds?: string[];
-  currentStatus: ReportStatus;
+  currentStatus: ReportStatusValue;
   currentRemarks: string | null;
 }
 
@@ -22,7 +24,7 @@ export function ReportRowActions({
 }: Props) {
   const router = useRouter();
 
-  const [status, setStatus] = useState<ReportStatus>(currentStatus);
+  const [status, setStatus] = useState<ReportStatusValue>(currentStatus);
   const [remarks, setRemarks] = useState(currentRemarks ?? "");
   const [isPending, startTransition] = useTransition();
 
@@ -55,7 +57,9 @@ export function ReportRowActions({
     <div className="flex min-w-[520px] items-center justify-end gap-2">
       <select
         value={status}
-        onChange={(event) => setStatus(event.target.value as ReportStatus)}
+        onChange={(event) =>
+          setStatus(event.target.value as ReportStatusValue)
+        }
         disabled={isPending}
         className="h-10 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-black uppercase tracking-widest text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] disabled:opacity-60"
       >

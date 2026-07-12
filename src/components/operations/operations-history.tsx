@@ -1,5 +1,36 @@
 import Link from "next/link";
-import type { EmployeeOperationReport } from "@prisma/client";
+
+type EmployeeOperationReport = {
+  id?: string;
+  _id?: string;
+  reportDate: Date | string;
+  queryGenerated: number;
+  dealsDone: number;
+  tutorAssigned: number;
+  status: string;
+  submittedAt?: Date | string | null;
+};
+
+function formatDate(date?: Date | string | null) {
+  if (!date) return "-";
+
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatDateTime(date?: Date | string | null) {
+  if (!date) return "Not submitted";
+
+  return new Date(date).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function OperationsHistory({
   reports,
@@ -93,15 +124,11 @@ export default function OperationsHistory({
             ) : (
               reports.map((report) => (
                 <tr
-                  key={report.id}
+                  key={report.id || report._id}
                   className="transition hover:bg-[var(--background)]/60"
                 >
                   <td className="px-4 py-5 text-sm font-bold text-[var(--foreground)]">
-                    {report.reportDate.toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {formatDate(report.reportDate)}
                   </td>
 
                   <td className="px-4 py-5 font-mono text-sm">
@@ -121,14 +148,7 @@ export default function OperationsHistory({
                   </td>
 
                   <td className="px-4 py-5 text-sm text-[var(--muted-foreground)]">
-                    {report.submittedAt
-                      ? report.submittedAt.toLocaleString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "Not submitted"}
+                    {formatDateTime(report.submittedAt)}
                   </td>
                 </tr>
               ))

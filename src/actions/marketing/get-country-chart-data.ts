@@ -1,7 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
 
 type SearchParams = {
   [key: string]: string | string[] | undefined;
@@ -13,6 +15,8 @@ type ChartRow = {
 };
 
 export async function getCountryChartData(searchParams?: SearchParams) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -27,53 +31,46 @@ export async function getCountryChartData(searchParams?: SearchParams) {
     case "week":
       startDate.setDate(startDate.getDate() - 7);
       break;
-
     case "month":
       startDate.setMonth(startDate.getMonth() - 1);
       break;
-
     case "year":
       startDate.setFullYear(startDate.getFullYear() - 1);
       break;
-
     default:
       startDate.setMonth(startDate.getMonth() - 1);
   }
 
-  const reports = await prisma.marketingReport.findMany({
-    where: {
-      status: "APPROVED",
-      createdAt: {
-        gte: startDate,
-      },
-      user: {
-        departmentId: currentUser.departmentId,
-      },
+  const departmentUsers = await User.find({
+    department: currentUser.departmentId,
+  })
+    .select("_id")
+    .lean();
+
+  const userIds = departmentUsers.map((user: any) => user._id);
+
+  const reports = await MarketingReport.find({
+    status: "APPROVED",
+    createdAt: {
+      $gte: startDate,
     },
-
-    select: {
-      country: true,
-      createdAt: true,
-
-      whatsappGroupsJoined: true,
-      telegramGroupsJoined: true,
-      facebookGroupsJoined: true,
-
-      whatsappPostsDone: true,
-      telegramPostsDone: true,
-      facebookPostsDone: true,
+    user: {
+      $in: userIds,
     },
-
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+  })
+    .select(
+      "country createdAt whatsappGroupsJoined telegramGroupsJoined facebookGroupsJoined whatsappPostsDone telegramPostsDone facebookPostsDone"
+    )
+    .sort({
+      createdAt: 1,
+    })
+    .lean();
 
   const groupsMap = new Map<string, ChartRow>();
   const postsMap = new Map<string, ChartRow>();
 
-  for (const report of reports) {
-    const date = report.createdAt.toLocaleDateString("en-CA");
+  for (const report of reports as any[]) {
+    const date = new Date(report.createdAt).toLocaleDateString("en-CA");
     const country = report.country?.trim() || "Other";
 
     const groupsJoined =
@@ -98,7 +95,6 @@ export async function getCountryChartData(searchParams?: SearchParams) {
     const postEntry = postsMap.get(date)!;
 
     groupEntry[country] = ((groupEntry[country] as number) || 0) + groupsJoined;
-
     postEntry[country] = ((postEntry[country] as number) || 0) + postsDone;
   }
 

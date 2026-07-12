@@ -1,8 +1,15 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, OperationReportStatus, Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import {
+  DepartmentType,
+  OperationReportStatus,
+  Role,
+} from "@/constants/enums";
 
 export type OperationReviewFilters = {
   search?: string;
@@ -19,13 +26,13 @@ function getDateFilter(from?: string, to?: string) {
   if (from) {
     const start = new Date(from);
     start.setHours(0, 0, 0, 0);
-    filter.gte = start;
+    filter.$gte = start;
   }
 
   if (to) {
     const end = new Date(to);
     end.setHours(23, 59, 59, 999);
-    filter.lte = end;
+    filter.$lte = end;
   }
 
   return filter;
@@ -34,6 +41,8 @@ function getDateFilter(from?: string, to?: string) {
 export async function getOperationReviewReports(
   filters: OperationReviewFilters = {}
 ) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
@@ -47,89 +56,63 @@ export async function getOperationReviewReports(
     throw new Error("Only Operations incharge can access this page");
   }
 
-  const where: any = {
-    user: {
-      departmentId: currentUser.departmentId,
-      role: Role.EMPLOYEE,
-    },
+  const userQuery: any = {
+    department: currentUser.departmentId,
+    role: Role.EMPLOYEE,
   };
 
   if (filters.search) {
-    where.user.OR = [
-      {
-        fullName: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        email: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        phone: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        id: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
+    userQuery.$or = [
+      { fullName: { $regex: filters.search, $options: "i" } },
+      { email: { $regex: filters.search, $options: "i" } },
+      { phone: { $regex: filters.search, $options: "i" } },
+      { username: { $regex: filters.search, $options: "i" } },
+      { employeeCode: { $regex: filters.search, $options: "i" } },
     ];
   }
+
+  const users = await User.find(userQuery).select("_id").lean();
+  const userIds = users.map((user: any) => user._id);
+
+  const reportQuery: any = {
+    user: {
+      $in: userIds,
+    },
+  };
 
   if (
     filters.status &&
     filters.status !== "ALL" &&
-    Object.values(OperationReportStatus).includes(
-      filters.status as OperationReportStatus
-    )
+    Object.values(OperationReportStatus).includes(filters.status as any)
   ) {
-    where.status = filters.status;
+    reportQuery.status = filters.status;
   }
 
   const dateFilter = getDateFilter(filters.from, filters.to);
 
   if (dateFilter) {
-    where.reportDate = dateFilter;
+    reportQuery.reportDate = dateFilter;
   }
 
-  const reports = await prisma.employeeOperationReport.findMany({
-    where,
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          phone: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
+  const reports: any[] = await EmployeeOperationReport.find(reportQuery)
+    .populate({
+      path: "user",
+      select: "fullName email phone username employeeCode department",
+      populate: {
+        path: "department",
+        select: "name type departmentCode shortCode",
       },
-    },
-    orderBy: {
-      reportDate: "desc",
-    },
-  });
+    })
+    .sort({ reportDate: -1 })
+    .lean();
 
   const totals = reports.reduce(
     (acc, report) => {
       acc.totalReports += 1;
-      acc.queryGenerated += report.queryGenerated;
-      acc.dealsDone += report.dealsDone;
-      acc.tutorAssigned += report.tutorAssigned;
-      acc.dealsDoneAmount += report.dealsDoneAmount;
+      acc.queryGenerated += report.queryGenerated ?? 0;
+      acc.dealsDone += report.dealsDone ?? 0;
+      acc.tutorAssigned += report.tutorAssigned ?? 0;
+      acc.dealsDoneAmount += report.dealsDoneAmount ?? 0;
 
       if (report.status === "DRAFT") acc.draft += 1;
       if (report.status === "SUBMITTED") acc.submitted += 1;
@@ -154,7 +137,7 @@ export async function getOperationReviewReports(
   );
 
   return {
-    reports,
+    reports: JSON.parse(JSON.stringify(reports)),
     totals,
   };
 }

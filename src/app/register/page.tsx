@@ -1,4 +1,4 @@
-import { getDepartments } from "@/actions/department/get-departments";
+import { getDepartments } from "@/actions/departments/get-departments";
 import RegisterForm from "@/components/forms/register-form";
 
 export default async function RegisterPage() {

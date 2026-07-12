@@ -1,6 +1,6 @@
-import { DepartmentType } from "@prisma/client";
+import { DepartmentType } from "@/constants/enums";
 
-export function getInchargeDepartmentRoutes(department: DepartmentType) {
+export function getInchargeDepartmentRoutes(department: string) {
   switch (department) {
     case DepartmentType.OPERATIONS:
       return {

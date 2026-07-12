@@ -3,7 +3,7 @@
 import { getCurrentUser } from "@/lib/current-user";
 import { getPendingReports } from "@/actions/marketing/get-pending-reports";
 import { getPendingOperationReports } from "@/actions/operations/get-pending-operation-reports";
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export async function getDepartmentPendingReports() {
   const user = await getCurrentUser();

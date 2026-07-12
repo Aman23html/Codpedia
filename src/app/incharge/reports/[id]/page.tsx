@@ -1,4 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import mongoose from "mongoose";
+import { connectDB } from "@/lib/mongodb";
+import { MarketingReport } from "@/models/MarketingReport";
+
 import Link from "next/link";
 import ReviewActions from "@/components/marketing/review-actions";
 
@@ -22,22 +25,23 @@ import {
   Database,
   BarChart3,
   MapPin,
-  Trash2,
 } from "lucide-react";
 
-function startOfDay(date: Date) {
+function startOfDay(date: Date | string) {
   const start = new Date(date);
   start.setHours(0, 0, 0, 0);
   return start;
 }
 
-function endOfDay(date: Date) {
+function endOfDay(date: Date | string) {
   const end = new Date(date);
   end.setHours(23, 59, 59, 999);
   return end;
 }
 
-function formatDate(date: Date) {
+function formatDate(date?: Date | string | null) {
+  if (!date) return "-";
+
   return new Date(date).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -49,7 +53,9 @@ function formatDate(date: Date) {
   });
 }
 
-function formatOnlyDate(date: Date) {
+function formatOnlyDate(date?: Date | string | null) {
+  if (!date) return "-";
+
   return new Date(date).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -109,6 +115,33 @@ function totalPosts(report: any) {
   );
 }
 
+function ReportNotFound() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-8">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--muted)]/50 text-[var(--muted-foreground)]">
+          <FileText className="h-8 w-8" />
+        </div>
+
+        <h2 className="text-xl font-bold text-[var(--foreground)]">
+          Report Not Found
+        </h2>
+
+        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+          The requested report does not exist or has been removed.
+        </p>
+
+        <Link
+          href="/incharge"
+          className="mt-6 rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[var(--primary)]/90"
+        >
+          Return to Dashboard
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default async function ReportDetailsPage({
   params,
 }: {
@@ -116,89 +149,48 @@ export default async function ReportDetailsPage({
 }) {
   const { id } = await params;
 
-  const selectedReport = await prisma.marketingReport.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-          profileImageUrl: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  await connectDB();
 
-  if (!selectedReport) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-8">
-        <div className="flex flex-col items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--muted)]/50 text-[var(--muted-foreground)]">
-            <FileText className="h-8 w-8" />
-          </div>
-
-          <h2 className="text-xl font-bold text-[var(--foreground)]">
-            Report Not Found
-          </h2>
-
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            The requested report does not exist or has been removed.
-          </p>
-
-          <Link
-            href="/incharge"
-            className="mt-6 rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[var(--primary)]/90"
-          >
-            Return to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return <ReportNotFound />;
   }
 
-  const sameDayReports = await prisma.marketingReport.findMany({
-    where: {
-      userId: selectedReport.userId,
-      reportDate: {
-        gte: startOfDay(selectedReport.reportDate),
-        lte: endOfDay(selectedReport.reportDate),
+  const selectedReport: any = await MarketingReport.findById(id)
+    .populate({
+      path: "user",
+      select:
+        "employeeCode fullName username email phone profileImageUrl department",
+      populate: {
+        path: "department",
+        select: "name type departmentCode shortCode",
       },
+    })
+    .lean();
+
+  if (!selectedReport || !selectedReport.user) {
+    return <ReportNotFound />;
+  }
+
+  const sameDayReports: any[] = await MarketingReport.find({
+    user: selectedReport.user._id,
+    reportDate: {
+      $gte: startOfDay(selectedReport.reportDate),
+      $lte: endOfDay(selectedReport.reportDate),
     },
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-          profileImageUrl: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
+  })
+    .populate({
+      path: "user",
+      select:
+        "employeeCode fullName username email phone profileImageUrl department",
+      populate: {
+        path: "department",
+        select: "name type departmentCode shortCode",
       },
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+    })
+    .sort({
+      updatedAt: -1,
+    })
+    .lean();
 
   const latestReport = sameDayReports[0] || selectedReport;
   const user = selectedReport.user;
@@ -609,7 +601,7 @@ export default async function ReportDetailsPage({
                   </span>
 
                   <span className="rounded bg-[var(--muted)] px-2 py-1 font-mono text-xs font-medium text-[var(--muted-foreground)]">
-                    {selectedReport.id.substring(0, 8)}...
+                    {String(selectedReport._id).substring(0, 8)}...
                   </span>
                 </div>
 
@@ -649,16 +641,17 @@ export default async function ReportDetailsPage({
               </h3>
 
               <p className="mb-6 text-xs font-medium text-[var(--muted-foreground)]">
-                This button currently reviews the selected report. If you want
-                one click to approve/reject all combined country records, we need
-                to update ReviewActions to accept multiple report IDs.
+                This button currently reviews all combined country records for
+                the same employee and selected date.
               </p>
 
               <div className="w-full [&>div]:w-full [&_button]:w-full [&_button]:rounded-xl [&_button]:font-bold [&_button]:shadow-sm">
                 <ReviewActions
-  reportIds={sameDayReports.map((report) => report.id)}
-  redirectTo="/incharge"
-/>
+                  reportIds={sameDayReports.map((report) =>
+                    report._id.toString()
+                  )}
+                  redirectTo="/incharge"
+                />
               </div>
             </div>
           </aside>

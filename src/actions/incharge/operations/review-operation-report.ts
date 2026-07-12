@@ -1,12 +1,22 @@
 "use server";
 
+import mongoose from "mongoose";
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, OperationReportStatus, Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import {
+  DepartmentType,
+  OperationReportStatus,
+  Role,
+} from "@/constants/enums";
 
 export async function reviewOperationReport(formData: FormData) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
@@ -28,7 +38,11 @@ export async function reviewOperationReport(formData: FormData) {
     throw new Error("Report ID is required");
   }
 
-  let status: OperationReportStatus;
+  if (!mongoose.Types.ObjectId.isValid(reportId)) {
+    throw new Error("Invalid report ID");
+  }
+
+  let status: string;
 
   if (action === "APPROVE") {
     status = OperationReportStatus.VERIFIED;
@@ -40,15 +54,21 @@ export async function reviewOperationReport(formData: FormData) {
     throw new Error("Invalid review action");
   }
 
-  const report = await prisma.employeeOperationReport.findFirst({
-    where: {
-      id: reportId,
-      user: {
-        departmentId: currentUser.departmentId,
-        role: Role.EMPLOYEE,
-      },
+  const departmentUsers = await User.find({
+    department: currentUser.departmentId,
+    role: Role.EMPLOYEE,
+  })
+    .select("_id")
+    .lean();
+
+  const userIds = departmentUsers.map((user: any) => user._id);
+
+  const report: any = await EmployeeOperationReport.findOne({
+    _id: reportId,
+    user: {
+      $in: userIds,
     },
-  });
+  }).lean();
 
   if (!report) {
     throw new Error("Report not found");
@@ -58,16 +78,11 @@ export async function reviewOperationReport(formData: FormData) {
     throw new Error("Draft report cannot be reviewed");
   }
 
-  await prisma.employeeOperationReport.update({
-    where: {
-      id: reportId,
-    },
-    data: {
-      status,
-      reviewRemarks: remarks || null,
-      reviewedById: currentUser.id,
-      reviewedAt: new Date(),
-    },
+  await EmployeeOperationReport.findByIdAndUpdate(reportId, {
+    status,
+    reviewRemarks: remarks || null,
+    reviewedBy: currentUser.id,
+    reviewedAt: new Date(),
   });
 
   revalidatePath("/incharge/operations/reports");

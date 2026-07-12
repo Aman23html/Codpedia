@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/current-user";
 import InchargeSidebar from "@/components/incharge/incharge-sidebar";
-import { Role } from "@prisma/client";
+import { Role } from "@/constants/enums";
 
 export default async function InchargeLayout({
   children,

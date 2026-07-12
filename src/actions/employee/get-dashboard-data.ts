@@ -1,8 +1,13 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+
+import { Attendance } from "@/models/Attendance";
+import { MarketingReport } from "@/models/MarketingReport";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import { DepartmentType, Role } from "@/constants/enums";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -22,20 +27,19 @@ function getTodayRange() {
   return { start, end };
 }
 
-async function getDepartmentReportCount(userId: string, department?: DepartmentType) {
+async function getDepartmentReportCount(
+  userId: string,
+  department?: string
+) {
   if (department === DepartmentType.OPERATIONS) {
-    return prisma.employeeOperationReport.count({
-      where: {
-        userId,
-      },
+    return EmployeeOperationReport.countDocuments({
+      user: userId,
     });
   }
 
   if (department === DepartmentType.MARKETING) {
-    return prisma.marketingReport.count({
-      where: {
-        userId,
-      },
+    return MarketingReport.countDocuments({
+      user: userId,
     });
   }
 
@@ -43,6 +47,8 @@ async function getDepartmentReportCount(userId: string, department?: DepartmentT
 }
 
 export async function getDashboardData() {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user || user.role !== Role.EMPLOYEE) {
@@ -52,18 +58,17 @@ export async function getDashboardData() {
   const { start, end } = getTodayRange();
 
   const [todayAttendance, totalReports] = await Promise.all([
-    prisma.attendance.findFirst({
-      where: {
-        userId: user.id,
-        attendanceDate: {
-          gte: start,
-          lt: end,
-        },
+    Attendance.findOne({
+      user: user.id,
+      attendanceDate: {
+        $gte: start,
+        $lt: end,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-    }),
+    })
+      .sort({
+        createdAt: -1,
+      })
+      .lean(),
 
     getDepartmentReportCount(user.id, user.department?.type),
   ]);
@@ -73,7 +78,9 @@ export async function getDashboardData() {
 
     greeting: getGreeting(),
 
-    todayAttendance,
+    todayAttendance: todayAttendance
+      ? JSON.parse(JSON.stringify(todayAttendance))
+      : null,
 
     stats: {
       attendancePercentage: 0,

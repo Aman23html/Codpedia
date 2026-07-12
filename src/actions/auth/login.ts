@@ -1,24 +1,28 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
-import { prisma } from "@/lib/prisma";
-import { createToken } from "@/lib/jwt";
+import { connectDB } from "@/lib/mongodb";
+import { User } from "@/models/User";
+import { UserStatus } from "@/constants/enums";
 
-export async function loginUser(
-  identifier: string,
-  password: string
-) {
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is missing in .env");
+}
+
+export async function loginUser(identifier: string, password: string) {
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: identifier },
-          { username: identifier },
-        ],
-      },
-    });
+    await connectDB();
+
+    const loginValue = identifier.trim().toLowerCase();
+
+    const user: any = await User.findOne({
+      $or: [{ email: loginValue }, { username: loginValue }],
+    }).lean();
 
     if (!user) {
       return {
@@ -39,19 +43,23 @@ export async function loginUser(
       };
     }
 
-    if (user.status !== "ACTIVE") {
+    if (user.status !== UserStatus.ACTIVE) {
       return {
         success: false,
-        message:
-          "Your account is not approved yet.",
+        message: `Your account is ${user.status}. Please wait for approval.`,
       };
     }
 
-    const token = createToken({
-      userId: user.id,
-      role: user.role,
-      departmentId: user.departmentId,
-    });
+    const token = jwt.sign(
+      {
+        id: user._id.toString(),
+        role: user.role,
+      },
+      JWT_SECRET!,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     const cookieStore = await cookies();
 
@@ -69,11 +77,11 @@ export async function loginUser(
       role: user.role,
     };
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
 
     return {
       success: false,
-      message: "Something went wrong",
+      message: "Server error during login",
     };
   }
 }

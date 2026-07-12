@@ -1,8 +1,19 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import mongoose from "mongoose";
+
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, OperationReportStatus, Role } from "@prisma/client";
+
+import { Department } from "@/models/Department";
+import { User } from "@/models/User";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import {
+  DepartmentType,
+  OperationReportStatus,
+  Role,
+} from "@/constants/enums";
 
 function getDateRange({
   filter,
@@ -15,20 +26,20 @@ function getDateRange({
 }) {
   if (startDate || endDate) {
     const range: {
-      gte?: Date;
-      lte?: Date;
+      $gte?: Date;
+      $lte?: Date;
     } = {};
 
     if (startDate) {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
-      range.gte = start;
+      range.$gte = start;
     }
 
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      range.lte = end;
+      range.$lte = end;
     }
 
     return range;
@@ -43,7 +54,7 @@ function getDateRange({
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
-    return { gte: start, lte: end };
+    return { $gte: start, $lte: end };
   }
 
   if (filter === "7_DAYS") {
@@ -51,7 +62,7 @@ function getDateRange({
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "30_DAYS") {
@@ -59,18 +70,14 @@ function getDateRange({
     start.setDate(now.getDate() - 30);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   return undefined;
 }
 
-function isValidOperationStatus(
-  status: string
-): status is OperationReportStatus {
-  return Object.values(OperationReportStatus).includes(
-    status as OperationReportStatus
-  );
+function isValidOperationStatus(status: string) {
+  return Object.values(OperationReportStatus).includes(status as any);
 }
 
 export async function getOwnerOperationsUserAnalytics({
@@ -86,37 +93,37 @@ export async function getOwnerOperationsUserAnalytics({
   startDate?: string;
   endDate?: string;
 }) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.OWNER) {
     throw new Error("Unauthorized");
   }
 
-  const employee = await prisma.user.findFirst({
-    where: {
-      id: userId,
-      role: Role.EMPLOYEE,
-      department: {
-        type: DepartmentType.OPERATIONS,
-      },
-    },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      username: true,
-      phone: true,
-      status: true,
-      createdAt: true,
-      department: {
-        select: {
-          id: true,
-          name: true,
-          type: true,
-        },
-      },
-    },
-  });
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  const operationsDepartment = await Department.findOne({
+    type: DepartmentType.OPERATIONS,
+  }).lean();
+
+  if (!operationsDepartment) {
+    return null;
+  }
+
+  const employee: any = await User.findOne({
+    _id: userId,
+    role: Role.EMPLOYEE,
+    department: operationsDepartment._id,
+  })
+    .populate({
+      path: "department",
+      select: "name type departmentCode shortCode",
+    })
+    .select("fullName email username phone status createdAt department")
+    .lean();
 
   if (!employee) {
     return null;
@@ -128,24 +135,23 @@ export async function getOwnerOperationsUserAnalytics({
     endDate,
   });
 
-  const where: any = {
-    userId,
+  const reportQuery: any = {
+    user: employee._id,
   };
 
   if (dateRange) {
-    where.reportDate = dateRange;
+    reportQuery.reportDate = dateRange;
   }
 
   if (status !== "ALL" && isValidOperationStatus(status)) {
-    where.status = status;
+    reportQuery.status = status;
   }
 
-  const reports = await prisma.employeeOperationReport.findMany({
-    where,
-    orderBy: {
-      reportDate: "asc",
-    },
-  });
+  const reports: any[] = await EmployeeOperationReport.find(reportQuery)
+    .sort({
+      reportDate: 1,
+    })
+    .lean();
 
   const summary = reports.reduce(
     (acc, report) => {
@@ -230,12 +236,53 @@ export async function getOwnerOperationsUserAnalytics({
     },
   ];
 
+  const plainEmployee = {
+    id: employee._id.toString(),
+    fullName: employee.fullName,
+    email: employee.email,
+    username: employee.username,
+    phone: employee.phone,
+    status: employee.status,
+    createdAt: employee.createdAt?.toISOString(),
+    department: employee.department
+      ? {
+          id: employee.department._id.toString(),
+          name: employee.department.name,
+          type: employee.department.type,
+          departmentCode: employee.department.departmentCode,
+          shortCode: employee.department.shortCode,
+        }
+      : null,
+  };
+
   return {
-    employee,
+    employee: plainEmployee,
     summary,
     approvalRate,
     statusRows,
     chartData: Array.from(chartMap.values()),
-    reports,
+
+    reports: reports.map((report) => ({
+      id: report._id.toString(),
+      userId: report.user?.toString(),
+      reportDate: report.reportDate?.toISOString(),
+
+      queryGenerated: report.queryGenerated ?? 0,
+      dealsDone: report.dealsDone ?? 0,
+      tutorAssigned: report.tutorAssigned ?? 0,
+      dealsDoneAmount: report.dealsDoneAmount ?? 0,
+
+      workNotes: report.workNotes,
+      status: report.status,
+
+      submittedAt: report.submittedAt?.toISOString(),
+      lockedAt: report.lockedAt?.toISOString(),
+      reviewedBy: report.reviewedBy?.toString() || null,
+      reviewedAt: report.reviewedAt?.toISOString(),
+      reviewRemarks: report.reviewRemarks,
+
+      createdAt: report.createdAt?.toISOString(),
+      updatedAt: report.updatedAt?.toISOString(),
+    })),
   };
 }

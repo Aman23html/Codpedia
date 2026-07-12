@@ -1,75 +1,81 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { assertActiveMarketingAttendanceWindow } from "@/lib/marketing/marketing-attendance-guard";
-
-import { DepartmentType, Role } from "@prisma/client";
-
-type MarketingCountry = "NORTH_AMERICA" | "EUROPE" | "AUSTRALIA";
+import { MarketingReport } from "@/models/MarketingReport";
+import { DepartmentType, ReportStatus, Role } from "@/constants/enums";
+import { assertActiveMarketingAttendanceWindow } from "@/lib/attendance/assert-active-marketing-attendance-window";
 
 type SaveMarketingReportInput = {
-  country: MarketingCountry;
+  country: string;
+  platform?: string | null;
 
-  whatsappGroupsJoined: number;
-  whatsappPostsDone: number;
+  whatsappGroupsJoined?: number;
+  whatsappPostsDone?: number;
 
-  telegramGroupsJoined: number;
-  telegramPostsDone: number;
+  telegramGroupsJoined?: number;
+  telegramPostsDone?: number;
 
-  facebookGroupsJoined: number;
-  facebookPostsDone: number;
+  facebookGroupsJoined?: number;
+  facebookPostsDone?: number;
 
-  resourceLogin: number;
-  accountClean: number;
+  resourceLogin?: number;
+  accountClean?: number;
 };
 
 function toNumber(value: unknown) {
-  const number = Number(value);
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : 0;
+}
 
-  if (!Number.isFinite(number)) {
-    return 0;
-  }
-
-  return Math.max(0, number);
+function startOfDay(date: Date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  return start;
 }
 
 export async function saveMarketingReport(input: SaveMarketingReportInput) {
-  const user = await getCurrentUser();
+  await connectDB();
 
-  if (!user) {
-    throw new Error("Unauthorized");
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser || currentUser.role !== Role.EMPLOYEE) {
+    return {
+      success: false,
+      message: "Unauthorized",
+    };
   }
 
-  if (user.role !== Role.EMPLOYEE) {
-    throw new Error("Only employees can submit marketing reports");
+  if (
+    !currentUser.department ||
+    currentUser.department.type !== DepartmentType.MARKETING
+  ) {
+    return {
+      success: false,
+      message: "Only marketing employees can submit marketing reports.",
+    };
   }
 
-  if (!user.department || user.department.type !== DepartmentType.MARKETING) {
-    throw new Error("Only marketing employees can submit marketing reports");
+  const { attendance } = await assertActiveMarketingAttendanceWindow(
+    currentUser.id
+  );
+
+  const reportDate = startOfDay(new Date(attendance.checkIn));
+
+  const country = input.country;
+
+  if (!country) {
+    return {
+      success: false,
+      message: "Country is required.",
+    };
   }
 
-  const { attendance } = await assertActiveMarketingAttendanceWindow(user.id);
-
-  if (!attendance || !attendance.checkIn) {
-    throw new Error("No active attendance check-in found");
-  }
-
-  const reportDate = new Date(attendance.checkIn);
-  reportDate.setHours(0, 0, 0, 0);
-
-  const existingReport = await prisma.marketingReport.findFirst({
-    where: {
-      userId: user.id,
-      country: input.country,
-      reportDate,
-    },
-  });
-
-  const data = {
-    country: input.country,
+  const payload = {
+    user: currentUser.id,
+    reportDate,
+    country,
+    platform: input.platform || null,
 
     whatsappGroupsJoined: toNumber(input.whatsappGroupsJoined),
     whatsappPostsDone: toNumber(input.whatsappPostsDone),
@@ -83,34 +89,30 @@ export async function saveMarketingReport(input: SaveMarketingReportInput) {
     resourceLogin: toNumber(input.resourceLogin),
     accountClean: toNumber(input.accountClean),
 
-    status: "PENDING" as const,
+    status: ReportStatus.PENDING,
+    remarks: null,
+    approvedBy: null,
   };
 
+  const existingReport = await MarketingReport.findOne({
+    user: currentUser.id,
+    country,
+    reportDate,
+  });
+
   if (existingReport) {
-    await prisma.marketingReport.update({
-      where: {
-        id: existingReport.id,
-      },
-      data,
-    });
-  } else {
-    await prisma.marketingReport.create({
-      data: {
-        userId: user.id,
-        reportDate,
-        ...data,
-      },
-    });
+    await MarketingReport.findByIdAndUpdate(existingReport._id, payload);
+
+    return {
+      success: true,
+      message: "Marketing report updated and sent for review.",
+    };
   }
 
-  revalidatePath("/employee/marketing");
-  revalidatePath("/employee/analytics");
-  revalidatePath("/incharge");
-  revalidatePath("/incharge/reports");
-  revalidatePath("/incharge/analytics");
+  await MarketingReport.create(payload);
 
   return {
     success: true,
-    message: "Marketing report saved successfully",
+    message: "Marketing report submitted successfully.",
   };
 }

@@ -3,7 +3,6 @@ import {
   Activity,
   AlertCircle,
   CheckCircle2,
-  Clock,
   FileText,
   Lock,
   TimerReset,
@@ -19,15 +18,15 @@ import SubmissionStatus from "@/components/operations/submission-status";
 import ManagerRemarks from "@/components/operations/manager-remarks";
 import OperationsHistory from "@/components/operations/operations-history";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
-function getWindowEnd(checkIn: Date) {
+function getWindowEnd(checkIn: Date | string) {
   const end = new Date(checkIn);
   end.setHours(end.getHours() + 24);
   return end;
 }
 
-function getRemainingTime(checkIn: Date) {
+function getRemainingTime(checkIn: Date | string) {
   const windowEnd = getWindowEnd(checkIn);
   const now = new Date();
 
@@ -41,6 +40,18 @@ function getRemainingTime(checkIn: Date) {
     text: `${hours}h ${minutes}m left`,
     isActive: now <= windowEnd,
   };
+}
+
+function formatDateTime(date?: Date | string | null) {
+  if (!date) return null;
+
+  return new Date(date).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default async function OperationsPage({
@@ -77,6 +88,7 @@ export default async function OperationsPage({
   ]);
 
   const attendanceActive = !!attendance?.checkIn;
+
   const windowInfo = attendance?.checkIn
     ? getRemainingTime(attendance.checkIn)
     : null;
@@ -166,15 +178,8 @@ export default async function OperationsPage({
 
               <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--muted-foreground)]">
                 {canSubmitWork
-                  ? `You can save or submit operations work until ${windowInfo?.windowEnd.toLocaleString(
-                      "en-IN",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
+                  ? `You can save or submit operations work until ${formatDateTime(
+                      windowInfo?.windowEnd
                     )}.`
                   : "Please check in first. Operations work can only be filled during the active 24-hour attendance window."}
               </p>
@@ -201,17 +206,7 @@ export default async function OperationsPage({
         <div className="space-y-8">
           <SubmissionStatus
             status={status}
-            submittedAt={
-              report?.submittedAt
-                ? report.submittedAt.toLocaleString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : null
-            }
+            submittedAt={formatDateTime(report?.submittedAt)}
           />
 
           <ManagerRemarks remarks={report?.reviewRemarks ?? ""} />

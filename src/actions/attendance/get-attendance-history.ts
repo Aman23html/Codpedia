@@ -1,24 +1,26 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
+import { Attendance } from "@/models/Attendance";
 
 export async function getAttendanceHistory() {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     throw new Error("Unauthorized");
   }
 
-  return prisma.attendance.findMany({
-    where: {
-      userId: currentUser.id,
-    },
+  const attendance = await Attendance.find({
+    user: currentUser.id,
+  })
+    .sort({
+      attendanceDate: -1,
+    })
+    .limit(30)
+    .lean();
 
-    orderBy: {
-      attendanceDate: "desc",
-    },
-
-    take: 30,
-  });
+  return JSON.parse(JSON.stringify(attendance));
 }

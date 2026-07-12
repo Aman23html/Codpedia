@@ -1,8 +1,15 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, OperationReportStatus, Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import {
+  DepartmentType,
+  OperationReportStatus,
+  Role,
+} from "@/constants/enums";
 
 export type OperationAnalyticsFilters = {
   status?: string;
@@ -19,13 +26,13 @@ function getDateFilter(from?: string, to?: string) {
   if (from) {
     const start = new Date(from);
     start.setHours(0, 0, 0, 0);
-    filter.gte = start;
+    filter.$gte = start;
   }
 
   if (to) {
     const end = new Date(to);
     end.setHours(23, 59, 59, 999);
-    filter.lte = end;
+    filter.$lte = end;
   }
 
   return filter;
@@ -34,6 +41,8 @@ function getDateFilter(from?: string, to?: string) {
 export async function getInchargeOperationAnalytics(
   filters: OperationAnalyticsFilters = {}
 ) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
@@ -47,82 +56,60 @@ export async function getInchargeOperationAnalytics(
     throw new Error("Only Operations incharge can access this analytics");
   }
 
-  const where: any = {
-    user: {
-      departmentId: currentUser.departmentId,
-      role: Role.EMPLOYEE,
-    },
+  const userQuery: any = {
+    department: currentUser.departmentId,
+    role: Role.EMPLOYEE,
   };
 
   if (filters.search) {
-    where.user.OR = [
-      {
-        fullName: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        email: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        phone: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
-      {
-        id: {
-          contains: filters.search,
-          mode: "insensitive",
-        },
-      },
+    userQuery.$or = [
+      { fullName: { $regex: filters.search, $options: "i" } },
+      { email: { $regex: filters.search, $options: "i" } },
+      { phone: { $regex: filters.search, $options: "i" } },
+      { username: { $regex: filters.search, $options: "i" } },
+      { employeeCode: { $regex: filters.search, $options: "i" } },
     ];
   }
+
+  const users = await User.find(userQuery)
+    .select("_id fullName email phone username employeeCode")
+    .lean();
+
+  const userIds = users.map((user: any) => user._id);
+
+  const reportQuery: any = {
+    user: { $in: userIds },
+  };
 
   if (
     filters.status &&
     filters.status !== "ALL" &&
-    Object.values(OperationReportStatus).includes(
-      filters.status as OperationReportStatus
-    )
+    Object.values(OperationReportStatus).includes(filters.status as any)
   ) {
-    where.status = filters.status;
+    reportQuery.status = filters.status;
   }
 
   const dateFilter = getDateFilter(filters.from, filters.to);
 
   if (dateFilter) {
-    where.reportDate = dateFilter;
+    reportQuery.reportDate = dateFilter;
   }
 
-  const reports = await prisma.employeeOperationReport.findMany({
-    where,
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          phone: true,
-        },
-      },
-    },
-    orderBy: {
-      reportDate: "asc",
-    },
-  });
+  const reports: any[] = await EmployeeOperationReport.find(reportQuery)
+    .populate({
+      path: "user",
+      select: "fullName email phone username employeeCode",
+    })
+    .sort({ reportDate: 1 })
+    .lean();
 
   const totals = reports.reduce(
     (acc, report) => {
       acc.totalReports += 1;
-      acc.queryGenerated += report.queryGenerated;
-      acc.dealsDone += report.dealsDone;
-      acc.tutorAssigned += report.tutorAssigned;
-      acc.dealsDoneAmount += report.dealsDoneAmount;
+      acc.queryGenerated += report.queryGenerated ?? 0;
+      acc.dealsDone += report.dealsDone ?? 0;
+      acc.tutorAssigned += report.tutorAssigned ?? 0;
+      acc.dealsDoneAmount += report.dealsDoneAmount ?? 0;
 
       if (report.status === "DRAFT") acc.draft += 1;
       if (report.status === "SUBMITTED") acc.submitted += 1;
@@ -149,11 +136,20 @@ export async function getInchargeOperationAnalytics(
   const employeeMap = new Map<string, any>();
 
   for (const report of reports) {
-    const userId = report.user.id;
+    if (!report.user) continue;
+
+    const userId = report.user._id.toString();
 
     if (!employeeMap.has(userId)) {
       employeeMap.set(userId, {
-        employee: report.user,
+        employee: {
+          id: userId,
+          fullName: report.user.fullName,
+          email: report.user.email,
+          phone: report.user.phone,
+          username: report.user.username,
+          employeeCode: report.user.employeeCode,
+        },
         totalReports: 0,
         queryGenerated: 0,
         dealsDone: 0,
@@ -169,10 +165,10 @@ export async function getInchargeOperationAnalytics(
     const row = employeeMap.get(userId);
 
     row.totalReports += 1;
-    row.queryGenerated += report.queryGenerated;
-    row.dealsDone += report.dealsDone;
-    row.tutorAssigned += report.tutorAssigned;
-    row.dealsDoneAmount += report.dealsDoneAmount;
+    row.queryGenerated += report.queryGenerated ?? 0;
+    row.dealsDone += report.dealsDone ?? 0;
+    row.tutorAssigned += report.tutorAssigned ?? 0;
+    row.dealsDoneAmount += report.dealsDoneAmount ?? 0;
 
     if (report.status === "VERIFIED") row.approved += 1;
     if (report.status === "SUBMITTED") row.submitted += 1;
@@ -187,15 +183,16 @@ export async function getInchargeOperationAnalytics(
   const dailyMap = new Map<string, any>();
 
   for (const report of reports) {
-    const key = report.reportDate.toISOString().slice(0, 10);
+    const reportDate = new Date(report.reportDate);
+    const key = reportDate.toISOString().slice(0, 10);
 
     if (!dailyMap.has(key)) {
       dailyMap.set(key, {
-        date: report.reportDate.toLocaleDateString("en-IN", {
+        date: reportDate.toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "short",
         }),
-        fullDate: report.reportDate.toLocaleDateString("en-IN", {
+        fullDate: reportDate.toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "short",
           year: "numeric",
@@ -209,10 +206,10 @@ export async function getInchargeOperationAnalytics(
 
     const day = dailyMap.get(key);
 
-    day.queryGenerated += report.queryGenerated;
-    day.dealsDone += report.dealsDone;
-    day.tutorAssigned += report.tutorAssigned;
-    day.dealsDoneAmount += report.dealsDoneAmount;
+    day.queryGenerated += report.queryGenerated ?? 0;
+    day.dealsDone += report.dealsDone ?? 0;
+    day.tutorAssigned += report.tutorAssigned ?? 0;
+    day.dealsDoneAmount += report.dealsDoneAmount ?? 0;
   }
 
   const chartData = Array.from(dailyMap.values());

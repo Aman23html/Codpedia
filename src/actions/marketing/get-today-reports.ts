@@ -1,59 +1,35 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { getTodayAttendance } from "@/actions/attendance/get-today-attendance";
+import { MarketingReport } from "@/models/MarketingReport";
 
 export async function getTodayReports() {
+  await connectDB();
+
   const user = await getCurrentUser();
 
   if (!user) {
     return [];
   }
 
-  const attendance = await getTodayAttendance();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  if (!attendance?.checkIn) {
-    return [];
-  }
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const windowEnd = new Date(attendance.checkIn);
-  windowEnd.setHours(windowEnd.getHours() + 24);
-
-  return prisma.marketingReport.findMany({
-    where: {
-      userId: user.id,
-      createdAt: {
-        gte: attendance.checkIn,
-        lte: windowEnd,
-      },
+  const reports = await MarketingReport.find({
+    user: user.id,
+    reportDate: {
+      $gte: today,
+      $lt: tomorrow,
     },
+  })
+    .sort({
+      country: 1,
+    })
+    .lean();
 
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          status: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
-      },
-    },
-
-    orderBy: {
-      country: "asc",
-    },
-  });
+  return JSON.parse(JSON.stringify(reports));
 }

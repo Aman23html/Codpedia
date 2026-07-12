@@ -17,7 +17,7 @@ import {
 import OperationAnalyticsFilter from "@/components/operations/operation-analytics-filter";
 import OperationLineChart from "@/components/operations/operation-line-chart";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export default async function OperationAnalyticsPage({
   searchParams,
@@ -59,7 +59,8 @@ export default async function OperationAnalyticsPage({
           </h1>
 
           <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-            Analyze your query generation, deals done, tutor assignment and submission performance.
+            Analyze your query generation, deals done, tutor assignment and
+            submission performance.
           </p>
         </div>
 
@@ -87,13 +88,15 @@ export default async function OperationAnalyticsPage({
           icon={UserCheck}
           tone="purple"
         />
-{/* 
+
+        {/* 
         <AnalyticsCard
           title="Deals Amount"
           value={`₹${analytics.totals.dealsDoneAmount.toLocaleString("en-IN")}`}
           icon={BadgeIndianRupee}
           tone="amber"
-        /> */}
+        /> 
+        */}
       </section>
 
       <section className="grid gap-6 md:grid-cols-3">
@@ -205,13 +208,7 @@ function AnalyticsCard({
   );
 }
 
-function MiniCard({
-  title,
-  value,
-}: {
-  title: string;
-  value: number;
-}) {
+function MiniCard({ title, value }: { title: string; value: number }) {
   return (
     <div className="rounded-[24px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl">
       <div className="mb-3 flex items-center gap-2 text-[var(--primary)]">
@@ -221,20 +218,12 @@ function MiniCard({
         </p>
       </div>
 
-      <h3 className="text-3xl font-black text-[var(--foreground)]">
-        {value}
-      </h3>
+      <h3 className="text-3xl font-black text-[var(--foreground)]">{value}</h3>
     </div>
   );
 }
 
-function StatusBox({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function StatusBox({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">

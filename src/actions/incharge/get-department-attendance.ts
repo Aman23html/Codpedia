@@ -1,29 +1,42 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { Attendance } from "@/models/Attendance";
+import { User } from "@/models/User";
+import { Role } from "@/constants/enums";
 
 export async function getDepartmentAttendance() {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
   }
 
-  return prisma.attendance.findMany({
-    where: {
-      user: {
-        departmentId: currentUser.departmentId,
-      },
-    },
+  const users = await User.find({
+    department: currentUser.departmentId,
+  })
+    .select("_id")
+    .lean();
 
-    include: {
-      user: true,
-    },
+  const userIds = users.map((user: any) => user._id);
 
-    orderBy: {
-      attendanceDate: "desc",
+  const attendance = await Attendance.find({
+    user: {
+      $in: userIds,
     },
-  });
+  })
+    .populate({
+      path: "user",
+      select:
+        "employeeCode fullName username email phone role status department",
+    })
+    .sort({
+      attendanceDate: -1,
+    })
+    .lean();
+
+  return JSON.parse(JSON.stringify(attendance));
 }

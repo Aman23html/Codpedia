@@ -80,6 +80,22 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
   const getFriendlyErrorMessage = (message?: string) => {
     const msg = message?.toLowerCase() || "";
 
+    if (msg.includes("firebase") && msg.includes("email")) {
+      return "This email is already registered in Firebase. Please login or use another email.";
+    }
+
+    if (msg.includes("auth/email-already-exists")) {
+      return "This email already exists in Firebase. Please login or contact administrator.";
+    }
+
+    if (msg.includes("auth/invalid-password")) {
+      return "Password is not accepted by Firebase. Please use a stronger password.";
+    }
+
+    if (msg.includes("auth/invalid-email")) {
+      return "Please enter a valid email address.";
+    }
+
     if (msg.includes("email")) {
       return "This email is already registered. Please use another email or login.";
     }
@@ -108,11 +124,11 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
       return "Some details are not valid. Please check your information and try again.";
     }
 
-    if (msg.includes("network") || msg.includes("fetch")) {
-      return "Network issue. Please check your internet connection and try again.";
-    }
-
-    if (msg.includes("database") || msg.includes("prisma")) {
+    if (
+      msg.includes("database") ||
+      msg.includes("mongodb") ||
+      msg.includes("mongoose")
+    ) {
       return "Database error occurred. Please contact the administrator.";
     }
 
@@ -134,13 +150,34 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
     }));
   };
 
+  const validatePassword = (password: string) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter.";
+    }
+
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter.";
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return "Password must contain at least one number.";
+    }
+
+    return "";
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     setErrorMsg("");
     setIsSuccess(false);
 
     const fullName = formData.fullName.trim();
-    const username = formData.username.trim();
+    const username = formData.username.trim().toLowerCase();
     const email = formData.email.trim().toLowerCase();
     const phone = formData.phone.trim();
     const departmentId = formData.departmentId;
@@ -167,6 +204,13 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
       return;
     }
 
+    if (!/^[a-z0-9._-]+$/.test(username)) {
+      setErrorMsg(
+        "Username can only contain lowercase letters, numbers, dot, underscore, and hyphen."
+      );
+      return;
+    }
+
     if (!email) {
       setErrorMsg("Please enter your email address.");
       return;
@@ -183,7 +227,9 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
     }
 
     if (!/^[0-9]{10}$/.test(phone)) {
-      setErrorMsg("Phone number must be exactly 10 digits. Do not include +91, spaces, or symbols.");
+      setErrorMsg(
+        "Phone number must be exactly 10 digits. Do not include +91, spaces, or symbols."
+      );
       return;
     }
 
@@ -197,8 +243,10 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters long.");
+    const passwordError = validatePassword(password);
+
+    if (passwordError) {
+      setErrorMsg(passwordError);
       return;
     }
 
@@ -250,9 +298,6 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
 
   return (
     <div className="relative min-h-screen w-full bg-[var(--background)] font-sans flex flex-col text-[var(--foreground)] selection:bg-[var(--primary)] selection:text-white">
-      {/* ========================================== */}
-      {/* SECURE BACKGROUND LAYER                    */}
-      {/* ========================================== */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 mix-blend-overlay" />
 
@@ -288,11 +333,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
         />
       </div>
 
-      {/* Main Grid Layout */}
       <div className="relative z-10 max-w-[1440px] mx-auto w-full px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 min-h-screen overflow-x-hidden pt-24 lg:pt-32">
-        {/* ========================================== */}
-        {/* LEFT COLUMN: BRANDING & METRICS            */}
-        {/* ========================================== */}
         <div className="lg:col-span-7 flex flex-col pt-8 lg:pt-16 pb-16 lg:pr-24">
           <motion.div
             variants={staggerContainer}
@@ -304,7 +345,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
               className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner cursor-default"
             >
               <span className="text-[var(--foreground)] text-[11px] font-bold tracking-[0.15em] uppercase opacity-90">
-                Next-Gen Workspace
+                Firebase Secured Workspace
               </span>
             </motion.div>
 
@@ -322,8 +363,8 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
               variants={fadeUp}
               className="text-lg text-[var(--muted-foreground)] font-medium max-w-lg mb-14 leading-relaxed"
             >
-              Deploy faster, scale globally, and command your digital
-              infrastructure from a single, unified command center.
+              Create your Codepedia EMS workspace identity with Firebase-secured
+              authentication and MongoDB-powered role-based access control.
             </motion.p>
           </motion.div>
 
@@ -335,23 +376,23 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
           >
             {[
               {
-                label: "Active Nodes",
-                value: "20k+",
+                label: "Auth Layer",
+                value: "Firebase",
+                icon: <Lock className="w-5 h-5" />,
+              },
+              {
+                label: "Access",
+                value: "RBAC",
                 icon: <Users className="w-5 h-5" />,
               },
               {
-                label: "Throughput",
-                value: "5k/s",
-                icon: <ClipboardList className="w-5 h-5" />,
+                label: "Approval",
+                value: "Admin",
+                icon: <CheckCircle2 className="w-5 h-5" />,
               },
               {
-                label: "Uptime",
-                value: "99.9%",
-                icon: <Star className="w-5 h-5" />,
-              },
-              {
-                label: "Latency",
-                value: "<12ms",
+                label: "Status",
+                value: "Secure",
                 icon: <TrendingUp className="w-5 h-5" />,
               },
             ].map((stat, i) => (
@@ -365,7 +406,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                   {stat.icon}
                 </div>
 
-                <h4 className="text-2xl font-black">{stat.value}</h4>
+                <h4 className="text-xl font-black truncate">{stat.value}</h4>
 
                 <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mt-1.5">
                   {stat.label}
@@ -375,9 +416,6 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
           </motion.div>
         </div>
 
-        {/* ========================================== */}
-        {/* RIGHT COLUMN: REGISTRATION TERMINAL        */}
-        {/* ========================================== */}
         <div className="lg:col-span-5 flex justify-center lg:justify-end items-start lg:items-center pb-16 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -390,10 +428,8 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
             }}
             className="w-full max-w-[520px] relative group"
           >
-            {/* Animated Gradient Border Layer */}
             <div className="absolute -inset-[1.5px] rounded-[2.5rem] bg-gradient-to-br from-[var(--primary)]/50 via-transparent to-[var(--secondary)]/50 opacity-50 blur-[2px] group-hover:opacity-100 transition-opacity duration-500" />
 
-            {/* Main Form Card */}
             <div className="relative rounded-[2.5rem] bg-[var(--card)]/60 backdrop-blur-3xl border border-white/20 dark:border-white/10 shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
               <AnimatePresence mode="wait">
                 {!isSuccess ? (
@@ -416,7 +452,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                         </h2>
 
                         <p className="text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-widest mt-2">
-                          Step 1 of 3: Identity
+                          Firebase Auth + EMS Approval
                         </p>
                       </div>
 
@@ -429,7 +465,6 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                       onSubmit={handleSubmit}
                       className="space-y-5 relative flex-1 flex flex-col justify-between"
                     >
-                      {/* Dynamic Error Banner */}
                       {errorMsg && (
                         <motion.div
                           initial={{ opacity: 0, y: -10 }}
@@ -448,7 +483,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                             : "opacity-100"
                         }`}
                       >
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-[var(--foreground)]/70 uppercase tracking-widest ml-1">
                               Full Name
@@ -490,7 +525,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
 
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-[var(--foreground)]/70 uppercase tracking-widest ml-1">
-                            Workspace Email
+                            Firebase Login Email
                           </label>
 
                           <div className="relative group/input">
@@ -508,7 +543,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-[var(--foreground)]/70 uppercase tracking-widest ml-1">
                               Phone
@@ -594,10 +629,10 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-[var(--foreground)]/70 uppercase tracking-widest ml-1">
-                              Password
+                              Firebase Password
                             </label>
 
                             <div className="relative group/input">
@@ -606,7 +641,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                               <input
                                 name="password"
                                 type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
+                                placeholder="Min 8 chars, A-Z, a-z, 0-9"
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
@@ -640,7 +675,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                                 type={
                                   showConfirmPassword ? "text" : "password"
                                 }
-                                placeholder="••••••••"
+                                placeholder="Repeat password"
                                 required
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
@@ -685,7 +720,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                             {isPending ? (
                               <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                EXECUTING...
+                                CREATING FIREBASE IDENTITY...
                               </>
                             ) : (
                               <>
@@ -778,7 +813,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                       className="flex items-center justify-center gap-2 text-sm text-[var(--muted-foreground)] font-medium mb-10 bg-[var(--background)]/50 px-4 py-2 rounded-full border border-[var(--border)]"
                     >
                       <Clock className="w-4 h-4 text-[var(--secondary)]" />
-                      Please wait for administrator approval
+                      Firebase identity created. Waiting for EMS approval.
                     </motion.div>
 
                     <motion.p
@@ -787,13 +822,13 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                       transition={{ delay: 0.7 }}
                       className="text-[13px] text-[var(--muted-foreground)] max-w-[300px] mb-12 leading-relaxed"
                     >
-                      Your workspace identity has been securely configured. You
-                      will receive an email notification once your clearance
-                      level is approved.
+                      Your Firebase login identity and EMS workspace request have
+                      been submitted successfully. You can login only after your
+                      administrator approves your EMS account.
                     </motion.p>
 
                     <motion.a
-                      href="/"
+                      href="/login"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.8 }}
@@ -801,7 +836,7 @@ export default function RegisterForm({ departments }: RegisterFormProps) {
                       whileTap={{ scale: 0.98 }}
                       className="w-full relative overflow-hidden rounded-2xl py-4 text-sm font-bold text-black bg-[var(--foreground)] dark:bg-white/10 dark:hover:bg-white/20 border border-transparent dark:border-white/10 transition-all duration-300 flex items-center justify-center gap-2"
                     >
-                      RETURN TO SYSTEM HOME
+                      GO TO LOGIN
                     </motion.a>
                   </motion.div>
                 )}

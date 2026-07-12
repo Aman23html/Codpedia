@@ -26,7 +26,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { getOperationReportDetails } from "@/actions/incharge/operations/get-operation-report-details";
 import OperationReviewActions from "@/components/incharge/operations/operation-review-actions";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 function getInitials(name: string) {
   if (!name) return "U";
@@ -39,20 +39,20 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function formatDate(date?: Date | null) {
+function formatDate(date?: Date | string | null) {
   if (!date) return "Not Available";
 
-  return date.toLocaleDateString("en-IN", {
+  return new Date(date).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 }
 
-function formatDateTime(date?: Date | null) {
+function formatDateTime(date?: Date | string | null) {
   if (!date) return "Not Available";
 
-  return date.toLocaleString("en-IN", {
+  return new Date(date).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -309,7 +309,7 @@ export default async function OperationReportDetailPage({
 
             <div className="rounded-[26px] border border-[var(--border)] bg-[var(--background)]/70 p-6">
               <OperationReviewActions
-                reportId={report.id}
+                reportId={report.id || report._id}
                 status={report.status}
               />
             </div>
@@ -348,7 +348,7 @@ export default async function OperationReportDetailPage({
               <InfoRow
                 icon={Building2}
                 label="Department"
-                value={report.user.department.name}
+                value={report.user.department?.name || "Operations"}
               />
 
               <InfoRow

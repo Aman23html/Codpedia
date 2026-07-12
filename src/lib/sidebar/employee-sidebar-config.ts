@@ -12,7 +12,8 @@ import {
   UserCircle2,
   Settings,
 } from "lucide-react";
-import { DepartmentType } from "@prisma/client";
+
+import { DepartmentType } from "@/constants/enums";
 
 export type SidebarItem = {
   title: string;
@@ -22,7 +23,6 @@ export type SidebarItem = {
   badge?: number;
 };
 
-// --- Common Items ---
 const commonItems: SidebarItem[] = [
   {
     title: "Dashboard",
@@ -68,7 +68,6 @@ const commonItems: SidebarItem[] = [
   },
 ];
 
-// --- Department Specific Items ---
 const marketingItems: SidebarItem[] = [
   {
     title: "Marketing",
@@ -144,31 +143,30 @@ const digitalItems: SidebarItem[] = [
   },
 ];
 
-// --- Factory Function ---
-export function getEmployeeSidebar(department: DepartmentType): SidebarItem[] {
+export function getEmployeeSidebar(department: string): SidebarItem[] {
   let workspace: SidebarItem[] = [];
 
   switch (department) {
     case DepartmentType.MARKETING:
       workspace = marketingItems;
       break;
+
     case DepartmentType.OPERATIONS:
       workspace = operationsItems;
       break;
+
     case DepartmentType.ACCOUNTS:
       workspace = accountsItems;
       break;
+
     case DepartmentType.TUTOR:
       workspace = tutorItems;
       break;
+
     case DepartmentType.DIGITAL_MARKETING:
       workspace = digitalItems;
       break;
   }
 
-  return [
-    commonItems[0], // Dashboard
-    ...workspace,
-    ...commonItems.slice(1),
-  ];
+  return [commonItems[0], ...workspace, ...commonItems.slice(1)];
 }

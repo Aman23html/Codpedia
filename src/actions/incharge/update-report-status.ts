@@ -2,21 +2,32 @@
 
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { ReportStatus, Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { ReportStatus, Role } from "@/constants/enums";
 
 export async function updateReportStatus(
   reportIdOrIds: string | string[],
-  status: ReportStatus,
+  status: string,
   remarks?: string
 ) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
     return {
       success: false,
       message: "Unauthorized",
+    };
+  }
+
+  if (!Object.values(ReportStatus).includes(status as any)) {
+    return {
+      success: false,
+      message: "Invalid report status.",
     };
   }
 
@@ -31,21 +42,29 @@ export async function updateReportStatus(
     };
   }
 
-  const result = await prisma.marketingReport.updateMany({
-    where: {
-      id: {
-        in: reportIds,
+  const departmentUsers = await User.find({
+    department: currentUser.departmentId,
+  })
+    .select("_id")
+    .lean();
+
+  const userIds = departmentUsers.map((user: any) => user._id);
+
+  const result = await MarketingReport.updateMany(
+    {
+      _id: {
+        $in: reportIds,
       },
       user: {
-        departmentId: currentUser.departmentId,
+        $in: userIds,
       },
     },
-    data: {
+    {
       status,
       remarks: remarks?.trim() || null,
-      approvedById: currentUser.id,
-    },
-  });
+      approvedBy: currentUser.id,
+    }
+  );
 
   revalidatePath("/incharge");
   revalidatePath("/incharge/reports");
@@ -54,7 +73,7 @@ export async function updateReportStatus(
 
   return {
     success: true,
-    message: `${result.count} report updated successfully.`,
-    updatedReports: result.count,
+    message: `${result.modifiedCount} report updated successfully.`,
+    updatedReports: result.modifiedCount,
   };
 }

@@ -1,10 +1,13 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { Role } from "@/constants/enums";
 
 export async function getMyProfile() {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -18,28 +21,40 @@ export async function getMyProfile() {
     throw new Error("Only employee or incharge profile is available here.");
   }
 
-  return prisma.user.findUnique({
-    where: {
-      id: currentUser.id,
-    },
-    select: {
-      id: true,
-      employeeCode: true,
-      fullName: true,
-      username: true,
-      email: true,
-      phone: true,
-      role: true,
-      status: true,
-      profileImageUrl: true,
-      coverImageUrl: true,
-      department: {
-        select: {
-          name: true,
-          type: true,
-        },
-      },
-      createdAt: true,
-    },
-  });
+  const user: any = await User.findById(currentUser.id)
+    .populate({
+      path: "department",
+      select: "name type departmentCode shortCode",
+    })
+    .select(
+      "employeeCode fullName username email phone role status profileImageUrl coverImageUrl department createdAt"
+    )
+    .lean();
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user._id.toString(),
+    employeeCode: user.employeeCode,
+    fullName: user.fullName,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    status: user.status,
+    profileImageUrl: user.profileImageUrl,
+    coverImageUrl: user.coverImageUrl,
+    department: user.department
+      ? {
+          id: user.department._id.toString(),
+          name: user.department.name,
+          type: user.department.type,
+          departmentCode: user.department.departmentCode,
+          shortCode: user.department.shortCode,
+        }
+      : null,
+    createdAt: user.createdAt?.toISOString(),
+  };
 }

@@ -1,4 +1,4 @@
-import { getDepartments } from "@/actions/department/get-departments";
+import { getDepartments } from "@/actions/departments/get-departments";
 
 export default async function TestPage() {
   const departments = await getDepartments();

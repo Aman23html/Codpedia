@@ -1,29 +1,43 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+
+import { Department } from "@/models/Department";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+
+import { DepartmentType, Role } from "@/constants/enums";
 
 async function getDepartmentReportCount(
   departmentId: string,
-  type: DepartmentType
+  type: string
 ) {
+  const users = await User.find({
+    department: departmentId,
+  })
+    .select("_id")
+    .lean();
+
+  const userIds = users.map((user: any) => user._id);
+
+  if (userIds.length === 0) {
+    return 0;
+  }
+
   if (type === DepartmentType.MARKETING) {
-    return prisma.marketingReport.count({
-      where: {
-        user: {
-          departmentId,
-        },
+    return MarketingReport.countDocuments({
+      user: {
+        $in: userIds,
       },
     });
   }
 
   if (type === DepartmentType.OPERATIONS) {
-    return prisma.employeeOperationReport.count({
-      where: {
-        user: {
-          departmentId,
-        },
+    return EmployeeOperationReport.countDocuments({
+      user: {
+        $in: userIds,
       },
     });
   }
@@ -32,54 +46,52 @@ async function getDepartmentReportCount(
 }
 
 export async function getOwnerAnalyticsDepartments() {
-  const user = await getCurrentUser();
+  await connectDB();
 
-  if (!user || user.role !== Role.OWNER) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser || currentUser.role !== Role.OWNER) {
     throw new Error("Unauthorized");
   }
 
-  const departments = await prisma.department.findMany({
-    select: {
-      id: true,
-      name: true,
-      type: true,
-      users: {
-        select: {
-          id: true,
-          role: true,
-          status: true,
-        },
-      },
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
+  const departments = await Department.find()
+    .sort({
+      name: 1,
+    })
+    .lean();
 
   const data = await Promise.all(
-    departments.map(async (department) => {
+    departments.map(async (department: any) => {
+      const users = await User.find({
+        department: department._id,
+      })
+        .select("role status")
+        .lean();
+
       const totalReports = await getDepartmentReportCount(
-        department.id,
+        department._id.toString(),
         department.type
       );
 
-      const employees = department.users.filter(
-        (user) => user.role === Role.EMPLOYEE
+      const employees = users.filter(
+        (user: any) => user.role === Role.EMPLOYEE
       ).length;
 
-      const incharges = department.users.filter(
-        (user) => user.role === Role.INCHARGE
+      const incharges = users.filter(
+        (user: any) => user.role === Role.INCHARGE
       ).length;
 
-      const activeUsers = department.users.filter(
-        (user) => user.status === "ACTIVE"
+      const activeUsers = users.filter(
+        (user: any) => user.status === "ACTIVE"
       ).length;
 
       return {
-        id: department.id,
+        id: department._id.toString(),
         name: department.name,
         type: department.type,
-        totalUsers: department.users.length,
+        departmentCode: department.departmentCode,
+        shortCode: department.shortCode,
+        totalUsers: users.length,
         employees,
         incharges,
         activeUsers,

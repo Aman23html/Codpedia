@@ -1,8 +1,15 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import mongoose from "mongoose";
+
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { DepartmentType, Role } from "@prisma/client";
+
+import { User } from "@/models/User";
+import { Department } from "@/models/Department";
+import { MarketingReport } from "@/models/MarketingReport";
+
+import { DepartmentType, Role } from "@/constants/enums";
 
 function getDateRange(filter?: string) {
   const now = new Date();
@@ -14,7 +21,7 @@ function getDateRange(filter?: string) {
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
-    return { gte: start, lte: end };
+    return { $gte: start, $lte: end };
   }
 
   if (filter === "7_DAYS") {
@@ -22,7 +29,7 @@ function getDateRange(filter?: string) {
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "30_DAYS") {
@@ -30,7 +37,7 @@ function getDateRange(filter?: string) {
     start.setDate(now.getDate() - 30);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   return undefined;
@@ -68,40 +75,39 @@ export async function getOwnerMarketingUserAnalytics({
   filter?: string;
   status?: string;
 }) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.OWNER) {
     throw new Error("Unauthorized");
   }
 
-  const employee = await prisma.user.findFirst({
-    where: {
-      id: userId,
-      role: Role.EMPLOYEE,
-      department: {
-        type: DepartmentType.MARKETING,
-      },
-    },
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
 
-    select: {
-      id: true,
-      employeeCode: true,
-      profileImageUrl: true,
-      coverImageUrl: true,
-      fullName: true,
-      email: true,
-      username: true,
-      phone: true,
-      status: true,
-      createdAt: true,
-      department: {
-        select: {
-          name: true,
-          type: true,
-        },
-      },
-    },
-  });
+  const marketingDepartment = await Department.findOne({
+    type: DepartmentType.MARKETING,
+  }).lean();
+
+  if (!marketingDepartment) {
+    return null;
+  }
+
+  const employee: any = await User.findOne({
+    _id: userId,
+    role: Role.EMPLOYEE,
+    department: marketingDepartment._id,
+  })
+    .populate({
+      path: "department",
+      select: "name type departmentCode shortCode",
+    })
+    .select(
+      "employeeCode profileImageUrl coverImageUrl fullName email username phone status createdAt department"
+    )
+    .lean();
 
   if (!employee) {
     return null;
@@ -109,39 +115,27 @@ export async function getOwnerMarketingUserAnalytics({
 
   const dateRange = getDateRange(filter);
 
-  const where: any = {
-    userId,
+  const reportQuery: any = {
+    user: employee._id,
   };
 
   if (dateRange) {
-    where.reportDate = dateRange;
+    reportQuery.reportDate = dateRange;
   }
 
   if (status !== "ALL") {
-    where.status = status;
+    reportQuery.status = status;
   }
 
-  const reports = await prisma.marketingReport.findMany({
-    where,
-
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-        },
-      },
-    },
-
-    orderBy: {
-      reportDate: "asc",
-    },
-  });
+  const reports: any[] = await MarketingReport.find(reportQuery)
+    .populate({
+      path: "user",
+      select: "employeeCode profileImageUrl fullName username email phone",
+    })
+    .sort({
+      reportDate: 1,
+    })
+    .lean();
 
   const summary = reports.reduce(
     (acc, report) => {
@@ -273,17 +267,71 @@ export async function getOwnerMarketingUserAnalytics({
       row.whatsappPosts + row.telegramPosts + row.facebookPosts;
   }
 
+  const plainEmployee = {
+    id: employee._id.toString(),
+    employeeCode: employee.employeeCode,
+    profileImageUrl: employee.profileImageUrl,
+    coverImageUrl: employee.coverImageUrl,
+    fullName: employee.fullName,
+    email: employee.email,
+    username: employee.username,
+    phone: employee.phone,
+    status: employee.status,
+    createdAt: employee.createdAt?.toISOString(),
+    department: employee.department
+      ? {
+          id: employee.department._id.toString(),
+          name: employee.department.name,
+          type: employee.department.type,
+          departmentCode: employee.department.departmentCode,
+          shortCode: employee.department.shortCode,
+        }
+      : null,
+  };
+
   return {
-    employee,
+    employee: plainEmployee,
     summary,
     approvalRate,
     countries: Array.from(countryMap.values()),
     chartData: Array.from(chartMap.values()),
+
     reports: reports.map((report) => ({
-      ...report,
+      id: report._id.toString(),
+      userId: report.user?._id?.toString() || employee._id.toString(),
+      user: report.user
+        ? {
+            id: report.user._id.toString(),
+            employeeCode: report.user.employeeCode,
+            profileImageUrl: report.user.profileImageUrl,
+            fullName: report.user.fullName,
+            username: report.user.username,
+            email: report.user.email,
+            phone: report.user.phone,
+          }
+        : null,
+
+      reportDate: report.reportDate?.toISOString(),
+      country: report.country,
       countryLabel: formatCountry(report.country),
+
+      whatsappGroupsJoined: report.whatsappGroupsJoined ?? 0,
+      whatsappPostsDone: report.whatsappPostsDone ?? 0,
+      telegramGroupsJoined: report.telegramGroupsJoined ?? 0,
+      telegramPostsDone: report.telegramPostsDone ?? 0,
+      facebookGroupsJoined: report.facebookGroupsJoined ?? 0,
+      facebookPostsDone: report.facebookPostsDone ?? 0,
+      resourceLogin: report.resourceLogin ?? 0,
+      accountClean: report.accountClean ?? 0,
+
+      status: report.status,
+      remarks: report.remarks,
+
       totalGroups: totalGroups(report),
       totalPosts: totalPosts(report),
+
+      createdAt: report.createdAt?.toISOString(),
+      updatedAt: report.updatedAt?.toISOString(),
     })),
   };
 }

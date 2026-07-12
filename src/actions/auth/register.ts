@@ -1,66 +1,228 @@
 "use server";
 
-import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
-import { registerSchema } from "@/validations/register";
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+
+import { connectDB } from "@/lib/mongodb";
+import { User } from "@/models/User";
+import { Department } from "@/models/Department";
+import { firebaseAdminAuth } from "@/lib/firebase-admin";
+import { Role, UserStatus } from "@/constants/enums";
 import { generateEmployeeCode } from "@/lib/users/generate-employee-code";
 
-export async function registerUser(data: unknown) {
+type RegisterInput = {
+  fullName: string;
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+  departmentId: string;
+};
+
+export async function registerUser(data: RegisterInput) {
+  let firebaseUid: string | null = null;
+
   try {
-    const validatedData = registerSchema.parse(data);
+    await connectDB();
 
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: validatedData.email },
-          { username: validatedData.username },
-          { phone: validatedData.phone },
-        ],
-      },
-    });
+    const fullName = data.fullName?.trim();
+    const username = data.username?.trim().toLowerCase();
+    const email = data.email?.trim().toLowerCase();
+    const phone = data.phone?.trim();
+    const password = data.password;
+    const departmentId = data.departmentId;
 
-    if (existingUser) {
+    if (!fullName || !username || !email || !phone || !password || !departmentId) {
       return {
         success: false,
-        message:
-          "Email, Username or Phone already exists",
+        message: "All fields are required.",
       };
     }
 
-    const passwordHash = await bcrypt.hash(
-      validatedData.password,
-      10
-    );
+    if (fullName.length < 3) {
+      return {
+        success: false,
+        message: "Full name must be at least 3 characters.",
+      };
+    }
 
-    const employeeCode = await generateEmployeeCode(validatedData.departmentId);
+    if (username.length < 3) {
+      return {
+        success: false,
+        message: "Username must be at least 3 characters.",
+      };
+    }
 
-    const user = await prisma.user.create({
-      data: {
-        fullName: validatedData.fullName,
-        username: validatedData.username,
-        email: validatedData.email,
-        phone: validatedData.phone,
-        passwordHash,
+    if (!/^[a-z0-9._-]+$/.test(username)) {
+      return {
+        success: false,
+        message: "Username can only contain letters, numbers, dot, underscore, and hyphen.",
+      };
+    }
 
-        departmentId: validatedData.departmentId,
-        employeeCode,
+    if (!email.includes("@") || !email.includes(".")) {
+      return {
+        success: false,
+        message: "Invalid email address.",
+      };
+    }
 
-        role: "EMPLOYEE",
-        status: "PENDING_APPROVAL",
-      },
+    if (!/^[0-9]{10}$/.test(phone)) {
+      return {
+        success: false,
+        message: "Phone number must be exactly 10 digits.",
+      };
+    }
+
+    if (password.length < 8) {
+      return {
+        success: false,
+        message: "Password must be at least 8 characters.",
+      };
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(departmentId)) {
+      return {
+        success: false,
+        message: "Invalid department.",
+      };
+    }
+
+    const department = await Department.findById(departmentId).lean();
+
+    if (!department) {
+      return {
+        success: false,
+        message: "Department not found.",
+      };
+    }
+
+    const existingMongoUser = await User.findOne({
+      $or: [{ email }, { username }, { phone }],
+    }).lean();
+
+    if (existingMongoUser) {
+      if (existingMongoUser.email === email) {
+        return {
+          success: false,
+          message: "Email already registered.",
+        };
+      }
+
+      if (existingMongoUser.username === username) {
+        return {
+          success: false,
+          message: "Username already taken.",
+        };
+      }
+
+      if (existingMongoUser.phone === phone) {
+        return {
+          success: false,
+          message: "Phone number already registered.",
+        };
+      }
+
+      return {
+        success: false,
+        message: "User already exists.",
+      };
+    }
+
+    try {
+      const existingFirebaseUser = await firebaseAdminAuth.getUserByEmail(email);
+
+      if (existingFirebaseUser) {
+        return {
+          success: false,
+          message: "Firebase email already exists.",
+        };
+      }
+    } catch (error: any) {
+      if (error?.code !== "auth/user-not-found") {
+        console.error("Firebase email check error:", error);
+
+        return {
+          success: false,
+          message: "Firebase account check failed.",
+        };
+      }
+    }
+
+    const firebaseUser = await firebaseAdminAuth.createUser({
+      email,
+      password,
+      displayName: fullName,
+      disabled: false,
+    });
+
+    firebaseUid = firebaseUser.uid;
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const employeeCode = await generateEmployeeCode(departmentId);
+
+    await User.create({
+      fullName,
+      username,
+      email,
+      phone,
+      passwordHash,
+      employeeCode,
+      role: Role.EMPLOYEE,
+      status: UserStatus.PENDING_APPROVAL,
+      emailVerified: true,
+      department: departmentId,
+      firebaseUid,
     });
 
     return {
       success: true,
-      message: "Registration successful",
-      userId: user.id,
+      message: "Registration successful. Please wait for admin approval.",
     };
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error("REGISTER USER ERROR:", error);
+
+    if (firebaseUid) {
+      try {
+        await firebaseAdminAuth.deleteUser(firebaseUid);
+      } catch (deleteError) {
+        console.error("Firebase rollback failed:", deleteError);
+      }
+    }
+
+    if (error?.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+
+      return {
+        success: false,
+        message: `${field || "User"} already exists.`,
+      };
+    }
+
+    if (error?.code === "auth/email-already-exists") {
+      return {
+        success: false,
+        message: "Firebase email already exists.",
+      };
+    }
+
+    if (error?.code === "auth/invalid-password") {
+      return {
+        success: false,
+        message: "Firebase password is invalid.",
+      };
+    }
+
+    if (error?.code === "auth/invalid-email") {
+      return {
+        success: false,
+        message: "Firebase email is invalid.",
+      };
+    }
 
     return {
       success: false,
-      message: "Registration failed",
+      message: "Registration failed due to server error.",
     };
   }
 }

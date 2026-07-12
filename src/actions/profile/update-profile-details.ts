@@ -2,15 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { Role } from "@/constants/enums";
 
 function cleanValue(value: FormDataEntryValue | null) {
   return String(value || "").trim();
 }
 
 export async function updateProfileDetails(formData: FormData) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -25,7 +28,7 @@ export async function updateProfileDetails(formData: FormData) {
   }
 
   const fullName = cleanValue(formData.get("fullName"));
-  const email = cleanValue(formData.get("email"));
+  const email = cleanValue(formData.get("email")).toLowerCase();
   const phone = cleanValue(formData.get("phone"));
 
   if (!fullName) {
@@ -40,48 +43,43 @@ export async function updateProfileDetails(formData: FormData) {
     throw new Error("Phone number is required.");
   }
 
-  const existingEmail = await prisma.user.findFirst({
-    where: {
-      email,
-      NOT: {
-        id: currentUser.id,
-      },
+  const existingEmail = await User.findOne({
+    email,
+    _id: {
+      $ne: currentUser.id,
     },
-    select: {
-      id: true,
-    },
-  });
+  })
+    .select("_id")
+    .lean();
 
   if (existingEmail) {
     throw new Error("This email is already used by another user.");
   }
 
-  const existingPhone = await prisma.user.findFirst({
-    where: {
-      phone,
-      NOT: {
-        id: currentUser.id,
-      },
+  const existingPhone = await User.findOne({
+    phone,
+    _id: {
+      $ne: currentUser.id,
     },
-    select: {
-      id: true,
-    },
-  });
+  })
+    .select("_id")
+    .lean();
 
   if (existingPhone) {
     throw new Error("This phone number is already used by another user.");
   }
 
-  await prisma.user.update({
-    where: {
-      id: currentUser.id,
-    },
-    data: {
+  await User.findByIdAndUpdate(
+    currentUser.id,
+    {
       fullName,
       email,
       phone,
     },
-  });
+    {
+      returnDocument: "after",
+    }
+  );
 
   revalidatePath("/employee/profile");
   revalidatePath("/incharge/profile");

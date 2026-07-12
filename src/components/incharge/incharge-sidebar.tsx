@@ -24,11 +24,11 @@ import {
   Moon,
 } from "lucide-react";
 
-import { DepartmentType } from "@prisma/client";
+import { DepartmentType } from "@/constants/enums";
 import LogoutButton from "@/components/auth/logout-button";
 
 interface InchargeSidebarProps {
-  department: DepartmentType;
+  department: string;
 }
 
 type SidebarLink = {
@@ -37,9 +37,7 @@ type SidebarLink = {
   icon: any;
 };
 
-function getDepartmentWorkspaceLinks(
-  department: DepartmentType
-): SidebarLink[] {
+function getDepartmentWorkspaceLinks(department: string): SidebarLink[] {
   switch (department) {
     case DepartmentType.MARKETING:
       return [
@@ -116,7 +114,7 @@ function getDepartmentWorkspaceLinks(
   }
 }
 
-function formatDepartmentName(department: DepartmentType) {
+function formatDepartmentName(department: string) {
   return department.replaceAll("_", " ");
 }
 
@@ -256,24 +254,9 @@ export default function InchargeSidebar({
 
       {/* Bottom Panel */}
       <div className="relative border-t border-[var(--border)]/70 p-4">
-        <div className="mb-4 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-gradient-to-br from-[var(--primary)]/10 via-[var(--card)] to-[var(--card)] p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] ring-1 ring-[var(--primary)]/15">
-              {/* <Sparkles className="h-4 w-4" /> */}
-            </div>
+       
 
-            <div>
-              <p className="text-sm font-black tracking-tight text-[var(--foreground)]">
-                Review Center
-              </p>
-              <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">
-                Manage reports, approvals, attendance, and team activity.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--card)]/70 p-3 shadow-sm backdrop-blur-xl">
+        <div className="rounded-[1rem]  border border-[var(--border)] bg-[var(--card)]/70 p-3 shadow-sm backdrop-blur-xl">
           <LogoutButton />
         </div>
       </div>

@@ -1,44 +1,54 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { Role, UserStatus } from "@prisma/client";
+import { connectDB } from "@/lib/mongodb";
+import { Department } from "@/models/Department";
+import { User } from "@/models/User";
+import { Role, UserStatus } from "@/constants/enums";
 
 export async function getOwnerDashboardStats() {
-  const [
-    totalDepartments,
-    totalUsers,
-    totalEmployees,
-    totalIncharges,
-    pendingApprovals,
-  ] = await Promise.all([
-    prisma.department.count(),
+  try {
+    await connectDB();
 
-    prisma.user.count(),
+    const [
+      totalDepartments,
+      totalUsers,
+      totalEmployees,
+      totalIncharges,
+      pendingApprovals,
+    ] = await Promise.all([
+      Department.countDocuments(),
 
-    prisma.user.count({
-      where: {
+      User.countDocuments(),
+
+      User.countDocuments({
         role: Role.EMPLOYEE,
-      },
-    }),
+      }),
 
-    prisma.user.count({
-      where: {
+      User.countDocuments({
         role: Role.INCHARGE,
-      },
-    }),
+      }),
 
-    prisma.user.count({
-      where: {
+      User.countDocuments({
         status: UserStatus.PENDING_APPROVAL,
-      },
-    }),
-  ]);
+      }),
+    ]);
 
-  return {
-    totalDepartments,
-    totalUsers,
-    totalEmployees,
-    totalIncharges,
-    pendingApprovals,
-  };
+    return {
+      totalDepartments,
+      totalUsers,
+      totalEmployees,
+      totalIncharges,
+      pendingApprovals,
+    };
+  } catch (error) {
+    console.error("Get owner dashboard stats error:", error);
+
+    return {
+      totalDepartments: 0,
+      totalUsers: 0,
+      totalEmployees: 0,
+      totalIncharges: 0,
+      pendingApprovals: 0,
+    };
+  }
 }

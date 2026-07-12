@@ -1,34 +1,28 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import mongoose from "mongoose";
+
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import {
-  LeaveStatus,
-  Role,
-} from "@prisma/client";
+import { Leave } from "@/models/Leave";
+import { LeaveStatus, Role } from "@/constants/enums";
 
-export async function approveLeave(
-  leaveId: string
-) {
-  const currentUser =
-    await getCurrentUser();
+export async function approveLeave(leaveId: string) {
+  await connectDB();
 
-  if (
-    !currentUser ||
-    currentUser.role !== Role.INCHARGE
-  ) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser || currentUser.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
   }
 
-  await prisma.leave.update({
-    where: {
-      id: leaveId,
-    },
+  if (!mongoose.Types.ObjectId.isValid(leaveId)) {
+    throw new Error("Invalid leave ID");
+  }
 
-    data: {
-      status: LeaveStatus.APPROVED,
-      approvedById: currentUser.id,
-    },
+  await Leave.findByIdAndUpdate(leaveId, {
+    status: LeaveStatus.APPROVED,
+    approvedBy: currentUser.id,
   });
 
   return {

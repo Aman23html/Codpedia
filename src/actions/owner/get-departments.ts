@@ -1,28 +1,46 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
+import { Department } from "@/models/Department";
+import { User } from "@/models/User";
 
 export async function getDepartments() {
-  const departments = await prisma.department.findMany({
-    include: {
-      users: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
+  try {
+    await connectDB();
 
-  return departments.map((department) => ({
-    id: department.id,
-    name: department.name,
-    type: department.type,
+    const departments = await Department.find()
+      .sort({ name: 1 })
+      .lean();
 
-    employeeCount: department.users.filter(
-      (user) => user.role === "EMPLOYEE"
-    ).length,
+    const result = await Promise.all(
+      departments.map(async (department: any) => {
+        const [employeeCount, inchargeCount] = await Promise.all([
+          User.countDocuments({
+            department: department._id,
+            role: "EMPLOYEE",
+          }),
 
-    inchargeCount: department.users.filter(
-      (user) => user.role === "INCHARGE"
-    ).length,
-  }));
+          User.countDocuments({
+            department: department._id,
+            role: "INCHARGE",
+          }),
+        ]);
+
+        return {
+          id: department._id.toString(),
+          name: department.name,
+          type: department.type,
+          departmentCode: department.departmentCode,
+          shortCode: department.shortCode,
+          employeeCount,
+          inchargeCount,
+        };
+      })
+    );
+
+    return result;
+  } catch (error) {
+    console.error("Get departments with stats error:", error);
+    return [];
+  }
 }

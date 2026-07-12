@@ -15,7 +15,7 @@ import { getOperationReviewReports } from "@/actions/incharge/operations/get-ope
 import OperationReviewFilter from "@/components/incharge/operations/operation-review-filter";
 import OperationReviewTable from "@/components/incharge/operations/operation-review-table";
 
-import { DepartmentType, Role } from "@prisma/client";
+import { DepartmentType, Role } from "@/constants/enums";
 
 export default async function InchargeOperationReportsPage({
   searchParams,

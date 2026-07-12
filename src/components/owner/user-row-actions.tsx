@@ -2,9 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Role, User, UserStatus } from "@prisma/client";
 
+import { Role, UserStatus } from "@/constants/enums";
 import { updateUser } from "@/actions/owner/update-user";
+
+type User = {
+  id: string;
+  role: keyof typeof Role | string;
+  status: keyof typeof UserStatus | string;
+};
 
 interface Props {
   user: User;
@@ -16,11 +22,8 @@ export function UserRowActions({ user }: Props) {
 
   const [isPending, startTransition] = useTransition();
 
-  const [role, setRole] = useState<Role>(user.role);
-
-  const [status, setStatus] = useState<UserStatus>(
-    user.status
-  );
+  const [role, setRole] = useState<string>(user.role);
+  const [status, setStatus] = useState<string>(user.status);
 
   function handleSave() {
     startTransition(async () => {
@@ -41,7 +44,7 @@ export function UserRowActions({ user }: Props) {
     <div className="flex items-center gap-2">
       <select
         value={role}
-        onChange={(e) => setRole(e.target.value as Role)}
+        onChange={(e) => setRole(e.target.value)}
         className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-white"
       >
         {Object.values(Role).map((value) => (
@@ -53,9 +56,7 @@ export function UserRowActions({ user }: Props) {
 
       <select
         value={status}
-        onChange={(e) =>
-          setStatus(e.target.value as UserStatus)
-        }
+        onChange={(e) => setStatus(e.target.value)}
         className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-white"
       >
         {Object.values(UserStatus).map((value) => (

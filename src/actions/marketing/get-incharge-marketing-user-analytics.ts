@@ -1,26 +1,30 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import mongoose from "mongoose";
+
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { Role } from "@/constants/enums";
 
 function getDateRange(filter?: string, from?: string, to?: string) {
   if (from || to) {
     const range: {
-      gte?: Date;
-      lte?: Date;
+      $gte?: Date;
+      $lte?: Date;
     } = {};
 
     if (from) {
       const start = new Date(from);
       start.setHours(0, 0, 0, 0);
-      range.gte = start;
+      range.$gte = start;
     }
 
     if (to) {
       const end = new Date(to);
       end.setHours(23, 59, 59, 999);
-      range.lte = end;
+      range.$lte = end;
     }
 
     return range;
@@ -35,7 +39,7 @@ function getDateRange(filter?: string, from?: string, to?: string) {
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
-    return { gte: start, lte: end };
+    return { $gte: start, $lte: end };
   }
 
   if (filter === "7_DAYS") {
@@ -43,7 +47,7 @@ function getDateRange(filter?: string, from?: string, to?: string) {
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   if (filter === "30_DAYS") {
@@ -51,7 +55,7 @@ function getDateRange(filter?: string, from?: string, to?: string) {
     start.setDate(now.getDate() - 30);
     start.setHours(0, 0, 0, 0);
 
-    return { gte: start };
+    return { $gte: start };
   }
 
   return undefined;
@@ -93,39 +97,31 @@ export async function getInchargeMarketingUserAnalytics({
   from?: string;
   to?: string;
 }) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
   }
 
-  const employee = await prisma.user.findFirst({
-    where: {
-      id: userId,
-      role: Role.EMPLOYEE,
-      departmentId: currentUser.departmentId,
-    },
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
 
-    select: {
-      id: true,
-      employeeCode: true,
-      profileImageUrl: true,
-      coverImageUrl: true,
-      fullName: true,
-      email: true,
-      username: true,
-      phone: true,
-      status: true,
-      createdAt: true,
-      department: {
-        select: {
-          id: true,
-          name: true,
-          type: true,
-        },
-      },
-    },
-  });
+  const employee: any = await User.findOne({
+    _id: userId,
+    role: Role.EMPLOYEE,
+    department: currentUser.departmentId,
+  })
+    .populate({
+      path: "department",
+      select: "name type departmentCode shortCode",
+    })
+    .select(
+      "employeeCode profileImageUrl coverImageUrl fullName email username phone status createdAt department"
+    )
+    .lean();
 
   if (!employee) {
     return null;
@@ -133,25 +129,23 @@ export async function getInchargeMarketingUserAnalytics({
 
   const dateRange = getDateRange(filter, from, to);
 
-  const where: any = {
-    userId,
+  const query: any = {
+    user: employee._id,
   };
 
   if (dateRange) {
-    where.reportDate = dateRange;
+    query.reportDate = dateRange;
   }
 
   if (status !== "ALL") {
-    where.status = status;
+    query.status = status;
   }
 
-  const reports = await prisma.marketingReport.findMany({
-    where,
-
-    orderBy: {
-      reportDate: "asc",
-    },
-  });
+  const reports: any[] = await MarketingReport.find(query)
+    .sort({
+      reportDate: 1,
+    })
+    .lean();
 
   const summary = reports.reduce(
     (acc, report) => {
@@ -180,22 +174,16 @@ export async function getInchargeMarketingUserAnalytics({
     },
     {
       totalReports: 0,
-
       whatsappGroups: 0,
       whatsappPosts: 0,
-
       telegramGroups: 0,
       telegramPosts: 0,
-
       facebookGroups: 0,
       facebookPosts: 0,
-
       resourceLogin: 0,
       accountClean: 0,
-
       totalGroups: 0,
       totalPosts: 0,
-
       approved: 0,
       pending: 0,
       rejected: 0,
@@ -284,13 +272,13 @@ export async function getInchargeMarketingUserAnalytics({
   }
 
   return {
-    employee,
+    employee: JSON.parse(JSON.stringify(employee)),
     summary,
     approvalRate,
     countries: Array.from(countryMap.values()),
     chartData: Array.from(chartMap.values()),
     reports: reports.map((report) => ({
-      ...report,
+      ...JSON.parse(JSON.stringify(report)),
       countryLabel: formatCountry(report.country),
       totalGroups: totalGroups(report),
       totalPosts: totalPosts(report),

@@ -1,8 +1,10 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
-import { Role } from "@prisma/client";
+import { User } from "@/models/User";
+import { MarketingReport } from "@/models/MarketingReport";
+import { Role } from "@/constants/enums";
 
 type SearchParams = {
   [key: string]: string | string[] | undefined;
@@ -54,6 +56,8 @@ function formatCountry(country: string) {
 }
 
 export async function getAllReports(searchParams?: SearchParams) {
+  await connectDB();
+
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
@@ -65,119 +69,88 @@ export async function getAllReports(searchParams?: SearchParams) {
   const from = getStringValue(searchParams?.from);
   const to = getStringValue(searchParams?.to);
 
-  const where: any = {
+  const userQuery: any = {
+    department: currentUser.departmentId,
+  };
+
+  if (searchQuery) {
+    userQuery.$or = [
+      { employeeCode: { $regex: searchQuery, $options: "i" } },
+      { fullName: { $regex: searchQuery, $options: "i" } },
+      { username: { $regex: searchQuery, $options: "i" } },
+      { email: { $regex: searchQuery, $options: "i" } },
+      { phone: { $regex: searchQuery, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(userQuery).select("_id").lean();
+  const userIds = users.map((user: any) => user._id);
+
+  const reportQuery: any = {
     user: {
-      departmentId: currentUser.departmentId,
+      $in: userIds,
     },
   };
 
   if (status !== "ALL") {
-    where.status = status;
+    reportQuery.status = status;
   }
 
   if (from || to) {
-    where.reportDate = {};
+    reportQuery.reportDate = {};
 
     if (from) {
-      where.reportDate.gte = startOfDay(new Date(from));
+      reportQuery.reportDate.$gte = startOfDay(new Date(from));
     }
 
     if (to) {
-      where.reportDate.lte = endOfDay(new Date(to));
+      reportQuery.reportDate.$lte = endOfDay(new Date(to));
     }
   }
 
-  if (searchQuery) {
-    where.user.OR = [
-      {
-        employeeCode: {
-          contains: searchQuery,
-          mode: "insensitive",
-        },
+  const reports: any[] = await MarketingReport.find(reportQuery)
+    .populate({
+      path: "user",
+      select:
+        "employeeCode profileImageUrl coverImageUrl fullName username email phone role status department",
+      populate: {
+        path: "department",
+        select: "name type departmentCode shortCode",
       },
-      {
-        fullName: {
-          contains: searchQuery,
-          mode: "insensitive",
-        },
-      },
-      {
-        username: {
-          contains: searchQuery,
-          mode: "insensitive",
-        },
-      },
-      {
-        email: {
-          contains: searchQuery,
-          mode: "insensitive",
-        },
-      },
-      {
-        phone: {
-          contains: searchQuery,
-          mode: "insensitive",
-        },
-      },
-    ];
-  }
-
-  const reports = await prisma.marketingReport.findMany({
-    where,
-
-    include: {
-      user: {
-        select: {
-          id: true,
-          employeeCode: true,
-          profileImageUrl: true,
-          coverImageUrl: true,
-          fullName: true,
-          username: true,
-          email: true,
-          phone: true,
-          role: true,
-          status: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
-      },
-    },
-
-    orderBy: [
-      {
-        reportDate: "desc",
-      },
-      {
-        updatedAt: "desc",
-      },
-    ],
-  });
+    })
+    .sort({
+      reportDate: -1,
+      updatedAt: -1,
+    })
+    .lean();
 
   const dateWiseMap = new Map<string, any>();
 
   for (const report of reports) {
+    const reportId = report._id.toString();
+    const userId = report.user?._id?.toString();
+
+    if (!userId) continue;
+
     const dateKey = getDateKey(report.reportDate);
-    const mapKey = `${report.userId}-${dateKey}`;
+    const mapKey = `${userId}-${dateKey}`;
     const countryKey = report.country || "UNKNOWN";
 
     if (!dateWiseMap.has(mapKey)) {
       dateWiseMap.set(mapKey, {
-        id: report.id,
+        id: reportId,
         rowId: mapKey,
 
-        userId: report.userId,
-        user: report.user,
+        userId,
+        user: {
+          ...report.user,
+          id: userId,
+        },
 
         reportDate: report.reportDate,
         combinedDateKey: dateKey,
 
-        reportIds: [report.id],
+        reportIds: [reportId],
 
         countrySet: new Set<string>(),
         countryMap: new Map<string, any>(),
@@ -204,7 +177,7 @@ export async function getAllReports(searchParams?: SearchParams) {
         status: report.status,
         remarks: report.remarks,
 
-        latestReportId: report.id,
+        latestReportId: reportId,
         latestStatus: report.status,
         latestRemarks: report.remarks,
         latestUpdatedAt: report.updatedAt,
@@ -213,7 +186,7 @@ export async function getAllReports(searchParams?: SearchParams) {
 
     const row = dateWiseMap.get(mapKey);
 
-    row.reportIds.push(report.id);
+    row.reportIds.push(reportId);
     row.totalReports += 1;
 
     row.countrySet.add(countryKey);
@@ -287,13 +260,13 @@ export async function getAllReports(searchParams?: SearchParams) {
     if (report.status === "PENDING") countryRow.pendingReports += 1;
     if (report.status === "REJECTED") countryRow.rejectedReports += 1;
 
-    if (report.updatedAt > row.latestUpdatedAt) {
-      row.id = report.id;
+    if (new Date(report.updatedAt) > new Date(row.latestUpdatedAt)) {
+      row.id = reportId;
       row.reportDate = report.reportDate;
       row.status = report.status;
       row.remarks = report.remarks;
 
-      row.latestReportId = report.id;
+      row.latestReportId = reportId;
       row.latestStatus = report.status;
       row.latestRemarks = report.remarks;
       row.latestUpdatedAt = report.updatedAt;
@@ -310,9 +283,13 @@ export async function getAllReports(searchParams?: SearchParams) {
     return {
       ...row,
 
+      reportDate: row.reportDate?.toISOString(),
+      latestUpdatedAt: row.latestUpdatedAt?.toISOString(),
+
       country: countries.join(", ") || "-",
       countryLabels:
-        countries.map((country) => formatCountry(country as string)).join(", ") || "-",
+        countries.map((country) => formatCountry(country as string)).join(", ") ||
+        "-",
 
       countries,
       countryBreakdown,
@@ -333,5 +310,5 @@ export async function getAllReports(searchParams?: SearchParams) {
     );
   });
 
-  return groupedReports;
+  return JSON.parse(JSON.stringify(groupedReports));
 }

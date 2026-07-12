@@ -42,45 +42,61 @@ export default async function InchargeLeavesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {leaves.map((leave) => (
-                  <tr
-                    key={leave.id}
-                    className="group hover:bg-[var(--primary)]/5 transition-colors"
-                  >
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[10px] font-bold text-[var(--muted-foreground)]">
-                          {leave.user.fullName.substring(0, 2).toUpperCase()}
-                        </div>
-                        <span className="text-sm font-semibold text-[var(--foreground)]">
-                          {leave.user.fullName}
-                        </span>
-                      </div>
-                    </td>
+                {leaves.map((leave: any) => {
+  const leaveId = String(leave.id || leave._id);
 
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--muted-foreground)]">
-                        <span className="px-2 py-1 bg-[var(--background)] rounded-md border border-[var(--border)]">
-                          {new Date(leave.fromDate).toLocaleDateString("en-IN", { day: '2-digit', month: 'short' })}
-                        </span>
-                        <span className="opacity-50">—</span>
-                        <span className="px-2 py-1 bg-[var(--background)] rounded-md border border-[var(--border)]">
-                          {new Date(leave.toDate).toLocaleDateString("en-IN", { day: '2-digit', month: 'short' })}
-                        </span>
-                      </div>
-                    </td>
+  return (
+    <tr
+      key={leaveId}
+      className="group hover:bg-[var(--primary)]/5 transition-colors"
+    >
+      <td className="px-8 py-5">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[10px] font-bold text-[var(--muted-foreground)]">
+            {leave.user.fullName.substring(0, 2).toUpperCase()}
+          </div>
 
-                    <td className="px-8 py-5">
-                      <div className="max-w-xs text-sm text-[var(--foreground)] font-medium truncate" title={leave.reason}>
-                        {leave.reason}
-                      </div>
-                    </td>
+          <span className="text-sm font-semibold text-[var(--foreground)]">
+            {leave.user.fullName}
+          </span>
+        </div>
+      </td>
 
-                    <td className="px-8 py-5 text-right">
-                      <LeaveRowActions leaveId={leave.id} />
-                    </td>
-                  </tr>
-                ))}
+      <td className="px-8 py-5">
+        <div className="flex items-center gap-2 text-xs font-medium text-[var(--muted-foreground)]">
+          <span className="px-2 py-1 bg-[var(--background)] rounded-md border border-[var(--border)]">
+            {new Date(leave.fromDate).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "short",
+            })}
+          </span>
+
+          <span className="opacity-50">—</span>
+
+          <span className="px-2 py-1 bg-[var(--background)] rounded-md border border-[var(--border)]">
+            {new Date(leave.toDate).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "short",
+            })}
+          </span>
+        </div>
+      </td>
+
+      <td className="px-8 py-5">
+        <div
+          className="max-w-xs text-sm text-[var(--foreground)] font-medium truncate"
+          title={leave.reason}
+        >
+          {leave.reason}
+        </div>
+      </td>
+
+      <td className="px-8 py-5 text-right">
+        <LeaveRowActions leaveId={leaveId} />
+      </td>
+    </tr>
+  );
+})}
               </tbody>
             </table>
           </div>
