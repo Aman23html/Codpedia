@@ -31,7 +31,7 @@ export async function checkOut() {
 
   if (now > windowEnd) {
     throw new Error(
-      "Your 24-hour attendance window has expired. Please start a new check-in cycle."
+      "Your attendance window has expired. Please start a new check-in cycle."
     );
   }
 

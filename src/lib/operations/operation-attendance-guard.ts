@@ -23,7 +23,7 @@ export async function assertActiveAttendanceWindow(userId: string) {
 
   if (now > windowEnd) {
     throw new Error(
-      "Your 24-hour attendance window has expired. Please check in again to start a new work cycle."
+      "Your  attendance window has expired. Please check in again to start a new work cycle."
     );
   }
 

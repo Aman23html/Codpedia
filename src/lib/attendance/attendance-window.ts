@@ -1,4 +1,4 @@
-export const ATTENDANCE_WINDOW_HOURS = 24;
+export const ATTENDANCE_WINDOW_HOURS = 14;
 
 export function getAttendanceWindowEnd(checkIn: Date) {
   const end = new Date(checkIn);

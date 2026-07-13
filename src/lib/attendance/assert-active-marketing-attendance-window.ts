@@ -17,13 +17,13 @@ export async function assertActiveMarketingAttendanceWindow(userId: string) {
   }
 
   const windowEnd = new Date(latestAttendance.checkIn);
-  windowEnd.setHours(windowEnd.getHours() + 24);
+  windowEnd.setHours(windowEnd.getHours() + 14);
 
   const now = new Date();
 
   if (now > windowEnd) {
     throw new Error(
-      "Your 24-hour attendance window has expired. Please check in again to start a new marketing work cycle."
+      "Your  attendance window has expired. Please check in again to start a new marketing work cycle."
     );
   }
 

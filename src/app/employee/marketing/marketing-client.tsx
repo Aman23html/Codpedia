@@ -210,7 +210,7 @@ export default function MarketingClient({
 
               <p className="max-w-3xl text-base font-medium leading-7 text-[var(--muted-foreground)]">
                 Submit WhatsApp, Telegram, Facebook, resource login, and account
-                cleaning work only inside your active 24-hour attendance window.
+                cleaning work only inside your active attendance window.
               </p>
             </div>
 
@@ -274,7 +274,7 @@ export default function MarketingClient({
                     ? `You can update marketing work until ${formatDateTime(
                         attendanceInfo.windowEnd
                       )}.`
-                    : "Please check in first. Marketing work can only be filled during the active 24-hour attendance window."}
+                    : "Please check in first. Marketing work can only be filled during the active  attendance window."}
                 </p>
               </div>
             </div>
@@ -310,8 +310,7 @@ export default function MarketingClient({
 
                 <p className="mt-2 text-sm font-semibold leading-6 text-[var(--muted-foreground)]">
                   Your daily marketing workspace opens only after attendance
-                  check-in and remains active for exactly 24 hours from check-in
-                  time. After that, a new cycle starts from the next check-in.
+                  check-in and remains active for exactly active hours.
                 </p>
               </div>
             </div>

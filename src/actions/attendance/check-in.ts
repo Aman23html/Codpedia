@@ -33,7 +33,7 @@ export async function checkIn() {
 
     if (now <= windowEnd) {
       throw new Error(
-        "You already have an active attendance window. New check-in is allowed only after 24 hours from your last check-in."
+        "You already have an active attendance window. New check-in is allowed only after your shift  from your last check-in."
       );
     }
   }

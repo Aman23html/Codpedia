@@ -22,7 +22,7 @@ import { DepartmentType, Role } from "@/constants/enums";
 
 function getWindowEnd(checkIn: Date | string) {
   const end = new Date(checkIn);
-  end.setHours(end.getHours() + 24);
+  end.setHours(end.getHours() + 14);
   return end;
 }
 
@@ -115,7 +115,7 @@ export default async function OperationsPage({
             </h1>
 
             <p className="max-w-3xl text-base font-medium leading-7 text-[var(--muted-foreground)]">
-              Submit your operations work only inside your active 24-hour
+              Submit your operations work only inside your active 
               attendance window. The work cycle starts from your check-in time,
               not from the calendar date.
             </p>
@@ -181,7 +181,7 @@ export default async function OperationsPage({
                   ? `You can save or submit operations work until ${formatDateTime(
                       windowInfo?.windowEnd
                     )}.`
-                  : "Please check in first. Operations work can only be filled during the active 24-hour attendance window."}
+                  : "Please check in first. Operations work can only be filled during the active  attendance window."}
               </p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default async function OperationsPage({
             </p>
 
             <p className="mt-1 text-sm font-black text-[var(--foreground)]">
-              Check-In + 24 Hours
+              Check-In + 14 Hours
             </p>
           </div>
         </div>

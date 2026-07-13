@@ -112,7 +112,7 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
             </h3>
 
             <p className="mt-1 text-xs font-bold text-[var(--muted-foreground)]">
-              Attendance window works for 24 hours from check-in time.
+              Attendance window works for your given working hours.
             </p>
           </div>
         </div>
@@ -151,13 +151,12 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
 
             <div>
               <p className="text-sm font-black text-[var(--foreground)]">
-                24-Hour Attendance Rule
+                 Attendance Rule
               </p>
 
               <p className="mt-1 text-xs font-semibold leading-5 text-[var(--muted-foreground)]">
                 Your attendance and daily work can be updated only from check-in
-                time until the next 24 hours. After this window ends, a new day
-                cycle starts from your next check-in.
+                time until your working hours.
               </p>
             </div>
           </div>

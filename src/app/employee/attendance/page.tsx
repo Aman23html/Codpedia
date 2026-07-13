@@ -11,7 +11,7 @@ function getWindowEnd(checkIn: Date | string | null) {
   if (!checkIn) return "-";
 
   return new Date(
-    new Date(checkIn).getTime() + 24 * 60 * 60 * 1000
+    new Date(checkIn).getTime() + 14 * 60 * 60 * 1000
   ).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -67,7 +67,7 @@ export default async function AttendancePage() {
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">
               <Clock className="h-3.5 w-3.5" />
-              24 Hour Attendance Cycle
+               Attendance Cycle
             </div>
 
             <h1 className="text-4xl font-black tracking-tight text-[var(--foreground)] lg:text-5xl">
@@ -75,7 +75,7 @@ export default async function AttendancePage() {
             </h1>
 
             <p className="mt-3 max-w-3xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
-              Attendance is tracked from your check-in time for the next 24 hours.
+              Attendance is tracked from your check-in time.
               After that window ends, your next check-in starts a new attendance cycle.
             </p>
           </div>
@@ -115,9 +115,7 @@ export default async function AttendancePage() {
             </h2>
 
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--muted-foreground)]">
-              Your attendance and work submission window remains active for exactly
-              24 hours from your check-in time. Example: if you check in at 8:00 PM,
-              your active cycle ends next day at 8:00 PM.
+              Your attendance and work submission window remains active for Given shift .
             </p>
           </div>
         </div>
@@ -130,7 +128,7 @@ export default async function AttendancePage() {
           </h2>
 
           <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-            Check-in, 24-hour window end, checkout, duration and status history.
+            Check-in,  window end, checkout, duration and status history.
           </p>
         </div>
 

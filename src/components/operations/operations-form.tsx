@@ -80,7 +80,7 @@ export default function OperationsForm({
 
           <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
             Fill daily operations data during your active attendance window.
-            You can update and resubmit while the 24-hour window is active.
+            You can update and resubmit while the window is active.
           </p>
         </div>
 
@@ -116,8 +116,7 @@ export default function OperationsForm({
               </p>
 
               <p className="mt-1 text-xs font-semibold leading-5 text-[var(--muted-foreground)]">
-                Operations submission is available only after check-in and
-                remains open for 24 hours from the check-in time.
+                Operations submission is available only after check-in .
               </p>
             </div>
           </div>
