@@ -41,6 +41,7 @@ async function seedOwner() {
   const ownerEmail = process.env.OWNER_MAIL;
   const ownerPassword = process.env.OWNER_PASS;
   const ownerUsername = process.env.OWNER_USERNAME || "owner";
+ 
 
   if (!ownerEmail || !ownerPassword) {
     throw new Error("OWNER_MAIL or OWNER_PASS is missing in .env file.");
@@ -75,7 +76,7 @@ async function seedOwner() {
   const passwordHash = await bcrypt.hash(ownerPassword, 10);
 
   const ownerData = {
-    fullName: "System Owner",
+    fullName: "Ranjeet Kumar",
     username: ownerUsername.toLowerCase(),
     email: ownerEmail.toLowerCase(),
     phone: "9999999999",
