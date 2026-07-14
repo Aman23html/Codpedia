@@ -10,7 +10,7 @@ import Logo from "./Logo";
 const ecosystemBrands = [
   { name: "Tutor4Study", icon: BookOpen, href: "https://www.tutor4study.com/" },
   { name: "Assignments wallah", icon: GraduationCap, href: "https://www.assignmentswallah.com/" },
-  { name: "Grades Bubby", icon: Languages, href: "https://www.assignmentswallah.com/branch/languages-homework-help" },
+  { name: "Grades Buddy", icon: Languages, href: "https://www.assignmentswallah.com/branch/languages-homework-help" },
   { name: "Infinte Solution", icon: Briefcase, href: "https://www.assignmentswallah.com/job-support" },
   { name: "Gandharva School Of Music", icon: Music, href: "https://www.gandharvaschoolofmusic.com/" },
 ];

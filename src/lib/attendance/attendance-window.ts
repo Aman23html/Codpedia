@@ -1,20 +1,19 @@
-export const ATTENDANCE_WINDOW_HOURS = 14;
+import { ATTENDANCE_WINDOW_HOURS } from "@/constants/attendance";
 
-export function getAttendanceWindowEnd(checkIn: Date) {
-  const end = new Date(checkIn);
-  end.setHours(end.getHours() + ATTENDANCE_WINDOW_HOURS);
-  return end;
-}
-
-export function isAttendanceWindowActive(checkIn: Date) {
-  const now = new Date();
-  const windowEnd = getAttendanceWindowEnd(checkIn);
-
-  return now <= windowEnd;
-}
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 export function getAttendanceDateFromCheckIn(checkIn: Date) {
-  const date = new Date(checkIn);
-  date.setHours(0, 0, 0, 0);
-  return date;
+  const utcTime = checkIn.getTime();
+
+  const istDate = new Date(utcTime + IST_OFFSET_MS);
+
+  istDate.setUTCHours(0, 0, 0, 0);
+
+  return new Date(istDate.getTime() - IST_OFFSET_MS);
+}
+
+export function getAttendanceWindowEnd(checkIn: Date | string) {
+  const windowEnd = new Date(checkIn);
+  windowEnd.setHours(windowEnd.getHours() + ATTENDANCE_WINDOW_HOURS);
+  return windowEnd;
 }

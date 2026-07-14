@@ -62,12 +62,12 @@ const Footer: React.FC = () => {
     },
     {
       title: "Codepedia Experts",
-      subtitle: "(Grades Bubby)",
+      subtitle: "(Grades Buddy)",
       href: "https://gradesbuddy.com/",
     },
     {
       title: "Career Support",
-      subtitle: "(Infinite Solutions)",
+      subtitle: "(Infinite Solutionss)",
       href: "https://www.assignmentswallah.com/job-support",
     },
     {

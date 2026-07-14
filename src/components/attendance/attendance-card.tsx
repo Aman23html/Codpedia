@@ -1,5 +1,8 @@
 "use client";
 
+
+import { ATTENDANCE_WINDOW_HOURS } from "@/constants/attendance";
+import { formatTimeIST, formatDateTimeIST } from "@/lib/format-date";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { checkIn } from "@/actions/attendance/check-in";
@@ -17,7 +20,7 @@ import {
 
 function getWindowEnd(checkIn: Date) {
   const end = new Date(checkIn);
-  end.setHours(end.getHours() + 14);
+  end.setHours(end.getHours() + ATTENDANCE_WINDOW_HOURS);
   return end;
 }
 
@@ -178,10 +181,11 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
           label="Punch In"
           value={
             attendance?.checkIn
-              ? new Date(attendance.checkIn).toLocaleTimeString("en-IN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+              ? formatTimeIST(attendance.checkIn)
+              // new Date(attendance.checkIn).toLocaleTimeString("en-IN", {
+              //     hour: "2-digit",
+              //     minute: "2-digit",
+              //   })
               : "--:--"
           }
         />
@@ -190,10 +194,11 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
           label="Punch Out"
           value={
             attendance?.checkOut
-              ? new Date(attendance.checkOut).toLocaleTimeString("en-IN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+              ? formatTimeIST(attendance.checkOut)
+              // new Date(attendance.checkOut).toLocaleTimeString("en-IN", {
+              //     hour: "2-digit",
+              //     minute: "2-digit",
+              //   })
               : "--:--"
           }
         />

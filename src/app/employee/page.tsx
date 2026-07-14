@@ -22,6 +22,7 @@ import {
   Building2,
   Fingerprint,
 } from "lucide-react";
+import AttendancePage from "./attendance/page";
 
 export default async function EmployeePage() {
   const dashboard = await getDashboardData();
@@ -82,6 +83,7 @@ export default async function EmployeePage() {
                 {workspace.focus}
               </p>
             </div>
+            
 
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 p-5 shadow-inner">
               <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
@@ -109,6 +111,8 @@ export default async function EmployeePage() {
             </div>
           </div>
         </div>
+
+        
 
         <div className="relative overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)]/60 p-8 shadow-sm backdrop-blur-xl lg:col-span-4">
           <div className="pointer-events-none absolute right-[-80px] top-[-80px] h-48 w-48 rounded-full bg-[var(--primary)]/10 blur-[70px]" />

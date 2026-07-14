@@ -16,7 +16,7 @@ const AreasOfImpact: React.FC = () => {
       image: "/t4s.png" // Replace with your actual image paths
     },
     {
-      title: "Assignment Wallah",
+      title: "Assignments Wallah",
       description: "Assignment help and research assistance for Masters and PhD students across various disciplines.",
       icon: <BookOpenText className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#10B981]",
@@ -25,16 +25,16 @@ const AreasOfImpact: React.FC = () => {
       image: "/aw.png"
     },
     {
-      title: "Grades Bubby",
+      title: "Grades Buddy",
       description: "work on real-world projects across research, technology, engineering, management and more.",
       icon: <Languages className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#F59E0B]",
       textClass: "text-[#F59E0B]",
       href:"https://gradesbuddy.com/",
-      image: "/Lang.png"
+      image: "/Grades.png"
     },
     {
-      title: "Infinite Solution",
+      title: "Infinite Solutions",
       description: "Job support, resume building, interview preparation and upskilling programs for working professionals.",
       icon: <BriefcaseBusiness className="w-5 h-5 text-white" strokeWidth={2} />,
       bgClass: "bg-[#8B5CF6]",

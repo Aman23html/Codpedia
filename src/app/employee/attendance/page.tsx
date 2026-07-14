@@ -7,17 +7,32 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+import { ATTENDANCE_WINDOW_HOURS } from "@/constants/attendance";
+import {
+  formatDateIST,
+  formatDateTimeIST,
+} from "@/lib/format-date";
+
+// function getWindowEnd(checkIn: Date | string | null) {
+//   if (!checkIn) return "-";
+
+//   return new Date(
+//     new Date(checkIn).getTime() + 14 * 60 * 60 * 1000
+//   ).toLocaleString("en-IN", {
+//     day: "2-digit",
+//     month: "short",
+//     hour: "2-digit",
+//     minute: "2-digit",
+//   });
+// }
+
 function getWindowEnd(checkIn: Date | string | null) {
   if (!checkIn) return "-";
 
-  return new Date(
-    new Date(checkIn).getTime() + 14 * 60 * 60 * 1000
-  ).toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const end = new Date(checkIn);
+  end.setHours(end.getHours() + ATTENDANCE_WINDOW_HOURS);
+
+  return formatDateTimeIST(end);
 }
 
 function getDuration(checkIn: Date | string | null, checkOut: Date | string | null) {
@@ -34,14 +49,23 @@ function getDuration(checkIn: Date | string | null, checkOut: Date | string | nu
   return `${hours}h ${minutes}m`;
 }
 
+// function isWindowActive(checkIn: Date | string | null) {
+//   if (!checkIn) return false;
+
+//   const windowEnd = new Date(
+//     new Date(checkIn).getTime() + 24 * 60 * 60 * 1000
+//   );
+
+//   return new Date() <= windowEnd;
+// }
+
 function isWindowActive(checkIn: Date | string | null) {
   if (!checkIn) return false;
 
-  const windowEnd = new Date(
-    new Date(checkIn).getTime() + 24 * 60 * 60 * 1000
-  );
+  const end = new Date(checkIn);
+  end.setHours(end.getHours() + ATTENDANCE_WINDOW_HOURS);
 
-  return new Date() <= windowEnd;
+  return new Date() <= end;
 }
 
 type AttendanceRecord = {

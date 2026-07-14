@@ -3,6 +3,7 @@
 import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { Attendance } from "@/models/Attendance";
+import { ATTENDANCE_WINDOW_HOURS } from "@/constants/attendance";
 import { AttendanceStatus, Role } from "@/constants/enums";
 import {
   getAttendanceDateFromCheckIn,
@@ -33,7 +34,7 @@ export async function checkIn() {
 
     if (now <= windowEnd) {
       throw new Error(
-        "You already have an active attendance window. New check-in is allowed only after your shift  from your last check-in."
+        `You already have an active attendance window. New check-in is allowed only after ${ATTENDANCE_WINDOW_HOURS} hours from your last check-in.`
       );
     }
   }
@@ -43,7 +44,7 @@ export async function checkIn() {
   const hour = now.getHours();
 
   const status =
-    hour >= 13 ? AttendanceStatus.HALF_DAY : AttendanceStatus.PRESENT;
+    hour < 5 ? AttendanceStatus.HALF_DAY : AttendanceStatus.PRESENT;
 
   await Attendance.create({
     user: currentUser.id,

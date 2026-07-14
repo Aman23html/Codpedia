@@ -5,6 +5,10 @@ import {
   MoreVertical, Eye, Edit, ChevronLeft, ChevronRight,
   Printer, Clock, ArrowDownToLine, Plus, AlertTriangle
 } from "lucide-react";
+import {
+  formatDateIST,
+  formatTimeIST,
+} from "@/lib/format-date";
 
 // --- Server Actions ---
 import { getAttendance } from "@/actions/incharge/get-attendance";
@@ -317,11 +321,11 @@ export default async function AttendancePage(props: {
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="bg-[var(--background)]/80 p-3 rounded-xl border border-[var(--border)] shadow-inner">
                 <p className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">Check In</p>
-                <p className="font-mono text-sm font-bold text-emerald-500">{formatTime(record.checkIn) || "-"}</p>
+                <p className="font-mono text-sm font-bold text-emerald-500">{formatTimeIST(record.checkIn)}</p>
               </div>
               <div className="bg-[var(--background)]/80 p-3 rounded-xl border border-[var(--border)] shadow-inner">
                 <p className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">Check Out</p>
-                <p className="font-mono text-sm font-bold text-blue-500">{formatTime(record.checkOut) || "-"}</p>
+                <p className="font-mono text-sm font-bold text-blue-500">{formatTimeIST(record.checkOut)}</p>
               </div>
             </div>
 

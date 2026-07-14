@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { Attendance } from "@/models/Attendance";
 import { Role } from "@/constants/enums";
+import { ATTENDANCE_WINDOW_HOURS } from "@/constants/attendance";
 import { getAttendanceWindowEnd } from "@/lib/attendance/attendance-window";
 
 export async function checkOut() {
@@ -31,7 +32,7 @@ export async function checkOut() {
 
   if (now > windowEnd) {
     throw new Error(
-      "Your attendance window has expired. Please start a new check-in cycle."
+       `Your ${ATTENDANCE_WINDOW_HOURS}-hour attendance window has expired. Please start a new check-in cycle.`
     );
   }
 
