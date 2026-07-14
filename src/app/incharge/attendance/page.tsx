@@ -53,14 +53,14 @@ function getWorkHours(
   return `${hours}h ${minutes}m`;
 }
 
-function formatTime(date: Date | string | null) {
-  if (!date) return null;
+// function formatTime(date: Date | string | null) {
+//   if (!date) return null;
 
-  return new Date(date).toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+//   return new Date(date).toLocaleTimeString("en-IN", {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//   });
+// }
 
 // --- Components ---
 const StatusBadge = ({ status }: { status: string }) => {
@@ -173,6 +173,7 @@ export default async function AttendancePage(props: {
             <option value="all">All Statuses</option>
             <option value="PRESENT">Present</option>
             <option value="ABSENT">Absent</option>
+            <option value="HALF_DAY">Half Day</option>
             <option value="LATE">Late</option>
             <option value="LEAVE">Leave</option>
           </select>
@@ -222,11 +223,11 @@ export default async function AttendancePage(props: {
                     {record.checkIn ? (
                       <div className="flex flex-col gap-1.5">
                         <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {formatTime(record.checkIn)}
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {formatTimeIST(record.checkIn)}
                         </span>
                         {record.checkOut ? (
                            <span className="text-xs font-bold text-blue-500 flex items-center gap-1.5">
-                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> {formatTime(record.checkOut)}
+                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> {formatTimeIST(record.checkOut)}
                          </span>
                         ) : (
                           <span className="text-xs font-bold text-[var(--muted-foreground)] flex items-center gap-1.5 opacity-50">

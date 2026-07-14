@@ -22,7 +22,7 @@ import {
   Building2,
   Fingerprint,
 } from "lucide-react";
-import AttendancePage from "./attendance/page";
+import { formatDateIST } from "@/lib/format-date";
 
 export default async function EmployeePage() {
   const dashboard = await getDashboardData();
@@ -33,12 +33,7 @@ export default async function EmployeePage() {
 
   const workspace = getEmployeeWorkspace(employee.department?.type);
 
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const today = formatDateIST(new Date());
 
   const employeeId = employee.employeeCode || "Not Generated";
 

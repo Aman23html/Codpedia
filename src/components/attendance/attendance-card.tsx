@@ -28,19 +28,31 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  function handleCheckIn() {
-    startTransition(async () => {
+function handleCheckIn() {
+  startTransition(async () => {
+    try {
       await checkIn();
       router.refresh();
-    });
-  }
+    } catch (error) {
+      console.error("CHECK IN ERROR:", error);
+      alert(error instanceof Error ? error.message : "Check-in failed");
+      router.refresh();
+    }
+  });
+}
 
-  function handleCheckOut() {
-    startTransition(async () => {
+function handleCheckOut() {
+  startTransition(async () => {
+    try {
       await checkOut();
       router.refresh();
-    });
-  }
+    } catch (error) {
+      console.error("CHECK OUT ERROR:", error);
+      alert(error instanceof Error ? error.message : "Check-out failed");
+      router.refresh();
+    }
+  });
+}
 
   let workingHours = "--h --m";
   let windowEndText = "--";

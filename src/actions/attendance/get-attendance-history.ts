@@ -17,10 +17,27 @@ export async function getAttendanceHistory() {
     user: currentUser.id,
   })
     .sort({
-      attendanceDate: -1,
+      checkIn: -1,
     })
     .limit(30)
     .lean();
 
-  return JSON.parse(JSON.stringify(attendance));
+  return attendance.map((record: any) => ({
+    id: record._id.toString(),
+    _id: record._id.toString(),
+
+    attendanceDate: record.attendanceDate
+      ? record.attendanceDate.toISOString()
+      : null,
+
+    checkIn: record.checkIn ? record.checkIn.toISOString() : null,
+
+    checkOut: record.checkOut ? record.checkOut.toISOString() : null,
+
+    status: record.status,
+    remarks: record.remarks || null,
+
+    createdAt: record.createdAt ? record.createdAt.toISOString() : null,
+    updatedAt: record.updatedAt ? record.updatedAt.toISOString() : null,
+  }));
 }

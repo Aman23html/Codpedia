@@ -6,7 +6,6 @@ export function getAttendanceDateFromCheckIn(checkIn: Date) {
   const utcTime = checkIn.getTime();
 
   const istDate = new Date(utcTime + IST_OFFSET_MS);
-
   istDate.setUTCHours(0, 0, 0, 0);
 
   return new Date(istDate.getTime() - IST_OFFSET_MS);

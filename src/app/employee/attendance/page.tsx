@@ -8,10 +8,7 @@ import {
 } from "lucide-react";
 
 import { ATTENDANCE_WINDOW_HOURS } from "@/constants/attendance";
-import {
-  formatDateIST,
-  formatDateTimeIST,
-} from "@/lib/format-date";
+import { formatDateIST, formatDateTimeIST } from "@/lib/format-date";
 
 // function getWindowEnd(checkIn: Date | string | null) {
 //   if (!checkIn) return "-";
@@ -91,7 +88,7 @@ export default async function AttendancePage() {
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">
               <Clock className="h-3.5 w-3.5" />
-               Attendance Cycle
+               {ATTENDANCE_WINDOW_HOURS} Hour Attendance Cycle
             </div>
 
             <h1 className="text-4xl font-black tracking-tight text-[var(--foreground)] lg:text-5xl">
@@ -199,25 +196,11 @@ export default async function AttendancePage() {
                       className="transition-colors hover:bg-[var(--background)]/60"
                     >
                       <td className="whitespace-nowrap px-8 py-6 font-bold text-[var(--foreground)]">
-                        {new Date(record.attendanceDate).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }
-                        )}
+  {formatDateIST(record.attendanceDate)}
                       </td>
 
                       <td className="whitespace-nowrap px-8 py-6 font-mono text-sm text-[var(--muted-foreground)]">
-                        {record.checkIn
-                          ? new Date(record.checkIn).toLocaleString("en-IN", {
-                              day: "2-digit",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "-"}
+                        {formatDateTimeIST(record.checkIn)}
                       </td>
 
                       <td className="whitespace-nowrap px-8 py-6 font-mono text-sm font-bold text-[var(--primary)]">
@@ -225,14 +208,7 @@ export default async function AttendancePage() {
                       </td>
 
                       <td className="whitespace-nowrap px-8 py-6 font-mono text-sm text-[var(--muted-foreground)]">
-                        {record.checkOut
-                          ? new Date(record.checkOut).toLocaleString("en-IN", {
-                              day: "2-digit",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "-"}
+                        {formatDateTimeIST(record.checkOut)}
                       </td>
 
                       <td className="whitespace-nowrap px-8 py-6 font-mono text-sm font-black text-[var(--foreground)]">

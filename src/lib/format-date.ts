@@ -32,16 +32,3 @@ export function formatDateTimeIST(date: Date | string | null | undefined) {
     minute: "2-digit",
   });
 }
-
-export function formatDateTimeFullIST(date: Date | string | null | undefined) {
-  if (!date) return "-";
-
-  return new Date(date).toLocaleString("en-IN", {
-    timeZone: APP_TIME_ZONE,
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
