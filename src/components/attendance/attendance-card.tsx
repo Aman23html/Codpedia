@@ -17,7 +17,7 @@ import {
 
 function getWindowEnd(checkIn: Date) {
   const end = new Date(checkIn);
-  end.setHours(end.getHours() + 24);
+  end.setHours(end.getHours() + 14);
   return end;
 }
 
@@ -139,7 +139,7 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
           {isCheckedOut
             ? "Shift Concluded"
             : isCheckedIn
-              ? "Active 24h Window"
+              ? "Active 14h Window"
               : "Not Checked In"}
         </span>
       </div>
@@ -230,7 +230,7 @@ export function AttendanceCard({ attendance }: { attendance: any }) {
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-8 py-4 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             <LogIn className="h-5 w-5" />
-            Start 24h Check-In
+            Start Check-In
           </button>
         ) : !isCheckedOut && isWindowActive ? (
           <button
