@@ -141,6 +141,14 @@ function serializeAttendance(attendance: any) {
   const now = new Date();
   const windowEnd = getAttendanceWindowEnd(attendance.checkIn);
 
+  // IMPORTANT:
+  // If attendance window expired and employee did not check out,
+  // do not send this old record to dashboard card.
+  // Dashboard will show "Start Check-In" again.
+  if (now > windowEnd) {
+  return null;
+} 
+
   return {
     id: attendance._id.toString(),
     _id: attendance._id.toString(),

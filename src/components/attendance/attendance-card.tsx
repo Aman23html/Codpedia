@@ -67,8 +67,8 @@ function handleCheckOut() {
     isWindowActive = now <= windowEnd;
 
     const endTime = attendance.checkOut
-      ? new Date(attendance.checkOut).getTime()
-      : Date.now();
+  ? new Date(attendance.checkOut).getTime()
+  : Math.min(Date.now(), windowEnd.getTime());
 
     const diff = Math.max(0, endTime - checkInDate.getTime());
 
@@ -77,12 +77,7 @@ function handleCheckOut() {
 
     workingHours = `${hours}h ${minutes}m`;
 
-    windowEndText = windowEnd.toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    windowEndText = formatDateTimeIST(windowEnd);
 
     const remaining = Math.max(0, windowEnd.getTime() - now.getTime());
 
@@ -96,8 +91,9 @@ function handleCheckOut() {
       : "Window expired";
   }
 
-  const isCheckedIn = !!attendance?.checkIn;
-  const isCheckedOut = !!attendance?.checkOut;
+  const isExpired = attendance?.checkIn && !isWindowActive;
+const isCheckedIn = !!attendance?.checkIn && !isExpired;
+const isCheckedOut = !!attendance?.checkOut && !isExpired;
 
   return (
     <div className="relative overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)]/40 p-8 shadow-sm backdrop-blur-xl transition-all duration-300">
@@ -229,15 +225,14 @@ function handleCheckOut() {
       </div>
 
       {attendance?.checkIn && !isWindowActive && (
-        <div className="relative z-10 mb-6 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-red-500">
-          <AlertCircle className="mt-0.5 h-5 w-5" />
+  <div className="relative z-10 mb-6 flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-500">
+    <AlertCircle className="mt-0.5 h-5 w-5" />
 
-          <p className="text-sm font-bold">
-            This attendance window has expired. Please start a new check-in
-            cycle.
-          </p>
-        </div>
-      )}
+    <p className="text-sm font-bold">
+      Previous attendance window has expired. You can start a new check-in now.
+    </p>
+  </div>
+)}
 
       <div className="relative z-10 flex flex-col items-center gap-4 border-t border-[var(--border)]/40 pt-6 sm:flex-row">
         {!isCheckedIn ? (

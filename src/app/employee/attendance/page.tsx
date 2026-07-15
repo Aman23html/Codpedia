@@ -32,11 +32,21 @@ function getWindowEnd(checkIn: Date | string | null) {
   return formatDateTimeIST(end);
 }
 
-function getDuration(checkIn: Date | string | null, checkOut: Date | string | null) {
+function getDuration(
+  checkIn: Date | string | null,
+  checkOut: Date | string | null
+) {
   if (!checkIn) return "-";
 
-  const start = new Date(checkIn).getTime();
-  const end = checkOut ? new Date(checkOut).getTime() : Date.now();
+  const startDate = new Date(checkIn);
+  const start = startDate.getTime();
+
+  const windowEndDate = new Date(startDate);
+  windowEndDate.setHours(windowEndDate.getHours() + ATTENDANCE_WINDOW_HOURS);
+
+  const end = checkOut
+    ? new Date(checkOut).getTime()
+    : Math.min(Date.now(), windowEndDate.getTime());
 
   const diff = Math.max(0, end - start);
 
@@ -96,8 +106,9 @@ export default async function AttendancePage() {
             </h1>
 
             <p className="mt-3 max-w-3xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
-              Attendance is tracked from your check-in time.
-              After that window ends, your next check-in starts a new attendance cycle.
+              Attendance is tracked from your check-in time for the next{" "}
+              {ATTENDANCE_WINDOW_HOURS} hours. After that window ends, your next check-in
+              starts a new attendance cycle.
             </p>
           </div>
 
