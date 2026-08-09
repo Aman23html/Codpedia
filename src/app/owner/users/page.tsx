@@ -18,6 +18,10 @@ import {
   Fingerprint,
 } from "lucide-react";
 
+// ============================================================================
+// HELPER FUNCTIONS (UNCHANGED LOGIC)
+// ============================================================================
+
 function getInitials(name: string) {
   if (!name) return "U";
 
@@ -33,32 +37,32 @@ function getRoleStyle(role?: string) {
   const r = (role || "EMPLOYEE").toUpperCase();
 
   if (r === "OWNER") {
-    return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+    return "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400";
   }
 
   if (r === "INCHARGE") {
-    return "text-purple-500 bg-purple-500/10 border-purple-500/20";
+    return "text-purple-600 bg-purple-500/10 border-purple-500/20 dark:text-purple-400";
   }
 
-  return "text-blue-500 bg-blue-500/10 border-blue-500/20";
+  return "text-blue-600 bg-blue-500/10 border-blue-500/20 dark:text-blue-400";
 }
 
 function getStatusStyle(status?: string) {
   const s = (status || "ACTIVE").toUpperCase();
 
   if (s === "ACTIVE") {
-    return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+    return "text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400";
   }
 
   if (s === "PENDING_APPROVAL" || s === "PENDING_EMAIL") {
-    return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+    return "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400";
   }
 
   if (s === "SUSPENDED" || s === "REJECTED") {
-    return "text-red-500 bg-red-500/10 border-red-500/20";
+    return "text-red-600 bg-red-500/10 border-red-500/20 dark:text-red-400";
   }
 
-  return "text-slate-500 bg-slate-500/10 border-slate-500/20";
+  return "text-slate-600 bg-slate-500/10 border-slate-500/20 dark:text-slate-400";
 }
 
 function normalizeSearchParams(
@@ -87,6 +91,10 @@ function getVisibleEmployeeCode(user: any) {
   return user.employeeCode || "Not Generated";
 }
 
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
+
 export default async function UsersPage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
@@ -100,74 +108,59 @@ export default async function UsersPage(props: {
   const employees = users.filter((user: any) => user.role === "EMPLOYEE");
 
   return (
-    <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-20 lg:pt-32 lg:px-12 max-w-[1700px] mx-auto space-y-10">
-      <header className="relative overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)]/45 p-8 shadow-sm backdrop-blur-xl lg:p-10">
-        <div className="pointer-events-none absolute right-[-130px] top-[-130px] h-[360px] w-[360px] rounded-full bg-[var(--primary)]/10 blur-[90px]" />
-        <div className="pointer-events-none absolute bottom-[-150px] left-[20%] h-[300px] w-[300px] rounded-full bg-purple-500/10 blur-[90px]" />
-
-        <div className="relative z-10 flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 shadow-inner">
-              <ShieldAlert className="h-3.5 w-3.5 text-[var(--primary)]" />
-
-              <span className="text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">
-                Identity & Access Management
-              </span>
-            </div>
-
-            <h1 className="mb-4 text-4xl font-black leading-none tracking-tight text-[var(--foreground)] lg:text-5xl">
-              System Directory
-            </h1>
-
-            <p className="max-w-3xl text-base font-medium leading-7 text-[var(--muted-foreground)]">
-              Manage Owner, Incharge, and Employee accounts separately with
-              department access, status control, and role-based hierarchy.
-            </p>
+    <div className="mx-auto flex min-h-screen w-full max-w-[1400px] flex-col gap-6 px-4 py-8 pt-20 sm:gap-8 sm:px-5 sm:py-12 md:pt-24 lg:px-6">
+      
+      {/* ========================================== */}
+      {/* HEADER SECTION                             */}
+      {/* ========================================== */}
+      <header className="flex flex-col gap-5 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-5 md:flex-row md:items-start md:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+          <div className="inline-flex items-center gap-1.5 rounded-md bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-medium text-[var(--primary)] sm:text-xs">
+            <ShieldAlert className="h-3 w-3 shrink-0" />
+            <span>Identity & Access Management</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <HeaderMetric title="Owners" value={owners.length} icon={Crown} />
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
+            System Directory
+          </h1>
 
-            <HeaderMetric
-              title="Incharges"
-              value={incharges.length}
-              icon={UserCog}
-            />
+          <p className="max-w-2xl text-sm text-[var(--muted-foreground)]">
+            Manage Owner, Incharge, and Employee accounts separately with department access, status control, and role-based hierarchy.
+          </p>
+        </div>
 
-            <HeaderMetric
-              title="Employees"
-              value={employees.length}
-              icon={Users}
-            />
-          </div>
+        {/* Compact Metrics Row */}
+        <div className="grid shrink-0 grid-cols-3 gap-2 w-full md:w-auto md:flex md:flex-row md:gap-3">
+          <HeaderMetric title="Owners" value={owners.length} icon={Crown} />
+          <HeaderMetric title="Incharges" value={incharges.length} icon={UserCog} />
+          <HeaderMetric title="Employees" value={employees.length} icon={Users} />
         </div>
       </header>
 
-      <section className="rounded-[30px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl">
-        <form
-          method="GET"
-          className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between"
-        >
-          <div className="relative w-full xl:max-w-md">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
-
+      {/* ========================================== */}
+      {/* FILTER CONTROLS                            */}
+      {/* ========================================== */}
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-5">
+        <form method="GET" className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
             <input
               type="text"
               name="search"
               defaultValue={filters.search}
-              placeholder="Search by Employee ID, name, email or phone..."
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] py-3 pl-11 pr-4 text-sm font-semibold text-[var(--foreground)] outline-none transition focus:border-[var(--primary)]"
+              placeholder="Search by ID, name, email or phone..."
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-3 text-sm font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <div className="relative">
-              <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--primary)]" />
-
+          <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+            <div className="relative flex-1 sm:flex-none">
+              <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
               <select
                 name="department"
                 defaultValue={filters.department}
-                className="w-full appearance-none rounded-2xl border border-[var(--border)] bg-[var(--background)] py-3 pl-10 pr-10 text-sm font-semibold text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] sm:w-[210px]"
+                className="w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-8 text-sm font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] sm:w-[180px]"
               >
                 <option value="">All Departments</option>
                 <option value="MARKETING">Marketing</option>
@@ -176,48 +169,45 @@ export default async function UsersPage(props: {
                 <option value="ACCOUNTS">Accounts</option>
                 <option value="DIGITAL_MARKETING">Digital Marketing</option>
               </select>
-
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)]">
-                ▼
-              </span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--muted-foreground)]">▼</span>
             </div>
 
-            <div className="relative">
-              <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--primary)]" />
-
+            <div className="relative flex-1 sm:flex-none">
+              <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
               <select
                 name="sortDate"
                 defaultValue={filters.sortDate}
-                className="w-full appearance-none rounded-2xl border border-[var(--border)] bg-[var(--background)] py-3 pl-10 pr-10 text-sm font-semibold text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] sm:w-[180px]"
+                className="w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-8 text-sm font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] sm:w-[150px]"
               >
                 <option value="desc">Newest First</option>
                 <option value="asc">Oldest First</option>
               </select>
-
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)]">
-                ▼
-              </span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--muted-foreground)]">▼</span>
             </div>
 
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-6 py-3 text-sm font-black text-white transition hover:opacity-90"
-            >
-              <Filter className="h-4 w-4" />
-              Apply
-            </button>
-
-            <a
-              href="/owner/users"
-              className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] px-6 py-3 text-sm font-black text-[var(--foreground)] transition hover:bg-[var(--card)]"
-            >
-              Reset
-            </a>
+            <div className="flex w-full sm:w-auto gap-2">
+              <button
+                type="submit"
+                className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+              >
+                <Filter className="h-4 w-4" />
+                Apply
+              </button>
+              <a
+                href="/owner/users"
+                className="flex flex-1 sm:flex-none items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              >
+                Reset
+              </a>
+            </div>
           </div>
         </form>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      {/* ========================================== */}
+      {/* ROLE OVERVIEW CARDS                        */}
+      {/* ========================================== */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <RoleOverviewCard
           title="Owner"
           value={owners.length}
@@ -225,7 +215,6 @@ export default async function UsersPage(props: {
           icon={Crown}
           tone="amber"
         />
-
         <RoleOverviewCard
           title="Incharge"
           value={incharges.length}
@@ -233,7 +222,6 @@ export default async function UsersPage(props: {
           icon={UserCog}
           tone="purple"
         />
-
         <RoleOverviewCard
           title="Employee"
           value={employees.length}
@@ -243,9 +231,12 @@ export default async function UsersPage(props: {
         />
       </section>
 
+      {/* ========================================== */}
+      {/* USER DATA SECTIONS                         */}
+      {/* ========================================== */}
       <RoleSection
         title="Owner Accounts"
-        description="Highest-level access accounts with full EMS control."
+        description="Highest-level access accounts with full system control."
         icon={Crown}
         users={owners}
         tone="amber"
@@ -273,6 +264,10 @@ export default async function UsersPage(props: {
   );
 }
 
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
 function HeaderMetric({
   title,
   value,
@@ -283,20 +278,12 @@ function HeaderMetric({
   icon: React.ElementType;
 }) {
   return (
-    <div className="min-w-[120px] rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <Icon className="h-4 w-4 text-[var(--primary)]" />
-
-        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-          Live
-        </span>
+    <div className="flex flex-col items-start justify-center rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 shadow-sm md:min-w-[100px]">
+      <div className="mb-0.5 flex items-center gap-1.5 text-[var(--muted-foreground)]">
+        <Icon className="h-3.5 w-3.5" />
+        <span className="text-[9px] font-semibold uppercase tracking-wider md:text-[10px]">{title}</span>
       </div>
-
-      <p className="text-2xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
+      <p className="text-base font-semibold text-[var(--foreground)] sm:text-lg">{value}</p>
     </div>
   );
 }
@@ -315,32 +302,31 @@ function RoleOverviewCard({
   tone: "amber" | "purple" | "blue";
 }) {
   const styles = {
-    amber: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    purple: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    blue: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    amber: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
+    purple: "bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400",
+    blue: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
   };
 
   return (
-    <div className="rounded-[28px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div className={`rounded-2xl border p-3 ${styles[tone]}`}>
-          <Icon className="h-6 w-6" />
+    <div className="group relative flex min-w-0 flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all duration-200 hover:-translate-y-[1px] hover:border-[var(--primary)]/30 hover:shadow-sm sm:p-5">
+      <div className="mb-3 flex items-start justify-between sm:mb-4">
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border sm:h-9 sm:w-9 ${styles[tone]}`}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
-
-        <ArrowRight className="h-4 w-4 text-[var(--muted-foreground)]" />
+        <ArrowRight className="h-4 w-4 shrink-0 text-[var(--muted-foreground)] opacity-100 transition-all duration-200 group-hover:text-[var(--primary)] md:opacity-0 md:group-hover:opacity-100" />
       </div>
 
-      <h3 className="text-3xl font-black text-[var(--foreground)]">
-        {value}
-      </h3>
-
-      <p className="mt-1 text-[11px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
-
-      <p className="mt-3 text-sm font-medium text-[var(--muted-foreground)]">
-        {description}
-      </p>
+      <div className="mt-auto min-w-0">
+        <h3 className="truncate text-xl font-semibold leading-tight text-[var(--foreground)] sm:text-2xl">
+          {value}
+        </h3>
+        <p className="mt-0.5 truncate text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </p>
+        <p className="mt-1.5 truncate text-xs text-[var(--muted-foreground)]">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
@@ -361,38 +347,36 @@ function RoleSection({
   emptyMessage: string;
 }) {
   const toneStyles = {
-    amber: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    purple: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    blue: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    amber: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
+    purple: "bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400",
+    blue: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
   };
 
   return (
-    <section className="overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl">
-      <div className="flex flex-col gap-4 border-b border-[var(--border)]/60 bg-[var(--card)]/40 px-6 py-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
-          <div className={`rounded-2xl border p-3 ${toneStyles[tone]}`}>
-            <Icon className="h-6 w-6" />
+    <section className="flex flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:p-5 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border sm:h-9 sm:w-9 ${toneStyles[tone]}`}>
+            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-
           <div>
-            <h2 className="text-2xl font-black tracking-tight text-[var(--foreground)]">
+            <h2 className="text-base font-semibold tracking-tight text-[var(--foreground)] sm:text-lg">
               {title}
             </h2>
-
-            <p className="mt-1 text-sm font-medium text-[var(--muted-foreground)]">
+            <p className="mt-0.5 text-xs text-[var(--muted-foreground)] sm:text-sm">
               {description}
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm font-black text-[var(--foreground)]">
-          {users.length} Records
+        <div className="inline-flex self-start md:self-auto items-center justify-center rounded-md border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)]">
+          {users.length} {users.length === 1 ? "Record" : "Records"}
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1150px] text-left">
-          <thead className="border-b border-[var(--border)]/60 bg-[var(--background)]/50">
+        <table className="w-full min-w-[900px] text-left text-sm">
+          <thead className="bg-[var(--background)]">
             <tr>
               <TableHead>Identity</TableHead>
               <TableHead>Employee ID</TableHead>
@@ -404,14 +388,11 @@ function RoleSection({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[var(--border)]/50">
+          <tbody className="divide-y divide-[var(--border)]">
             {users.length === 0 ? (
               <tr>
-                <td
-                  colSpan={7}
-                  className="px-6 py-14 text-center text-sm font-semibold text-[var(--muted-foreground)]"
-                >
-                  {emptyMessage}
+                <td colSpan={7} className="px-4 py-10 text-center text-[var(--muted-foreground)]">
+                  <p className="text-sm font-medium">{emptyMessage}</p>
                 </td>
               </tr>
             ) : (
@@ -429,14 +410,14 @@ function UserRow({ user }: { user: any }) {
   const visibleIdLabel = getVisibleIdLabel(user.role);
 
   return (
-    <tr className="group/row transition hover:bg-[var(--background)]/60">
-      <td className="whitespace-nowrap px-6 py-5">
-        <div className="flex items-center gap-4">
-          <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)] text-sm font-black text-[var(--foreground)] shadow-sm">
+    <tr className="group/row transition-colors hover:bg-[var(--background)]/50">
+      <td className="px-4 py-3 sm:px-5 sm:py-3.5">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--background)] text-[10px] font-bold text-[var(--foreground)] shadow-sm">
             {user.profileImageUrl ? (
               <Image
                 src={user.profileImageUrl}
-                alt={user.fullName}
+                alt={user.fullName || "User Avatar"}
                 fill
                 unoptimized
                 className="object-cover"
@@ -446,76 +427,74 @@ function UserRow({ user }: { user: any }) {
             )}
           </div>
 
-          <div>
-            <p className="font-black text-[var(--foreground)] transition group-hover/row:text-[var(--primary)]">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[var(--foreground)] transition-colors group-hover/row:text-[var(--primary)]">
               {user.fullName}
             </p>
-
-            <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
+            <p className="truncate text-[11px] font-medium text-[var(--muted-foreground)]">
               @{user.username || "username"}
             </p>
           </div>
         </div>
       </td>
 
-      <td className="whitespace-nowrap px-6 py-5">
-        <div>
-          <p className="mb-1 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-            <Fingerprint className="h-3.5 w-3.5 text-[var(--primary)]" />
-            {visibleIdLabel}
+      <td className="px-4 py-3 sm:px-5 sm:py-3.5">
+        <div className="min-w-0">
+          <p className="mb-0.5 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            <Fingerprint className="h-3 w-3 shrink-0 text-[var(--primary)]" />
+            <span className="truncate">{visibleIdLabel}</span>
           </p>
-
-          <p className="font-mono text-sm font-black text-[var(--foreground)]">
+          <p className="truncate font-mono text-xs font-semibold text-[var(--foreground)] sm:text-sm">
             {visibleCode}
           </p>
         </div>
       </td>
 
-      <td className="whitespace-nowrap px-6 py-5">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-sm font-medium text-[var(--muted-foreground)]">
-            <Mail className="h-4 w-4 opacity-60" />
-            {user.email}
+      <td className="px-4 py-3 sm:px-5 sm:py-3.5">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--muted-foreground)]">
+            <Mail className="h-3.5 w-3.5 shrink-0 opacity-70" />
+            <span className="truncate">{user.email || "No Email"}</span>
           </div>
-
           {user.phone && (
-            <p className="text-xs font-semibold text-[var(--muted-foreground)]">
-              {user.phone}
-            </p>
+            <div className="flex items-center gap-2 text-xs font-medium text-[var(--muted-foreground)]">
+              <span className="h-3.5 w-3.5 shrink-0 opacity-70">📞</span> {/* Fallback if Phone icon not imported locally in scope, kept simple */}
+              <span className="truncate">{user.phone}</span>
+            </div>
           )}
         </div>
       </td>
 
-      <td className="whitespace-nowrap px-6 py-5">
-        <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-          <Building2 className="h-3.5 w-3.5 text-[var(--primary)]" />
-          {user.department?.name || "Unassigned"}
+      <td className="whitespace-nowrap px-4 py-3 sm:px-5 sm:py-3.5">
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--background)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] shadow-sm">
+          <Building2 className="h-3 w-3 shrink-0 text-[var(--primary)]" />
+          <span className="truncate max-w-[120px]">{user.department?.name || "Unassigned"}</span>
         </span>
       </td>
 
-      <td className="whitespace-nowrap px-6 py-5">
+      <td className="whitespace-nowrap px-4 py-3 sm:px-5 sm:py-3.5">
         <span
-          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest ${getRoleStyle(
+          className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm ${getRoleStyle(
             user.role
           )}`}
         >
-          <Shield className="h-3.5 w-3.5" />
+          <Shield className="h-3 w-3 shrink-0" />
           {user.role}
         </span>
       </td>
 
-      <td className="whitespace-nowrap px-6 py-5">
+      <td className="whitespace-nowrap px-4 py-3 sm:px-5 sm:py-3.5">
         <span
-          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest ${getStatusStyle(
+          className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm ${getStatusStyle(
             user.status
           )}`}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          <span className="h-1.5 w-1.5 rounded-full bg-current shrink-0" />
           {user.status?.replaceAll("_", " ")}
         </span>
       </td>
 
-      <td className="whitespace-nowrap px-6 py-5 text-right">
+      <td className="px-4 py-3 text-right sm:px-5 sm:py-3.5">
         <div className="flex justify-end">
           <UserRowActions user={user} />
         </div>
@@ -533,7 +512,7 @@ function TableHead({
 }) {
   return (
     <th
-      className={`whitespace-nowrap px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ${
+      className={`whitespace-nowrap px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] sm:px-5 sm:py-3.5 ${
         alignRight ? "text-right" : "text-left"
       }`}
     >

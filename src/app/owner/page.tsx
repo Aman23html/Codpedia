@@ -1,15 +1,14 @@
 import Link from "next/link";
-import { 
-  Building2, 
-  Users, 
-  UserCheck, 
-  UserCog, 
+import {
+  Building2,
+  Users,
+  UserCheck,
+  UserCog,
   AlertCircle,
-  ArrowRight,
+  Clock,
+  MoreVertical,
   ShieldAlert,
   LineChart,
-  Clock,
-  MoreVertical
 } from "lucide-react";
 
 import { getOwnerDashboardStats } from "@/actions/owner/get-dashboard-stats";
@@ -19,35 +18,38 @@ export default async function OwnerDashboard() {
   const stats = await getOwnerDashboardStats();
 
   return (
-    <div className="min-h-screen bg-[var(--background)] px-4 pt-24 pb-12 md:px-6 lg:px-8 max-w-[1600px] mx-auto flex flex-col gap-8">
-      
+    <div className="flex w-full flex-col gap-6 p-4 sm:p-6 md:p-8 lg:max-w-7xl lg:mx-auto">
       {/* ========================================== */}
       {/* HEADER SECTION                             */}
       {/* ========================================== */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm lg:p-8">
-        <div>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-md bg-[var(--primary)]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] shadow-sm ring-1 ring-[var(--primary)]/20">
+      <header className="flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-5 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col items-start gap-1.5">
+          <div className="inline-flex items-center gap-1.5 rounded-md bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-medium text-[var(--primary)] sm:text-xs">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75"></span>
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--primary)]"></span>
             </span>
             Global Command Center
           </div>
-          
-          <h1 className="mb-1 text-2xl font-bold tracking-tight text-[var(--foreground)] lg:text-3xl">
+
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
             System Overview
           </h1>
-          <p className="text-sm text-[var(--muted-foreground)] max-w-2xl">
+          <p className="max-w-2xl text-sm text-[var(--muted-foreground)]">
             Monitor real-time operations, manage hierarchy access, and track global workspace metrics.
           </p>
         </div>
 
-        {/* Status Indicator */}
-        <div className="flex shrink-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 shadow-sm">
+        {/* Compact Status Indicator */}
+        <div className="inline-flex items-center gap-2.5 self-start rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 shadow-sm md:self-auto">
           <Clock className="h-4 w-4 text-[var(--muted-foreground)]" />
-          <div className="flex flex-col">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Status</span>
-            <span className="text-xs font-semibold text-[var(--foreground)]">Live & Synced</span>
+          <div className="flex flex-col text-left">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              Status
+            </span>
+            <span className="mt-0.5 text-xs font-semibold leading-none text-[var(--foreground)]">
+              Live & Synced
+            </span>
           </div>
         </div>
       </header>
@@ -55,56 +57,54 @@ export default async function OwnerDashboard() {
       {/* ========================================== */}
       {/* STATS GRID                                 */}
       {/* ========================================== */}
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
         <StatCard
           title="Departments"
           value={stats.totalDepartments}
           icon={Building2}
-          glowColor="rgba(59,130,246,0.25)"
           accentClass="text-blue-600 bg-blue-500/10 border-blue-500/20 dark:text-blue-400"
         />
         <StatCard
           title="Total Users"
           value={stats.totalUsers}
           icon={Users}
-          glowColor="rgba(99,102,241,0.25)"
           accentClass="text-indigo-600 bg-indigo-500/10 border-indigo-500/20 dark:text-indigo-400"
         />
         <StatCard
           title="Employees"
           value={stats.totalEmployees}
           icon={UserCheck}
-          glowColor="rgba(16,185,129,0.25)"
           accentClass="text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400"
         />
         <StatCard
           title="Incharges"
           value={stats.totalIncharges}
           icon={UserCog}
-          glowColor="rgba(168,85,247,0.25)"
           accentClass="text-purple-600 bg-purple-500/10 border-purple-500/20 dark:text-purple-400"
         />
         <StatCard
           title="Pending Approvals"
           value={stats.pendingApprovals}
           icon={AlertCircle}
-          glowColor="rgba(245,158,11,0.3)"
           accentClass="text-amber-600 bg-amber-500/10 border-amber-500/30 dark:text-amber-400"
-          isAlert={stats.pendingApprovals > 0} 
+          isAlert={stats.pendingApprovals > 0}
         />
       </section>
 
       {/* ========================================== */}
       {/* ADMINISTRATIVE MODULES                     */}
       {/* ========================================== */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+      <section className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4">
+        <header>
+          <h2 className="text-base font-semibold text-[var(--foreground)] sm:text-lg">
             Administrative Modules
           </h2>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-3">
+          <p className="mt-0.5 text-xs text-[var(--muted-foreground)] sm:text-sm">
+            Manage users, departments, and perform workspace audits.
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           <ActionCard
             href="/owner/users"
             title="User Management"
@@ -125,7 +125,6 @@ export default async function OwnerDashboard() {
           />
         </div>
       </section>
-
     </div>
   );
 }
@@ -138,48 +137,50 @@ function StatCard({
   title,
   value,
   icon: Icon,
-  glowColor,
   accentClass,
   isAlert = false,
 }: {
   title: string;
   value: number;
   icon: React.ElementType;
-  glowColor: string;
   accentClass: string;
   isAlert?: boolean;
 }) {
   return (
-    <div className={`group relative overflow-hidden rounded-xl bg-[var(--card)] border p-5 transition-all duration-300 hover:-translate-y-0.5 shadow-sm ${
-      isAlert 
-        ? "border-amber-500/40 shadow-[0_4px_20px_-10px_rgba(245,158,11,0.2)]" 
-        : "border-[var(--border)] hover:border-[var(--primary)]/30 hover:shadow-[0_4px_20px_-10px_rgba(0,102,255,0.1)]"
-    }`}>
-      
-      {/* Dynamic Hover Glow effect */}
-      <div 
-        className="absolute -top-10 left-1/2 -translate-x-1/2 w-[120%] h-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-[40px] pointer-events-none"
-        style={{ background: `radial-gradient(circle at center, ${glowColor}, transparent 70%)` }}
-      />
+    <div
+      className={`group relative flex min-w-0 flex-col rounded-xl border bg-[var(--card)] p-3.5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-sm sm:p-4 ${
+        isAlert
+          ? "border-amber-500/40 bg-amber-500/[0.02]"
+          : "border-[var(--border)] hover:border-[var(--primary)]/30"
+      }`}
+    >
+      {/* Top row */}
+      <div className="flex items-start justify-between">
+        {/* Icon */}
+        <div
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border sm:h-9 sm:w-9 ${accentClass}`}
+        >
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </div>
 
-      <div className="flex flex-col gap-4 relative z-10">
-        <div className="flex justify-between items-start">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-transform duration-300 group-hover:scale-105 ${accentClass}`}>
-            <Icon className="h-5 w-5" />
-          </div>
-          <button className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors opacity-0 group-hover:opacity-100">
-            <MoreVertical className="h-4 w-4" />
-          </button>
-        </div>
-        
-        <div>
-          <h2 className="text-2xl font-bold text-[var(--foreground)] tracking-tight mb-0.5">
-            {value}
-          </h2>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
-            {title}
-          </p>
-        </div>
+        {/* More button */}
+        <button
+          type="button"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--muted-foreground)] opacity-0 outline-none transition-all hover:bg-[var(--primary)]/10 hover:text-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:opacity-100 group-hover:opacity-100"
+          aria-label={`More options for ${title}`}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Value */}
+      <div className="mt-4">
+        <h2 className="text-xl font-semibold leading-tight text-[var(--foreground)] sm:text-2xl">
+          {value}
+        </h2>
+        <p className="mt-0.5 text-xs font-medium text-[var(--muted-foreground)] sm:text-sm">
+          {title}
+        </p>
       </div>
     </div>
   );
@@ -199,34 +200,19 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className="group relative flex flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 transition-all duration-300 hover:border-[var(--primary)]/40 hover:shadow-md hover:-translate-y-0.5 overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+      className="group flex flex-col gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all duration-200 hover:-translate-y-[1px] hover:border-[var(--primary)]/30 hover:shadow-sm sm:p-5"
     >
-      {/* Subtle Background Mesh Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:16px_16px] opacity-10 group-hover:opacity-20 transition-opacity" />
-
-      <div className="relative z-10 flex flex-col h-full">
-        <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] ring-1 ring-[var(--primary)]/20 transition-all duration-300 group-hover:bg-[var(--primary)] group-hover:text-white shadow-sm">
-          <Icon className="h-6 w-6" />
-        </div>
-
-        <h3 className="mb-2 text-base font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors duration-200">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] transition-colors group-hover:bg-[var(--primary)] group-hover:text-primary-foreground">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-[var(--foreground)] transition-colors duration-200 group-hover:text-[var(--primary)] sm:text-base">
           {title}
         </h3>
-
-        <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mb-6 flex-1">
+        <p className="mt-1.5 max-w-[48ch] text-xs leading-relaxed text-[var(--muted-foreground)] sm:text-sm">
           {description}
         </p>
-
-        <div className="mt-auto flex items-center pt-4 border-t border-[var(--border)]/60 text-xs font-bold uppercase tracking-wider text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors duration-200">
-          <span>Launch Module</span>
-          <div className="ml-auto flex h-7 w-7 items-center justify-center rounded-md bg-[var(--primary)]/10 text-[var(--primary)] transition-all duration-300 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-hover:bg-[var(--primary)] group-hover:text-white">
-            <ArrowRight className="h-3.5 w-3.5" />
-          </div>
-        </div>
       </div>
-
-      {/* Shine Sweep Effect */}
-      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent group-hover:animate-[shimmer_2s_infinite]" />
     </Link>
   );
 }

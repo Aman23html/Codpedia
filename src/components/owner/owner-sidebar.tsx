@@ -14,7 +14,6 @@ import {
   ShieldAlert,
   LogOut,
   Loader2,
-  Sparkles,
   Settings,
   ChevronRight
 } from "lucide-react";
@@ -76,7 +75,9 @@ export default function OwnerSidebar() {
   };
 
   return (
-    <aside className="sticky top-0 left-0 hidden lg:flex flex-col w-[280px] h-screen bg-[var(--background)] backdrop-blur-2xl border-r border-[var(--border)]/50 flex-shrink-0 transition-colors duration-500 z-30 pt-20 lg:pt-24 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    // Changed: Removed 'hidden lg:flex', 'fixed', and 'h-screen'. 
+    // Added: 'w-full md:w-[280px]', 'h-full', and 'pt-8' so it adapts to both mobile drawer and desktop.
+    <div className="flex flex-col w-full md:w-[280px] h-full bg-[var(--background)] backdrop-blur-2xl border-r border-[var(--border)]/50 flex-shrink-0 transition-colors duration-500 relative z-30 pt-8 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       
       {/* Subtle Ambient Glow */}
       <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-[var(--primary)]/5 to-transparent blur-[80px] pointer-events-none -z-10" />
@@ -99,7 +100,6 @@ export default function OwnerSidebar() {
               Codepedia <span className="text-[var(--primary)]">EMS</span>
             </h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              {/* <Sparkles className="w-3 h-3 text-[var(--primary)]" /> */}
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
                 Owner Panel
               </p>
@@ -233,6 +233,6 @@ export default function OwnerSidebar() {
         </div>
       </div>
       
-    </aside>
+    </div>
   );
 }
