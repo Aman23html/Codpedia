@@ -3,7 +3,7 @@
 import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
-import { startOfDayIST } from "@/lib/format-date";
+import { formatDateIST, startOfDayIST } from "@/lib/format-date";
 import { DepartmentType, Role } from "@/constants/enums";
 
 export type OperationAnalyticsFilter = "TODAY" | "7_DAYS" | "30_DAYS" | "ALL";
@@ -112,15 +112,17 @@ export async function getOperationAnalytics(
   );
 
   const chartData = reports.map((report: any) => ({
-    date: new Date(report.reportDate).toLocaleDateString("en-IN", {
+    date: new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
-    }),
-    fullDate: new Date(report.reportDate).toLocaleDateString("en-IN", {
+    }).format(new Date(report.reportDate)),
+    fullDate: new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
-    }),
+    }).format(new Date(report.reportDate)),
     queryGenerated: report.queryGenerated ?? 0,
     dealsDone: report.dealsDone ?? 0,
     tutorAssigned: report.tutorAssigned ?? 0,

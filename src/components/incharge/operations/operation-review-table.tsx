@@ -186,6 +186,7 @@
 
 
 import OperationReviewActions from "@/components/incharge/operations/operation-review-actions";
+import { formatDateIST, formatDateTimeIST } from "@/lib/format-date";
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -253,13 +254,7 @@ export default function OperationReviewTable({
                     className="align-top transition hover:bg-[var(--background)]/60"
                   >
                     <TableCell bold>
-                      {report.reportDate
-                        ? new Date(report.reportDate).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-"}
+                      {report.reportDate ? formatDateIST(report.reportDate) : "-"}
                     </TableCell>
 
                     <TableCell mono>{employeeCode}</TableCell>
@@ -287,14 +282,7 @@ export default function OperationReviewTable({
                     </TableCell>
 
                     <TableCell>
-                      {report.submittedAt
-                        ? new Date(report.submittedAt).toLocaleString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "Not submitted"}
+                      {report.submittedAt ? formatDateTimeIST(report.submittedAt) : "Not submitted"}
                     </TableCell>
 
                     <TableCell>{report.reviewRemarks || "-"}</TableCell>
