@@ -18,14 +18,16 @@ import {
   BookOpen,
   Globe,
   User,
-  Sparkles,
-  ChevronRight,
   Sun,
   Moon,
 } from "lucide-react";
 
 import { DepartmentType } from "@/constants/enums";
 import LogoutButton from "@/components/auth/logout-button";
+
+// ============================================================================
+// TYPES & HELPER FUNCTIONS (UNCHANGED LOGIC)
+// ============================================================================
 
 interface InchargeSidebarProps {
   department: string;
@@ -126,6 +128,10 @@ function isRouteActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+// ============================================================================
+// MAIN SIDEBAR COMPONENT
+// ============================================================================
+
 export default function InchargeSidebar({
   department,
 }: InchargeSidebarProps) {
@@ -178,65 +184,55 @@ export default function InchargeSidebar({
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-hidden border-r border-[var(--border)]/70 bg-[var(--background)]/90 text-[var(--foreground)] shadow-[18px_0_60px_rgba(0,0,0,0.08)] backdrop-blur-2xl">
-      {/* Premium Ambient Background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.14]" />
-        <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[var(--primary)]/15 blur-3xl" />
-        <div className="absolute -bottom-20 left-8 h-52 w-52 rounded-full bg-cyan-500/10 blur-3xl" />
-        <div className="absolute right-[-90px] top-1/3 h-44 w-44 rounded-full bg-amber-400/10 blur-3xl" />
+    <aside className="flex h-full w-full shrink-0 flex-col border-r border-[var(--border)] bg-[var(--background)] md:w-64">
+      
+      {/* Header / Brand Area */}
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] px-4 sm:h-16 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-semibold tracking-tight text-[var(--foreground)]">
+              Codepedia EMS
+            </h2>
+            <p className="truncate text-[10px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+              Incharge Console
+            </p>
+          </div>
+        </div>
+
+        {/* Theme Toggle */}
+        <button
+          type="button"
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] shadow-sm transition-colors hover:bg-[var(--accent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+          aria-label="Toggle theme"
+          title="Change theme"
+        >
+          {mounted && isDark ? (
+            <Sun className="h-3.5 w-3.5" />
+          ) : (
+            <Moon className="h-3.5 w-3.5" />
+          )}
+        </button>
       </div>
 
-      {/* Brand Area */}
-      <div className="relative border-b border-[var(--border)]/70 px-5 py-5">
-        <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)]/75 p-4 shadow-sm backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--primary)] via-cyan-500 to-blue-700 text-white shadow-lg shadow-[var(--primary)]/25">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-black tracking-tight text-[var(--foreground)]">
-                Codepedia EMS
-              </h2>
-              <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--primary)]">
-                Incharge Panel
-              </p>
-            </div>
-
-            {/* Theme Toggle */}
-            <button
-              type="button"
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 text-[var(--muted-foreground)] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/10 hover:text-[var(--primary)]"
-              aria-label="Toggle theme"
-              title="Change theme"
-            >
-              {mounted && isDark ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-
-          <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--background)]/65 px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-              </span>
-
-              <p className="truncate text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                {formatDepartmentName(department)}
-              </p>
-            </div>
-          </div>
+      {/* Department Status Pill */}
+      <div className="shrink-0 px-4 py-3 sm:px-5">
+        <div className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--card)] px-2.5 py-1 shadow-sm">
+          <span className="relative flex h-1.5 w-1.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
+          <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+            {formatDepartmentName(department)}
+          </p>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="relative flex-1 space-y-2 overflow-y-auto px-4 py-5">
+      {/* Navigation Links */}
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-4 sm:px-4">
         <SidebarGroup title="Main" links={commonLinks} pathname={pathname} />
 
         <SidebarGroup
@@ -253,16 +249,16 @@ export default function InchargeSidebar({
       </nav>
 
       {/* Bottom Panel */}
-      <div className="relative border-t border-[var(--border)]/70 p-4">
-       
-
-        <div className="rounded-[1rem]  border border-[var(--border)] bg-[var(--card)]/70 p-3 shadow-sm backdrop-blur-xl">
-          <LogoutButton />
-        </div>
+      <div className="shrink-0 border-t border-[var(--border)] p-3 sm:p-4">
+        <LogoutButton />
       </div>
     </aside>
   );
 }
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
 
 function SidebarGroup({
   title,
@@ -276,12 +272,12 @@ function SidebarGroup({
   if (links.length === 0) return null;
 
   return (
-    <div className="mb-7">
-      <h3 className="mb-3 px-3 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
+    <div className="flex flex-col">
+      <h3 className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
         {title}
       </h3>
 
-      <div className="space-y-1.5">
+      <div className="space-y-0.5">
         {links.map((link) => {
           const Icon = link.icon;
           const isActive = isRouteActive(pathname, link.href);
@@ -290,47 +286,22 @@ function SidebarGroup({
             <Link
               key={link.href}
               href={link.href}
-              className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-[14px] font-bold transition-all duration-300 ${
+              className={`group flex items-center justify-between rounded-md px-2.5 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] ${
                 isActive
-                  ? "bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/25"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--card)]/85 hover:text-[var(--foreground)] hover:shadow-sm"
+                  ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)]"
               }`}
             >
-              {isActive && (
-                <>
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/16 via-white/5 to-transparent" />
-                  <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-white/80" />
-                </>
-              )}
-
-              {!isActive && (
-                <span className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <span className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[var(--primary)]/10 blur-2xl" />
-                </span>
-              )}
-
-              <span
-                className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
-                  isActive
-                    ? "bg-white/18 text-white ring-1 ring-white/20"
-                    : "bg-[var(--muted)]/45 text-[var(--muted-foreground)] ring-1 ring-[var(--border)] group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)] group-hover:ring-[var(--primary)]/20"
-                }`}
-              >
-                <Icon size={18} />
-              </span>
-
-              <span className="relative min-w-0 flex-1 truncate">
-                {link.name}
-              </span>
-
-              <ChevronRight
-                size={15}
-                className={`relative shrink-0 transition-all duration-300 ${
-                  isActive
-                    ? "translate-x-0 text-white/85"
-                    : "-translate-x-1 text-[var(--muted-foreground)]/0 group-hover:translate-x-0 group-hover:text-[var(--primary)]"
-                }`}
-              />
+              <div className="flex min-w-0 items-center gap-2.5">
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-colors ${
+                    isActive
+                      ? "text-[var(--primary)]"
+                      : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"
+                  }`}
+                />
+                <span className="truncate">{link.name}</span>
+              </div>
             </Link>
           );
         })}

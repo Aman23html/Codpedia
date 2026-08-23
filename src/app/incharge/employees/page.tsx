@@ -14,77 +14,86 @@ import {
   AlertCircle
 } from "lucide-react";
 
-// Helper for Initials Avatar
+// ============================================================================
+// HELPER FUNCTIONS (UNCHANGED LOGIC)
+// ============================================================================
+
 function getInitials(name: string) {
   if (!name) return "U";
   return name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
 }
 
-// Helper for Status Badge Styling
 function getStatusStyle(status?: string) {
   const s = (status || "ACTIVE").toUpperCase();
-  if (s === "ACTIVE" || s === "APPROVED") return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
-  if (s === "PENDING_APPROVAL") return "text-amber-500 bg-amber-500/10 border-amber-500/20";
-  if (s === "SUSPENDED" || s === "INACTIVE") return "text-red-500 bg-red-500/10 border-red-500/20";
-  return "text-slate-500 bg-slate-500/10 border-slate-500/20";
+  if (s === "ACTIVE" || s === "APPROVED") {
+    return "text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400";
+  }
+  if (s === "PENDING_APPROVAL") {
+    return "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400";
+  }
+  if (s === "SUSPENDED" || s === "INACTIVE") {
+    return "text-red-600 bg-red-500/10 border-red-500/20 dark:text-red-400";
+  }
+  return "text-slate-600 bg-slate-500/10 border-slate-500/20 dark:text-slate-400";
 }
+
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
 
 export default async function EmployeesPage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const searchParams = await props.searchParams;
   
-  // Note: Ensure getDepartmentEmployees accepts searchParams for backend filtering
+  // Data fetching
   const employees = await getDepartmentEmployees(searchParams);
 
   const currentSearch = (searchParams?.search as string) || "";
   const currentStatus = (searchParams?.status as string) || "all";
 
-  // Calculate Metrics (if doing frontend calculation, otherwise fetch from DB)
+  // Calculate Metrics
   const total = employees.length;
   const activeCount = employees.filter((e: any) => e.status === "ACTIVE" || e.status === "APPROVED").length;
 
   return (
-    <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-16 lg:pt-32 lg:px-12 max-w-[1600px] mx-auto text-[var(--foreground)]">
+    <div className="mx-auto flex min-h-screen w-full max-w-[1400px] flex-col gap-4 px-4 py-8 pt-20 sm:gap-6 sm:px-5 sm:py-12 md:pt-24 lg:gap-8 lg:px-6">
       
       {/* ========================================== */}
       {/* 1. HEADER & METRICS                        */}
       {/* ========================================== */}
-      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border)]/50 pb-8">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-5 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 shadow-inner">
-            <Users className="w-3.5 h-3.5 text-[var(--primary)]" />
-            <span className="text-[11px] font-extrabold tracking-widest uppercase text-[var(--primary)]">
-              Personnel Directory
-            </span>
+      <header className="flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:gap-5 sm:p-5 md:flex-row md:items-start md:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+          <div className="inline-flex items-center gap-1.5 rounded-md bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-medium text-[var(--primary)] sm:text-xs">
+            <Users className="h-3 w-3 shrink-0" />
+            <span>Personnel Directory</span>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none mb-3">
+
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
             Department Employees
           </h1>
-          <p className="text-[var(--muted-foreground)] text-base font-medium max-w-2xl">
+
+          <p className="max-w-2xl text-sm text-[var(--muted-foreground)]">
             Manage your department roster, view contact details, and audit account statuses.
           </p>
         </div>
 
-        <div className="flex gap-4">
-          <div className="flex items-center gap-4 px-5 py-3 rounded-2xl bg-[var(--card)]/80 backdrop-blur-xl border border-[var(--border)] shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)]">
-              <UserCircle className="w-5 h-5" />
+        {/* Compact Metrics Row */}
+        <div className="grid shrink-0 grid-cols-2 gap-2 w-full md:w-auto md:flex md:flex-row md:gap-3">
+          <div className="flex flex-col items-start justify-center rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 shadow-sm md:min-w-[120px]">
+            <div className="mb-0.5 flex items-center gap-1.5 text-[var(--muted-foreground)]">
+              <UserCircle className="h-3.5 w-3.5" />
+              <span className="text-[9px] font-semibold uppercase tracking-wider md:text-[10px]">Total</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Total Personnel</span>
-              <span className="text-xl font-black text-[var(--foreground)] leading-none">{total}</span>
-            </div>
+            <p className="text-base font-semibold text-[var(--foreground)] sm:text-lg">{total}</p>
           </div>
-          
-          <div className="hidden sm:flex items-center gap-4 px-5 py-3 rounded-2xl bg-[var(--card)]/80 backdrop-blur-xl border border-[var(--border)] shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-              <ShieldCheck className="w-5 h-5" />
+
+          <div className="flex flex-col items-start justify-center rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 shadow-sm md:min-w-[120px]">
+            <div className="mb-0.5 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span className="text-[9px] font-semibold uppercase tracking-wider md:text-[10px]">Active</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Active</span>
-              <span className="text-xl font-black text-[var(--foreground)] leading-none">{activeCount}</span>
-            </div>
+            <p className="text-base font-semibold text-[var(--foreground)] sm:text-lg">{activeCount}</p>
           </div>
         </div>
       </header>
@@ -92,116 +101,130 @@ export default async function EmployeesPage(props: {
       {/* ========================================== */}
       {/* 2. SEARCH & FILTER TOOLBAR                 */}
       {/* ========================================== */}
-      <section className="mb-8">
-        <form method="GET" className="flex flex-col sm:flex-row items-center gap-3 bg-[var(--card)]/50 p-2 rounded-2xl border border-[var(--border)] backdrop-blur-xl shadow-sm w-full md:w-fit">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-5">
+        <form method="GET" className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
             <input 
               type="text" 
               name="search"
               defaultValue={currentSearch}
               placeholder="Search by name or email..." 
-              className="w-full pl-9 pr-4 py-2.5 text-sm bg-[var(--background)]/80 border border-[var(--border)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--primary)]/30 text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/50 transition-all shadow-inner"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-3 text-sm font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] placeholder:text-[var(--muted-foreground)]"
             />
           </div>
 
-          <div className="relative w-full sm:w-auto">
-            <select 
-              name="status" 
-              defaultValue={currentStatus}
-              className="w-full sm:w-40 pl-4 pr-8 py-2.5 text-sm font-bold bg-[var(--background)]/80 border border-[var(--border)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--primary)]/30 text-[var(--foreground)] appearance-none cursor-pointer shadow-inner transition-all uppercase tracking-wider"
-            >
-              <option value="all">All Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--muted-foreground)]">▼</div>
-          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="relative flex-1 sm:flex-none">
+              <select 
+                name="status" 
+                defaultValue={currentStatus}
+                className="w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] py-2 pl-3 pr-8 text-sm font-medium text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] sm:w-[160px]"
+              >
+                <option value="all">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="PENDING_APPROVAL">Pending Approval</option>
+              </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--muted-foreground)]">▼</span>
+            </div>
 
-          <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--foreground)] dark:bg-[var(--primary)] text-[var(--background)] dark:text-white text-sm font-bold rounded-xl transition-all shadow-[0_4px_14px_rgba(0,102,255,0.25)] hover:opacity-90">
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
+            <button 
+              type="submit" 
+              className="flex w-full flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+            </button>
+          </div>
         </form>
       </section>
 
       {/* ========================================== */}
       {/* 3. DATA GRID (EMPLOYEE DIRECTORY)          */}
       {/* ========================================== */}
-      <div className="rounded-[24px] border border-[var(--border)] bg-[var(--card)]/40 backdrop-blur-xl shadow-sm overflow-hidden">
+      <section className="flex flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
-            <thead className="bg-[var(--card)]/80 border-b border-[var(--border)]/60">
+          <table className="w-full min-w-[800px] text-left text-sm">
+            <thead className="bg-[var(--background)]">
               <tr>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Identity & Contact</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Phone Number</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">Account Status</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] text-right">Actions</th>
+                <th className="whitespace-nowrap px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] sm:px-5 sm:py-3.5">
+                  Identity & Contact
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] sm:px-5 sm:py-3.5">
+                  Phone Number
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] sm:px-5 sm:py-3.5">
+                  Account Status
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] sm:px-5 sm:py-3.5">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--border)]/40">
+            <tbody className="divide-y divide-[var(--border)]">
               {employees.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-16 text-center text-[var(--muted-foreground)]">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--card)] border border-[var(--border)] flex items-center justify-center">
-                      <Users className="w-6 h-6 opacity-40" />
+                  <td colSpan={4} className="px-4 py-10 text-center text-[var(--muted-foreground)]">
+                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--background)]">
+                      <Users className="h-5 w-5 text-[var(--muted-foreground)]" />
                     </div>
-                    <p className="text-sm font-bold">No personnel found in the directory.</p>
+                    <p className="text-sm font-medium">No personnel found in the directory.</p>
                   </td>
                 </tr>
               ) : (
                 employees.map((employee: any) => (
-                  <tr key={employee.id} className="group/row hover:bg-[var(--primary)]/5 transition-colors duration-300">
+                  <tr key={employee.id || employee._id || employee.email} className="group/row transition-colors hover:bg-[var(--background)]/50">
                     
                     {/* Identity & Email Column */}
-                    <td className="px-8 py-5 whitespace-nowrap">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-xs font-black text-[var(--foreground)] shadow-sm">
+                    <td className="px-4 py-3 sm:px-5 sm:py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--background)] text-[10px] font-bold text-[var(--foreground)] shadow-sm">
                           {getInitials(employee.fullName)}
                         </div>
-                        <div>
-                          <p className="font-bold text-sm text-[var(--foreground)] group-hover/row:text-[var(--primary)] transition-colors">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[var(--foreground)] transition-colors group-hover/row:text-[var(--primary)]">
                             {employee.fullName}
                           </p>
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[var(--muted-foreground)]">
-                            <Mail className="w-3 h-3" />
-                            <span className="text-xs font-medium">{employee.email}</span>
+                          <div className="mt-0.5 flex items-center gap-1.5 text-[var(--muted-foreground)]">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <span className="truncate text-[11px] font-medium">{employee.email}</span>
                           </div>
                         </div>
                       </div>
                     </td>
 
                     {/* Phone Column */}
-                    <td className="px-8 py-5 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)]">
-                        <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
-                        {employee.phone || "Not Provided"}
+                    <td className="px-4 py-3 sm:px-5 sm:py-3.5">
+                      <div className="flex items-center gap-2 min-w-0 text-[var(--foreground)]">
+                        <Phone className="h-3.5 w-3.5 shrink-0 text-[var(--muted-foreground)]" />
+                        <span className="truncate text-sm font-medium">{employee.phone || "Not Provided"}</span>
                       </div>
                     </td>
 
                     {/* Status Column */}
-                    <td className="px-8 py-5 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest border shadow-sm ${getStatusStyle(employee.status)}`}>
+                    <td className="whitespace-nowrap px-4 py-3 sm:px-5 sm:py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm ${getStatusStyle(employee.status)}`}>
                         {employee.status === "ACTIVE" || employee.status === "APPROVED" ? (
-                          <CheckCircle2 className="w-3 h-3" />
+                          <CheckCircle2 className="h-3 w-3" />
                         ) : (
-                          <AlertCircle className="w-3 h-3" />
+                          <AlertCircle className="h-3 w-3" />
                         )}
-                        {employee.status || "Active"}
+                        {employee.status?.replaceAll("_", " ") || "Active"}
                       </span>
                     </td>
 
                     {/* Actions Column */}
-                    <td className="px-8 py-5 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                        <button className="p-2 hover:bg-[var(--background)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--primary)] border border-transparent hover:border-[var(--border)] transition-all" title="View Profile">
-                          <Eye className="w-4 h-4" />
+                    <td className="whitespace-nowrap px-4 py-3 text-right sm:px-5 sm:py-3.5">
+                      <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover/row:opacity-100">
+                        <button className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--muted-foreground)] transition-colors hover:bg-[var(--background)] hover:text-[var(--primary)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[var(--primary)]" title="View Profile">
+                          <Eye className="h-4 w-4" />
                         </button>
-                        <button className="p-2 hover:bg-[var(--background)] rounded-lg text-[var(--muted-foreground)] hover:text-emerald-500 border border-transparent hover:border-[var(--border)] transition-all" title="Message">
-                          <MessageSquare className="w-4 h-4" />
+                        <button className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--muted-foreground)] transition-colors hover:bg-[var(--background)] hover:text-emerald-500 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-emerald-500" title="Message">
+                          <MessageSquare className="h-4 w-4" />
                         </button>
-                        <button className="p-2 hover:bg-[var(--background)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent hover:border-[var(--border)] transition-all">
-                          <MoreVertical className="w-4 h-4" />
+                        <button className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--muted-foreground)] transition-colors hover:bg-[var(--background)] hover:text-[var(--foreground)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[var(--primary)]" title="More Options">
+                          <MoreVertical className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -212,7 +235,7 @@ export default async function EmployeesPage(props: {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
       
     </div>
   );
