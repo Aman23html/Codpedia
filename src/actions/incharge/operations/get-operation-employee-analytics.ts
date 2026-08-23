@@ -20,6 +20,22 @@ export type OperationEmployeeAnalyticsFilters = {
   to?: string;
 };
 
+// function getDateFilter(from?: string, to?: string) {
+//   if (!from && !to) return undefined;
+
+//   const filter: any = {};
+
+//   if (from) {
+//     filter.$gte = startOfDayIST(parseDateOnlyIST(from));
+//   }
+
+//   if (to) {
+//     filter.$lte = endOfDayIST(parseDateOnlyIST(to));
+//   }
+
+//   return filter;
+// }
+
 function getDateFilter(from?: string, to?: string) {
   if (!from && !to) return undefined;
 

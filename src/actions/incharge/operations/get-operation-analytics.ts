@@ -19,17 +19,37 @@ export type OperationAnalyticsFilters = {
   search?: string;
 };
 
+// function getDateFilter(from?: string, to?: string) {
+//   if (!from && !to) return undefined;
+
+//   const filter: any = {};
+
+//   if (from) {
+//     filter.$gte = startOfDayIST(parseDateOnlyIST(from));
+//   }
+
+//   if (to) {
+//     filter.$lte = endOfDayIST(parseDateOnlyIST(to));
+//   }
+
+//   return filter;
+// }
+
+
 function getDateFilter(from?: string, to?: string) {
   if (!from && !to) return undefined;
 
   const filter: any = {};
 
   if (from) {
-    filter.$gte = startOfDayIST(parseDateOnlyIST(from));
+    // Appending +05:30 forces the server to treat this as exactly 00:00:00 IST, 
+    // regardless of where in the world the server is physically located.
+    filter.$gte = new Date(`${from}T00:00:00.000+05:30`);
   }
 
   if (to) {
-    filter.$lte = endOfDayIST(parseDateOnlyIST(to));
+    // Forces exactly 23:59:59.999 IST
+    filter.$lte = new Date(`${to}T23:59:59.999+05:30`);
   }
 
   return filter;

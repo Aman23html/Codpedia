@@ -6,25 +6,63 @@ import { MarketingReport } from "@/models/MarketingReport";
 
 type FilterType = "ALL" | "TODAY" | "7_DAYS" | "30_DAYS";
 
+// function getDateFilter(filter: FilterType) {
+//   const now = new Date();
+
+//   if (filter === "TODAY") {
+//     const start = new Date();
+//     start.setHours(0, 0, 0, 0);
+//     return { $gte: start };
+//   }
+
+//   if (filter === "7_DAYS") {
+//     const start = new Date();
+//     start.setDate(now.getDate() - 7);
+//     return { $gte: start };
+//   }
+
+//   if (filter === "30_DAYS") {
+//     const start = new Date();
+//     start.setDate(now.getDate() - 30);
+//     return { $gte: start };
+//   }
+
+//   return undefined;
+// }
+
+// Define your FilterType if not already imported
+// type FilterType = "TODAY" | "7_DAYS" | "30_DAYS" | "ALL";
+
 function getDateFilter(filter: FilterType) {
-  const now = new Date();
+  // Helper to safely calculate exactly midnight in IST for "N" days ago
+  function getISTMidnight(daysAgo = 0) {
+    const now = new Date();
+    
+    // 1. Shift the current UTC time forward by 5.5 hours to match the clock in India
+    const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+    
+    // 2. Subtract the requested number of days (handles month/leap year rollovers safely)
+    istTime.setUTCDate(istTime.getUTCDate() - daysAgo);
+
+    // 3. Extract the exact Year-Month-Day in India
+    const yyyy = istTime.getUTCFullYear();
+    const mm = String(istTime.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(istTime.getUTCDate()).padStart(2, '0');
+
+    // 4. Return the strict ISO string forcing IST (+05:30) midnight
+    return new Date(`${yyyy}-${mm}-${dd}T00:00:00.000+05:30`);
+  }
 
   if (filter === "TODAY") {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    return { $gte: start };
+    return { $gte: getISTMidnight(0) };
   }
 
   if (filter === "7_DAYS") {
-    const start = new Date();
-    start.setDate(now.getDate() - 7);
-    return { $gte: start };
+    return { $gte: getISTMidnight(7) };
   }
 
   if (filter === "30_DAYS") {
-    const start = new Date();
-    start.setDate(now.getDate() - 30);
-    return { $gte: start };
+    return { $gte: getISTMidnight(30) };
   }
 
   return undefined;

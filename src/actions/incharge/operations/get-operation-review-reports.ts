@@ -18,6 +18,26 @@ export type OperationReviewFilters = {
   to?: string;
 };
 
+// function getDateFilter(from?: string, to?: string) {
+//   if (!from && !to) return undefined;
+
+//   const filter: any = {};
+
+//   if (from) {
+//     const start = new Date(from);
+//     start.setHours(0, 0, 0, 0);
+//     filter.$gte = start;
+//   }
+
+//   if (to) {
+//     const end = new Date(to);
+//     end.setHours(23, 59, 59, 999);
+//     filter.$lte = end;
+//   }
+
+//   return filter;
+// }
+
 function getDateFilter(from?: string, to?: string) {
   if (!from && !to) return undefined;
 
