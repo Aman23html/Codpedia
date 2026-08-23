@@ -6,6 +6,7 @@ import { assertActiveAttendanceWindow } from "@/lib/operations/operation-attenda
 import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { startOfDayIST } from "@/lib/format-date";
 
 import {
   DepartmentType,
@@ -14,11 +15,8 @@ import {
 } from "@/constants/enums";
 
 function getTodayRange() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+  const start = startOfDayIST();
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
 
   return { start, end };
 }

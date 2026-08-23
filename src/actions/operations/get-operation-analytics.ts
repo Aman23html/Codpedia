@@ -3,6 +3,7 @@
 import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { startOfDayIST } from "@/lib/format-date";
 import { DepartmentType, Role } from "@/constants/enums";
 
 export type OperationAnalyticsFilter = "TODAY" | "7_DAYS" | "30_DAYS" | "ALL";
@@ -14,12 +15,10 @@ function getDateRange(filter: OperationAnalyticsFilter) {
     return null;
   }
 
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
+  const start = startOfDayIST();
 
   if (filter === "TODAY") {
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
 
     return {
       $gte: start,
@@ -28,19 +27,21 @@ function getDateRange(filter: OperationAnalyticsFilter) {
   }
 
   if (filter === "7_DAYS") {
-    start.setDate(now.getDate() - 6);
+    const sevenDaysAgo = new Date(start);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
     return {
-      $gte: start,
+      $gte: sevenDaysAgo,
       $lte: now,
     };
   }
 
   if (filter === "30_DAYS") {
-    start.setDate(now.getDate() - 29);
+    const thirtyDaysAgo = new Date(start);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
 
     return {
-      $gte: start,
+      $gte: thirtyDaysAgo,
       $lte: now,
     };
   }

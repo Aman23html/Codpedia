@@ -6,6 +6,7 @@ import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { User } from "@/models/User";
 import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { endOfDayIST, parseDateOnlyIST, startOfDayIST } from "@/lib/format-date";
 
 import {
   DepartmentType,
@@ -25,15 +26,11 @@ function getDateFilter(from?: string, to?: string) {
   const filter: any = {};
 
   if (from) {
-    const start = new Date(from);
-    start.setHours(0, 0, 0, 0);
-    filter.$gte = start;
+    filter.$gte = startOfDayIST(parseDateOnlyIST(from));
   }
 
   if (to) {
-    const end = new Date(to);
-    end.setHours(23, 59, 59, 999);
-    filter.$lte = end;
+    filter.$lte = endOfDayIST(parseDateOnlyIST(to));
   }
 
   return filter;

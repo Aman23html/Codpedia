@@ -3,6 +3,7 @@
 import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/current-user";
 import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
+import { parseDateOnlyIST, startOfDayIST } from "@/lib/format-date";
 import {
   DepartmentType,
   OperationReportStatus,
@@ -40,11 +41,8 @@ export async function getOperationHistory(filter: Filter = {}) {
   }
 
   if (filter.date) {
-    const start = new Date(filter.date);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
+    const start = startOfDayIST(parseDateOnlyIST(filter.date));
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
 
     query.reportDate = {
       $gte: start,
