@@ -27,6 +27,8 @@ import {
   Settings,
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 // ============================================================================
 // HELPER FUNCTIONS (UNCHANGED LOGIC)
 // ============================================================================
@@ -63,7 +65,7 @@ export default async function InchargePage() {
 
   const grouped = Object.values(
     reports.reduce((acc: Record<string, any>, report: any) => {
-      const key = report.user.id;
+      const key = String(report.user._id ?? report.user.id);
 
       if (!acc[key]) {
         acc[key] = {
@@ -320,7 +322,7 @@ export default async function InchargePage() {
                 <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
                   {grouped.map((group: any) => (
                     <PendingGroupCard
-                      key={group.user.id}
+                      key={String(group.user._id ?? group.user.id)}
                       group={group}
                       reportsHref={routes.reportsHref}
                       departmentType={currentUser.department!.type}
@@ -397,35 +399,7 @@ export default async function InchargePage() {
             </div>
           </div>
 
-          {/* Team Health */}
-          <div className="flex flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-sm sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="flex items-center gap-1.5 text-xs font-semibold text-[var(--foreground)] sm:text-sm">
-                <Activity className="h-3.5 w-3.5 text-emerald-500" />
-                Team Health Pulse
-              </h3>
-              <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                Excellent
-              </span>
-            </div>
-
-            <div className="mb-1.5 flex items-baseline gap-1">
-              <span className="text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-                93
-              </span>
-              <span className="text-xs font-semibold text-[var(--muted-foreground)]">%</span>
-            </div>
-
-            <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-[var(--background)] border border-[var(--border)]/50">
-              <div className="h-full w-[93%] rounded-full bg-[var(--primary)]" />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-3">
-              <SmallMetric label="Present" value="52" />
-              <SmallMetric label="Leave" value="2" />
-              <SmallMetric label="Absent" value="2" />
-            </div>
-          </div>
+         
 
          
 
@@ -442,6 +416,7 @@ export default async function InchargePage() {
 function PendingGroupCard({ group, reportsHref, departmentType }: any) {
   const firstReport = group.reports[0];
   const employeeCode = getEmployeeCode(group.user);
+  const reportId = String(firstReport._id ?? firstReport.id);
 
   const previewLabels =
     departmentType === "MARKETING"
@@ -507,7 +482,7 @@ function PendingGroupCard({ group, reportsHref, departmentType }: any) {
       </div>
 
       <Link
-        href={`${reportsHref}/${firstReport.id}`}
+        href={`${reportsHref}/${reportId}`}
         className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--background)] px-2 py-1.5 text-[11px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--accent)] hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
       >
         Review
@@ -617,7 +592,7 @@ function InsightItem({ tone, title, subtitle }: any) {
   );
 }
 
-function SmallMetric({ label, value }: { label: string; value: string }) {
+function SmallMetric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--background)] p-1.5 shadow-sm sm:p-2">
       <p className="text-[8px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)] sm:text-[9px]">

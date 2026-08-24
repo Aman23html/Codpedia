@@ -25,6 +25,7 @@ export async function getPendingOperationReports() {
 
   const departmentUsers = await User.find({
     department: user.departmentId,
+    role: Role.EMPLOYEE,
   })
     .select("_id")
     .lean();

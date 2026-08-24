@@ -87,6 +87,8 @@ export async function reviewOperationReport(formData: FormData) {
 
   revalidatePath("/incharge/operations/reports");
   revalidatePath(`/incharge/operations/reports/${reportId}`);
+  revalidatePath("/incharge");
+  revalidatePath("/incharge/operations/analytics");
 
   return {
     success: true,

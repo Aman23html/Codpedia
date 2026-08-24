@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { displayEmployeeId } from "@/lib/users/display-employee-id";
 
 export default function OperationAnalyticsEmployeeTable({
   employees,
@@ -54,7 +55,7 @@ export default function OperationAnalyticsEmployeeTable({
                   className="transition hover:bg-[var(--background)]/60"
                 >
                   <TableCell mono>
-                    EMP-{row.employee.id.substring(0, 6).toUpperCase()}
+                    {displayEmployeeId(row.employee)}
                   </TableCell>
 
                   <TableCell bold>{row.employee.fullName}</TableCell>

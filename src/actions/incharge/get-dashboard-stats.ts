@@ -5,16 +5,35 @@ import { getCurrentUser } from "@/lib/current-user";
 
 import { User } from "@/models/User";
 import { MarketingReport } from "@/models/MarketingReport";
+import { EmployeeOperationReport } from "@/models/EmployeeOperationReport";
 import { Attendance } from "@/models/Attendance";
 
-import { ReportStatus, Role, UserStatus } from "@/constants/enums";
+import {
+  AttendanceStatus,
+  DepartmentType,
+  OperationReportStatus,
+  ReportStatus,
+  Role,
+  UserStatus,
+} from "@/constants/enums";
+
+function getTodayRangeIST() {
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+  const now = new Date();
+  const istNow = new Date(now.getTime() + IST_OFFSET_MS);
+  istNow.setUTCHours(0, 0, 0, 0);
+
+  const start = new Date(istNow.getTime() - IST_OFFSET_MS);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+
+  return { start, end };
+}
 
 export async function getDashboardStats() {
   await connectDB();
 
   const currentUser = await getCurrentUser();
-
-  console.log("DASHBOARD CURRENT USER:", currentUser);
 
   if (!currentUser || currentUser.role !== Role.INCHARGE) {
     throw new Error("Unauthorized");
@@ -24,11 +43,12 @@ export async function getDashboardStats() {
     throw new Error("Department not found");
   }
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
+  const { start: startOfDay, end: endOfDay } = getTodayRangeIST();
+  const isOperations =
+    currentUser.department?.type === DepartmentType.OPERATIONS;
+  const ReportModel = isOperations
+    ? EmployeeOperationReport
+    : MarketingReport;
 
   const departmentUsers = await User.find({
     department: currentUser.departmentId,
@@ -49,6 +69,10 @@ export async function getDashboardStats() {
     rejectedReports,
     todayReports,
     todayAttendance,
+    presentAttendance,
+    absentAttendance,
+    leaveAttendance,
+    halfDayAttendance,
   ] = await Promise.all([
     User.countDocuments({
       department: currentUser.departmentId,
@@ -67,30 +91,41 @@ export async function getDashboardStats() {
       status: UserStatus.PENDING_APPROVAL,
     }),
 
-    MarketingReport.countDocuments({
+    ReportModel.countDocuments({
       user: { $in: userIds },
     }),
 
-    MarketingReport.countDocuments({
+    ReportModel.countDocuments({
       user: { $in: userIds },
-      status: ReportStatus.PENDING,
+      status: isOperations
+        ? {
+            $in: [
+              OperationReportStatus.SUBMITTED,
+              OperationReportStatus.CORRECTION_REQUIRED,
+            ],
+          }
+        : ReportStatus.PENDING,
     }),
 
-    MarketingReport.countDocuments({
+    ReportModel.countDocuments({
       user: { $in: userIds },
-      status: ReportStatus.APPROVED,
+      status: isOperations
+        ? OperationReportStatus.VERIFIED
+        : ReportStatus.APPROVED,
     }),
 
-    MarketingReport.countDocuments({
+    ReportModel.countDocuments({
       user: { $in: userIds },
-      status: ReportStatus.REJECTED,
+      status: isOperations
+        ? OperationReportStatus.REJECTED
+        : ReportStatus.REJECTED,
     }),
 
-    MarketingReport.countDocuments({
+    ReportModel.countDocuments({
       user: { $in: userIds },
       reportDate: {
         $gte: startOfDay,
-        $lte: endOfDay,
+        $lt: endOfDay,
       },
     }),
 
@@ -98,10 +133,45 @@ export async function getDashboardStats() {
       user: { $in: userIds },
       attendanceDate: {
         $gte: startOfDay,
-        $lte: endOfDay,
+        $lt: endOfDay,
       },
     }),
+
+    Attendance.countDocuments({
+      user: { $in: userIds },
+      attendanceDate: { $gte: startOfDay, $lt: endOfDay },
+      status: AttendanceStatus.PRESENT,
+    }),
+
+    Attendance.countDocuments({
+      user: { $in: userIds },
+      attendanceDate: { $gte: startOfDay, $lt: endOfDay },
+      status: AttendanceStatus.ABSENT,
+    }),
+
+    Attendance.countDocuments({
+      user: { $in: userIds },
+      attendanceDate: { $gte: startOfDay, $lt: endOfDay },
+      status: AttendanceStatus.LEAVE,
+    }),
+
+    Attendance.countDocuments({
+      user: { $in: userIds },
+      attendanceDate: { $gte: startOfDay, $lt: endOfDay },
+      status: AttendanceStatus.HALF_DAY,
+    }),
   ]);
+
+  const teamHealth =
+    totalEmployees > 0
+      ? Math.min(
+          100,
+          Math.round(
+            ((presentAttendance + halfDayAttendance * 0.5) / totalEmployees) *
+              100
+          )
+        )
+      : 0;
 
   return {
     totalEmployees,
@@ -115,5 +185,10 @@ export async function getDashboardStats() {
     todayReports,
 
     todayAttendance,
+    presentAttendance,
+    absentAttendance,
+    leaveAttendance,
+    halfDayAttendance,
+    teamHealth,
   };
 }

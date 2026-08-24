@@ -51,28 +51,28 @@ const Footer: React.FC = () => {
 
   const brandsLinks = [
     {
-      title: "Codepedia Academy",
-      subtitle: "(Tutor4Study)",
+      title: "Tutor4Study",
+      subtitle: "",
       href: "https://www.tutor4study.com/",
     },
     {
-      title: "Codepedia Research",
-      subtitle: "(Assignments Wallah)",
+      title: "Assignments Wallah",
+      subtitle: "",
       href: "https://www.assignmentswallah.com/",
     },
     {
-      title: "Codepedia Experts",
-      subtitle: "(Grades Buddy)",
+      title: "Grades Buddy",
+      subtitle: "",
       href: "https://gradesbuddy.com/",
     },
     {
-      title: "Career Support",
-      subtitle: "(Infinite Solutionss)",
+      title: "Infinite Solutions",
+      subtitle: "",
       href: "https://www.assignmentswallah.com/job-support",
     },
     {
-      title: "Codepedia Skills",
-      subtitle: "(Gandharva School of Music)",
+      title: "Gandharva School of Music",
+      subtitle: "",
       href: "https://www.gandharvaschoolofmusic.com/",
     },
   ];
@@ -201,7 +201,7 @@ const Footer: React.FC = () => {
                     rel="noopener noreferrer"
                     className="group flex flex-col"
                   >
-                    <span className="text-[var(--foreground)]/80 text-sm group-hover:text-[var(--primary)] transition-colors duration-300">
+                    <span className="text-[var(--foreground)]/80 text-sm font-medium group-hover:text-[var(--primary)] transition-colors duration-300">
                       {brand.title}
                     </span>
                     <span className="text-[var(--muted-foreground)] text-xs group-hover:text-[var(--foreground)]/80 transition-colors duration-300">
