@@ -34,7 +34,7 @@ export default function EmployeeMarketingLineChart({
   label: string;
 }) {
   return (
-    <div className="h-[320px] w-full">
+    <div className="h-full min-h-0 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" opacity={0.25} />

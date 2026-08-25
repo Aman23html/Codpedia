@@ -356,48 +356,7 @@ export default async function InchargePage() {
         {/* Right Aside: Profile & Team Health */}
         <aside className="flex flex-col gap-3 sm:gap-4 lg:col-span-4">
           
-          {/* Profile Details */}
-          <div className="flex flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-sm sm:p-4">
-            <div className="mb-4 flex items-start gap-3">
-              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--background)] shadow-sm sm:h-12 sm:w-12">
-                {currentUser.profileImageUrl ? (
-                  <Image
-                    src={currentUser.profileImageUrl}
-                    alt={currentUser.fullName}
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--primary)] to-cyan-600 text-sm font-bold text-white">
-                    {currentUserInitials}
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0 pt-0.5">
-                <h3 className="truncate text-sm font-semibold tracking-tight text-[var(--foreground)] sm:text-base">
-                  {currentUser.fullName}
-                </h3>
-                <p className="truncate text-[11px] font-semibold text-[var(--primary)] sm:text-xs">
-                  Department Incharge
-                </p>
-                <p className="truncate font-mono text-[9px] text-[var(--muted-foreground)] sm:text-[10px]">
-                  {inchargeCode}
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-4 flex flex-col gap-1.5">
-              <ProfileRow icon={Mail} label="Email" value={currentUser.email} />
-              <ProfileRow icon={Phone} label="Phone" value={currentUser.phone || "-"} />
-              <ProfileRow icon={ShieldCheck} label="Dept." value={currentUser.department.name} />
-            </div>
-
-            <div className="flex flex-col gap-2.5 border-t border-[var(--border)] pt-3">
-              <ProgressMetric title="Approval Progress" value={`${approvalRate}%`} width={approvalRate} tone="emerald" />
-              <ProgressMetric title="Department Score" value="94%" width={94} tone="primary" />
-            </div>
-          </div>
+         
 
          
 

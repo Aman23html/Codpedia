@@ -1,11 +1,11 @@
 import React from "react";
 import { 
-  Search, Download, Filter, Users, 
+  Search, Filter, Users,
   CheckCircle2, XCircle, Calendar, 
   MoreVertical, Eye, Edit, ChevronLeft, ChevronRight,
   Clock, ArrowDownToLine, Plus, AlertTriangle
 } from "lucide-react";
-import { formatTimeIST } from "@/lib/format-date";
+import { formatDateIST, formatTimeIST } from "@/lib/format-date";
 
 // --- Server Actions ---
 import { getAttendance } from "@/actions/incharge/get-attendance";
@@ -197,6 +197,7 @@ export default async function AttendancePage(props: {
             <thead className="border-b border-[var(--border)] bg-[var(--background)]/50">
               <tr>
                 <th className="whitespace-nowrap px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Employee</th>
+                <th className="whitespace-nowrap px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Date</th>
                 <th className="whitespace-nowrap px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Shift</th>
                 <th className="whitespace-nowrap px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">In / Out</th>
                 <th className="whitespace-nowrap px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Work Hours</th>
@@ -227,6 +228,9 @@ export default async function AttendancePage(props: {
                         </div>
                       </div>
                     </div>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2.5 text-[12px] font-medium text-[var(--foreground)]">
+                    {formatDateIST(record.attendanceDate || record.date)}
                   </td>
                   <td className="px-4 py-2.5 text-[12px] text-[var(--muted-foreground)]">
                     General
@@ -328,7 +332,17 @@ export default async function AttendancePage(props: {
 // SUB-COMPONENTS
 // ============================================================================
 
-function SummaryCard({ label, value, icon: Icon, tone }: any) {
+function SummaryCard({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  tone: string;
+}) {
   const styles: Record<string, string> = {
     blue: "text-blue-600 bg-blue-500/10 border-blue-500/20 dark:text-blue-400",
     emerald: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400",
@@ -356,7 +370,7 @@ function SummaryCard({ label, value, icon: Icon, tone }: any) {
 function EmptyState() {
   return (
     <tr>
-      <td colSpan={6} className="px-4 py-10 text-center">
+      <td colSpan={7} className="px-4 py-10 text-center">
         <div className="flex flex-col items-center justify-center">
           <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--background)] shadow-sm">
             <Filter className="h-4 w-4 text-[var(--muted-foreground)]" />
@@ -392,7 +406,12 @@ function MobileRecordCard({ record }: { record: AttendanceRecord }) {
             </div>
           </div>
         </div>
-        <StatusBadge status={record.status} />
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span className="text-[10px] font-medium text-[var(--muted-foreground)]">
+            {formatDateIST(record.attendanceDate || record.date)}
+          </span>
+          <StatusBadge status={record.status} />
+        </div>
       </div>
       
       <div className="grid grid-cols-3 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--background)]/50 p-2 shadow-sm">

@@ -148,99 +148,43 @@ export default async function InchargeAnalyticsPage(props: {
     sortOrder !== "desc";
 
   return (
-    <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-20 lg:pt-32 lg:px-12 max-w-[1700px] mx-auto space-y-10 text-[var(--foreground)]">
-      <header className="relative overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)]/45 p-8 shadow-sm backdrop-blur-xl lg:p-10">
-        <div className="pointer-events-none absolute right-[-140px] top-[-140px] h-[380px] w-[380px] rounded-full bg-[var(--primary)]/10 blur-[90px]" />
-        <div className="pointer-events-none absolute bottom-[-150px] left-[25%] h-[320px] w-[320px] rounded-full bg-purple-500/10 blur-[90px]" />
-
-        <div className="relative z-10 flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 shadow-inner">
-              <BarChart3 className="h-3.5 w-3.5 text-[var(--primary)]" />
-
-              <span className="text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">
-                Marketing Analytics Command
-              </span>
-            </div>
-
-            <h1 className="mb-4 text-4xl font-black leading-none tracking-tight text-[var(--foreground)] lg:text-5xl">
-              Marketing Performance Dashboard
-            </h1>
-
-            <p className="max-w-3xl text-base font-medium leading-7 text-[var(--muted-foreground)]">
-              Track employee marketing performance, country-wise activity,
-              report approval status, and task output across WhatsApp, Telegram,
-              and Facebook operations.
-            </p>
+    <div className="min-h-screen bg-[var(--background)] max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6 py-5 sm:py-6 lg:py-8 space-y-6 text-[var(--foreground)]">
+      {/* PAGE HEADER */}
+      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-b border-[var(--border)] pb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-0.5 rounded">
+              Command Center
+            </span>
+            <span className="text-xs text-[var(--muted-foreground)]">/ Analytics</span>
           </div>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+            Marketing Performance Dashboard
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-0.5">
+            Track employee marketing performance, country-wise activity, report approval status, and task output across WhatsApp, Telegram, and Facebook operations.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <HeaderMetric
-              title="Approval"
-              value={`${approvalRate}%`}
-              icon={ShieldCheck}
-            />
-
-            <HeaderMetric
-              title="Pending"
-              value={`${pendingRate}%`}
-              icon={Clock}
-            />
-
-            <HeaderMetric
-              title="Today"
-              value={data.todayReports}
-              icon={Activity}
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          <HeaderMetric title="Approval" value={`${approvalRate}%`} icon={ShieldCheck} />
+          <HeaderMetric title="Pending" value={`${pendingRate}%`} icon={Clock} />
+          <HeaderMetric title="Today" value={data.todayReports} icon={Activity} />
         </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-6">
-        <KPICard
-          title="Employees"
-          value={data.totalEmployees}
-          icon={Users}
-          tone="blue"
-        />
-
-        <KPICard
-          title="Reports"
-          value={data.totalReports}
-          icon={FileText}
-          tone="indigo"
-        />
-
-        <KPICard
-          title="Approved"
-          value={data.approvedReports}
-          icon={CheckCircle2}
-          tone="emerald"
-        />
-
-        <KPICard
-          title="Pending"
-          value={data.pendingReports}
-          icon={Clock}
-          tone="amber"
-        />
-
-        <KPICard
-          title="Rejected"
-          value={data.rejectedReports}
-          icon={XCircle}
-          tone="red"
-        />
-
-        <KPICard
-          title="Reviewed"
-          value={totalReviewed}
-          icon={Target}
-          tone="purple"
-        />
+      {/* SUMMARY / KPI CARDS */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <KPICard title="Employees" value={data.totalEmployees} icon={Users} tone="blue" />
+        <KPICard title="Reports" value={data.totalReports} icon={FileText} tone="indigo" />
+        <KPICard title="Approved" value={data.approvedReports} icon={CheckCircle2} tone="emerald" />
+        <KPICard title="Pending" value={data.pendingReports} icon={Clock} tone="amber" />
+        <KPICard title="Rejected" value={data.rejectedReports} icon={XCircle} tone="red" />
+        <KPICard title="Reviewed" value={totalReviewed} icon={Target} tone="purple" />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
+      {/* EXECUTIVE SUMMARY CARDS */}
+      <section className="grid gap-3 md:grid-cols-3">
         <ExecutiveCard
           title="Approval Health"
           value={`${approvalRate}%`}
@@ -248,7 +192,6 @@ export default async function InchargeAnalyticsPage(props: {
           icon={CheckCircle2}
           tone="emerald"
         />
-
         <ExecutiveCard
           title="Pending Load"
           value={data.pendingReports}
@@ -256,7 +199,6 @@ export default async function InchargeAnalyticsPage(props: {
           icon={Clock}
           tone="amber"
         />
-
         <ExecutiveCard
           title="Marketing Output"
           value={data.totalGroupsJoined + data.totalPostsDone}
@@ -266,23 +208,22 @@ export default async function InchargeAnalyticsPage(props: {
         />
       </section>
 
-      <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 p-8 shadow-sm backdrop-blur-xl">
-        <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      {/* TRENDS & CHARTS SECTION */}
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 sm:p-5 shadow-sm backdrop-blur-xl">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="flex items-center gap-3 text-2xl font-black tracking-tight text-[var(--foreground)]">
-              <TrendingUp className="h-6 w-6 text-[var(--primary)]" />
+            <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+              <TrendingUp className="h-4 w-4 text-[var(--primary)]" />
               Country-wise Marketing Trends
             </h2>
-
-            <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-              Compare daily country-wise marketing activity using selected date
-              range.
+            <p className="text-xs text-[var(--muted-foreground)]">
+              Compare daily country-wise marketing activity using selected date range.
             </p>
           </div>
 
           <form
             method="GET"
-            className="flex w-full flex-wrap gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-2 shadow-sm lg:w-auto"
+            className="flex items-center gap-2 bg-[var(--background)] p-1 rounded-lg border border-[var(--border)]"
           >
             <input type="hidden" name="search" value={search} />
             <input type="hidden" name="status" value={status} />
@@ -292,34 +233,31 @@ export default async function InchargeAnalyticsPage(props: {
             <input type="hidden" name="from" value={from} />
             <input type="hidden" name="to" value={to} />
 
-            <div className="relative flex-1 lg:flex-none">
-              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--primary)]" />
-
+            <div className="relative">
               <select
                 name="graphDateRange"
                 defaultValue={graphDateRange}
-                className="w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-10 py-3 text-xs font-black uppercase tracking-widest outline-none focus:border-[var(--primary)] lg:w-[190px]"
+                className="h-8 appearance-none rounded-md bg-transparent pl-3 pr-8 text-xs font-semibold outline-none cursor-pointer"
               >
                 <option value="week">Last 7 Days</option>
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
               </select>
-
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)]">
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[var(--muted-foreground)]">
                 ▼
               </span>
             </div>
 
             <button
               type="submit"
-              className="rounded-xl bg-[var(--primary)] px-5 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:opacity-90"
+              className="h-8 rounded-md bg-[var(--primary)] px-3 text-xs font-semibold text-white transition hover:opacity-90"
             >
               Apply
             </button>
           </form>
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <ChartPanel
             title="Groups Joined by Country"
             description="Daily joined groups segmented by region."
@@ -338,7 +276,8 @@ export default async function InchargeAnalyticsPage(props: {
         </div>
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-2">
+      {/* METRIC SECTIONS */}
+      <section className="grid gap-4 lg:grid-cols-2">
         <MetricSection
           title="Regional Distribution"
           description="Report distribution by target country."
@@ -354,78 +293,51 @@ export default async function InchargeAnalyticsPage(props: {
           description="Total task output from approved and submitted marketing activities."
           icon={Share2}
         >
-          <MiniCard
-            title="Groups Joined"
-            value={data.totalGroupsJoined}
-            icon={Users}
-            tone="purple"
-          />
-
-          <MiniCard
-            title="Posts Done"
-            value={data.totalPostsDone}
-            icon={FileText}
-            tone="blue"
-          />
-
-          <MiniCard
-            title="Resource Login"
-            value={data.totalResourceLogin}
-            icon={Key}
-            tone="emerald"
-          />
-
-          <MiniCard
-            title="Account Clean"
-            value={data.totalAccountClean}
-            icon={Trash2}
-            tone="pink"
-          />
+          <MiniCard title="Groups Joined" value={data.totalGroupsJoined} icon={Users} tone="purple" />
+          <MiniCard title="Posts Done" value={data.totalPostsDone} icon={FileText} tone="blue" />
+          <MiniCard title="Resource Login" value={data.totalResourceLogin} icon={Key} tone="emerald" />
+          <MiniCard title="Account Clean" value={data.totalAccountClean} icon={Trash2} tone="pink" />
         </MetricSection>
       </section>
 
-      <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl">
-        <div className="border-b border-[var(--border)]/60 p-6">
-          <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      {/* TOOLBAR & DATA TABLE CONTAINER */}
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl overflow-hidden">
+        <div className="border-b border-[var(--border)] p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="flex items-center gap-3 text-2xl font-black text-[var(--foreground)]">
-                <Database className="h-6 w-6 text-[var(--primary)]" />
+              <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+                <Database className="h-4 w-4 text-[var(--primary)]" />
                 Date-wise Employee Reports
               </h2>
-
-              <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-                Same employee reports are combined date-wise. Click employee
-                name to open individual detailed analytics.
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Same employee reports are combined date-wise. Click employee name to open individual detailed analytics.
               </p>
             </div>
 
             {hasAdvancedFilter && (
               <Link
                 href="/incharge/analytics"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--background)] px-5 py-3 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-medium text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
               >
-                <RotateCcw className="h-3.5 w-3.5" />
+                <RotateCcw className="h-3 w-3" />
                 Clear Filters
               </Link>
             )}
           </div>
 
-          <form method="GET" className="space-y-5">
+          {/* COMPACT TOOLBAR / FILTERS */}
+          <form method="GET" className="space-y-3">
             <input type="hidden" name="graphDateRange" value={graphDateRange} />
 
-            <div className="grid gap-4 xl:grid-cols-4">
-              <label className="space-y-2 xl:col-span-2">
-                <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-                  <Search className="h-3.5 w-3.5" />
-                  Search Employee
-                </span>
-
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="relative flex items-center lg:col-span-2">
+                <Search className="absolute left-3 h-4 w-4 text-[var(--muted-foreground)] pointer-events-none" />
                 <input
                   type="text"
                   name="search"
                   defaultValue={search}
-                  placeholder="Name, email, phone, username, employee ID"
-                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
+                  placeholder="Search name, email, phone, username, employee ID..."
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] pl-9 pr-3 text-xs font-medium outline-none transition focus:border-[var(--primary)]"
                 />
               </label>
 
@@ -456,7 +368,7 @@ export default async function InchargeAnalyticsPage(props: {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <FilterSelect
                 icon={MapPin}
                 label="Country"
@@ -487,70 +399,154 @@ export default async function InchargeAnalyticsPage(props: {
               <DateInput label="To Date" name="to" defaultValue={to} />
             </div>
 
-        
-
-            <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto_auto]">
-              
-              <button
-                type="submit"
-                className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-7 text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:opacity-90"
-              >
-                <Filter className="h-4 w-4" />
-                Apply Filter
-              </button>
-
+            <div className="flex items-center justify-end gap-2 pt-1">
               <Link
                 href="/incharge/analytics"
-                className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--background)] px-7 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 text-xs font-medium text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
               >
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw className="h-3.5 w-3.5" />
                 Reset
               </Link>
+              <button
+                type="submit"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 text-xs font-medium text-white transition hover:opacity-90"
+              >
+                <Filter className="h-3.5 w-3.5" />
+                Apply Filter
+              </button>
             </div>
           </form>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1400px] text-left">
-            <thead className="border-b border-[var(--border)]/60 bg-[var(--background)]/50">
-              <tr>
-                <TableHead>Employee</TableHead>
-                <TableHead>Employee ID</TableHead>
-                <TableHead>Report Date</TableHead>
-                <TableHead>Territories</TableHead>
-                <TableHead>Groups</TableHead>
-                <TableHead>Posts</TableHead>
-                <TableHead>Logins</TableHead>
-                <TableHead>Cleans</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead alignRight>Volume</TableHead>
-                <TableHead alignRight>Details</TableHead>
-              </tr>
-            </thead>
+        {/* DATA TABLE (Desktop) & RECORD CARDS (Mobile) */}
+        <div>
+          {reports.length === 0 ? (
+            <div className="p-12 text-center text-xs text-[var(--muted-foreground)]">
+              No reports found for the selected advanced filters.
+            </div>
+          ) : (
+            <>
+              {/* DESKTOP TABLE */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[1100px]">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] bg-[var(--background)]/50">
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Employee ID</TableHead>
+                      <TableHead>Report Date</TableHead>
+                      <TableHead>Territories</TableHead>
+                      <TableHead>Groups</TableHead>
+                      <TableHead>Posts</TableHead>
+                      <TableHead>Logins</TableHead>
+                      <TableHead>Cleans</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead alignRight>Volume</TableHead>
+                      <TableHead alignRight>Details</TableHead>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]/50">
+                    {reports.map((employee: any) => {
+                      const employeeId = employee.employeeCode || "Not Generated";
+                      const initials = getInitials(employee.employeeName);
 
-            <tbody className="divide-y divide-[var(--border)]/50">
-              {reports.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={11}
-                    className="px-8 py-16 text-center text-sm font-semibold text-[var(--muted-foreground)]"
-                  >
-                    No reports found for the selected advanced filters.
-                  </td>
-                </tr>
-              ) : (
-                reports.map((employee: any) => {
+                      return (
+                        <tr
+                          key={employee.rowId}
+                          className="transition-colors hover:bg-[var(--background)]/60 text-xs"
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--background)] text-xs font-bold text-[var(--foreground)]">
+                                {employee.profileImageUrl ? (
+                                  <Image
+                                    src={employee.profileImageUrl}
+                                    alt={employee.employeeName}
+                                    fill
+                                    unoptimized
+                                    className="object-cover"
+                                  />
+                                ) : (
+                                  <>
+                                    <User className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+                                    <span className="sr-only">{initials}</span>
+                                  </>
+                                )}
+                              </div>
+                              <div>
+                                <Link
+                                  href={`/incharge/analytics/marketing/${employee.userId}`}
+                                  className="font-semibold text-[var(--foreground)] transition hover:text-[var(--primary)]"
+                                >
+                                  {employee.employeeName}
+                                </Link>
+                                <p className="text-[10px] text-[var(--muted-foreground)]">
+                                  Marketing Employee
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 rounded bg-[var(--primary)]/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-[var(--primary)]">
+                              <Fingerprint className="h-3 w-3" />
+                              {employeeId}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 whitespace-nowrap text-[var(--muted-foreground)]">
+                            {formatDate(employee.reportDate)}
+                          </td>
+
+                          <td className="px-4 py-3 whitespace-nowrap text-[var(--muted-foreground)]">
+                            {formatCountry(employee.countries)}
+                          </td>
+
+                          <TableValue value={employee.totalGroupsJoined} />
+                          <TableValue value={employee.totalPostsDone} />
+                          <TableValue value={employee.totalResourceLogin} />
+                          <TableValue value={employee.totalAccountClean} />
+
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <StatusPill label="A" value={employee.approvedReports} tone="emerald" />
+                              <StatusPill label="P" value={employee.pendingReports} tone="amber" />
+                              <StatusPill label="R" value={employee.rejectedReports} tone="red" />
+                            </div>
+                          </td>
+
+                          <td className="px-4 py-3 whitespace-nowrap text-right">
+                            <span className="inline-flex rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
+                              {employee.totalReports} Report{employee.totalReports > 1 ? "s" : ""}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 whitespace-nowrap text-right">
+                            <Link
+                              href={`/incharge/analytics/marketing/${employee.userId}`}
+                              className="inline-flex h-7 items-center gap-1 rounded border border-[var(--border)] bg-[var(--background)] px-2.5 text-[11px] font-medium text-[var(--muted-foreground)] transition hover:border-[var(--primary)]/40 hover:text-[var(--primary)]"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARDS VIEW */}
+              <div className="block lg:hidden divide-y divide-[var(--border)]">
+                {reports.map((employee: any) => {
                   const employeeId = employee.employeeCode || "Not Generated";
                   const initials = getInitials(employee.employeeName);
 
                   return (
-                    <tr
-                      key={employee.rowId}
-                      className="transition hover:bg-[var(--background)]/60"
-                    >
-                      <td className="whitespace-nowrap px-8 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)] text-sm font-black text-[var(--foreground)]">
+                    <div key={employee.rowId} className="p-4 space-y-3 bg-[var(--card)]/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--background)] text-xs font-bold">
                             {employee.profileImageUrl ? (
                               <Image
                                 src={employee.profileImageUrl}
@@ -560,92 +556,61 @@ export default async function InchargeAnalyticsPage(props: {
                                 className="object-cover"
                               />
                             ) : (
-                              <>
-                                <User className="h-4 w-4 text-[var(--muted-foreground)]" />
-                                <span className="sr-only">{initials}</span>
-                              </>
+                              <User className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                             )}
                           </div>
-
                           <div>
                             <Link
                               href={`/incharge/analytics/marketing/${employee.userId}`}
-                              className="font-black text-[var(--foreground)] transition hover:text-[var(--primary)]"
+                              className="text-xs font-semibold text-[var(--foreground)] hover:text-[var(--primary)]"
                             >
                               {employee.employeeName}
                             </Link>
-
-                            <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
-                              Marketing Employee
+                            <p className="text-[10px] text-[var(--muted-foreground)] font-mono">
+                              {employeeId}
                             </p>
                           </div>
                         </div>
-                      </td>
 
-                      <td className="whitespace-nowrap px-8 py-5">
-                        <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-3 py-1.5 font-mono text-[11px] font-black text-[var(--primary)]">
-                          <Fingerprint className="h-3.5 w-3.5" />
-                          {employeeId}
-                        </span>
-                      </td>
-
-                      <td className="whitespace-nowrap px-8 py-5 text-sm font-bold text-[var(--muted-foreground)]">
-                        {formatDate(employee.reportDate)}
-                      </td>
-
-                      <td className="whitespace-nowrap px-8 py-5 text-sm font-semibold text-[var(--muted-foreground)]">
-                        {formatCountry(employee.countries)}
-                      </td>
-
-                      <TableValue value={employee.totalGroupsJoined} />
-                      <TableValue value={employee.totalPostsDone} />
-                      <TableValue value={employee.totalResourceLogin} />
-                      <TableValue value={employee.totalAccountClean} />
-
-                      <td className="whitespace-nowrap px-8 py-5">
-                        <div className="flex flex-wrap gap-2">
-                          <StatusPill
-                            label="A"
-                            value={employee.approvedReports}
-                            tone="emerald"
-                          />
-
-                          <StatusPill
-                            label="P"
-                            value={employee.pendingReports}
-                            tone="amber"
-                          />
-
-                          <StatusPill
-                            label="R"
-                            value={employee.rejectedReports}
-                            tone="red"
-                          />
+                        <div className="flex items-center gap-1">
+                          <StatusPill label="A" value={employee.approvedReports} tone="emerald" />
+                          <StatusPill label="P" value={employee.pendingReports} tone="amber" />
+                          <StatusPill label="R" value={employee.rejectedReports} tone="red" />
                         </div>
-                      </td>
+                      </div>
 
-                      <td className="whitespace-nowrap px-8 py-5 text-right">
-                        <span className="inline-flex rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                          {employee.totalReports} Report
-                          {employee.totalReports > 1 ? "s" : ""}
+                      <div className="grid grid-cols-2 gap-2 text-[11px] bg-[var(--background)]/60 p-2.5 rounded-lg border border-[var(--border)]">
+                        <div>
+                          <span className="text-[var(--muted-foreground)] block">Date & Region:</span>
+                          <span className="font-medium">{formatDate(employee.reportDate)}</span>
+                          <span className="text-[10px] block text-[var(--muted-foreground)] truncate">
+                            {formatCountry(employee.countries)}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[var(--muted-foreground)] block">Performance:</span>
+                          <span className="font-semibold">Groups: {employee.totalGroupsJoined} | Posts: {employee.totalPostsDone}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-[var(--muted-foreground)]">
+                          {employee.totalReports} Report{employee.totalReports > 1 ? "s" : ""}
                         </span>
-                      </td>
-
-                      <td className="whitespace-nowrap px-8 py-5 text-right">
                         <Link
                           href={`/incharge/analytics/marketing/${employee.userId}`}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] transition hover:border-[var(--primary)]/40 hover:text-[var(--primary)]"
+                          className="inline-flex h-7 items-center gap-1 rounded border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-medium text-[var(--primary)]"
                         >
-                          <Eye className="h-4 w-4" />
-                          View
+                          <Eye className="h-3 w-3" />
+                          View Details
                         </Link>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   );
-                })
-              )}
-            </tbody>
-          </table>
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>
@@ -666,23 +631,27 @@ function FilterSelect({
   options: [string, string][];
 }) {
   return (
-    <label className="space-y-2">
-      <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        <Icon className="h-3.5 w-3.5" />
+    <label className="space-y-1 block">
+      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+        <Icon className="h-3 w-3" />
         {label}
       </span>
-
-      <select
-        name={name}
-        defaultValue={defaultValue}
-        className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-      >
-        {options.map(([value, text]) => (
-          <option key={value} value={value}>
-            {text}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          name={name}
+          defaultValue={defaultValue}
+          className="h-9 w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 pr-8 text-xs font-semibold outline-none transition focus:border-[var(--primary)] cursor-pointer"
+        >
+          {options.map(([value, text]) => (
+            <option key={value} value={value}>
+              {text}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[var(--muted-foreground)]">
+          ▼
+        </span>
+      </div>
     </label>
   );
 }
@@ -697,62 +666,18 @@ function DateInput({
   defaultValue: string;
 }) {
   return (
-    <label className="space-y-2">
-      <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        <CalendarDays className="h-3.5 w-3.5" />
+    <label className="space-y-1 block">
+      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+        <CalendarDays className="h-3 w-3" />
         {label}
       </span>
-
       <input
         type="date"
         name={name}
         defaultValue={defaultValue}
-        className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
+        className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-semibold outline-none transition focus:border-[var(--primary)]"
       />
     </label>
-  );
-}
-
-function RangeInput({
-  label,
-  minName,
-  maxName,
-  minValue,
-  maxValue,
-}: {
-  label: string;
-  minName: string;
-  maxName: string;
-  minValue: string;
-  maxValue: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        <SlidersHorizontal className="h-3.5 w-3.5" />
-        {label}
-      </span>
-
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          type="number"
-          name={minName}
-          defaultValue={minValue}
-          placeholder="Min"
-          min={0}
-          className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-        />
-
-        <input
-          type="number"
-          name={maxName}
-          defaultValue={maxValue}
-          placeholder="Max"
-          min={0}
-          className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-        />
-      </div>
-    </div>
   );
 }
 
@@ -773,9 +698,9 @@ function StatusPill({
 
   return (
     <span
-      className={`inline-flex rounded-lg border px-2.5 py-1 text-[10px] font-black ${styles[tone]}`}
+      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold border ${styles[tone]}`}
     >
-      {label}: {value}
+      {label}:{value}
     </span>
   );
 }
@@ -790,20 +715,14 @@ function HeaderMetric({
   icon: React.ElementType;
 }) {
   return (
-    <div className="min-w-[125px] rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <Icon className="h-4 w-4 text-[var(--primary)]" />
-
-        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-          Live
-        </span>
+    <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)]/60 px-3 py-1.5 shadow-sm">
+      <Icon className="h-3.5 w-3.5 text-[var(--primary)]" />
+      <div>
+        <div className="text-xs font-bold text-[var(--foreground)]">{value}</div>
+        <div className="text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </div>
       </div>
-
-      <p className="text-2xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
     </div>
   );
 }
@@ -829,20 +748,18 @@ function KPICard({
   };
 
   return (
-    <div className="rounded-[24px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:border-[var(--primary)]/30">
-      <div className="mb-5 flex items-center justify-between">
-        <div className={`rounded-2xl border p-3 ${styles[tone]}`}>
-          <Icon className="h-5 w-5" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-3.5 shadow-sm backdrop-blur-xl transition hover:border-[var(--primary)]/30">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </span>
+        <div className={`rounded-md border p-1.5 ${styles[tone]}`}>
+          <Icon className="h-3.5 w-3.5" />
         </div>
       </div>
-
-      <h3 className="text-3xl font-black text-[var(--foreground)]">
+      <h3 className="text-xl font-bold text-[var(--foreground)] tracking-tight">
         {value}
       </h3>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
     </div>
   );
 }
@@ -867,26 +784,25 @@ function ExecutiveCard({
   };
 
   return (
-    <div className="rounded-[30px] border border-[var(--border)] bg-[var(--card)]/40 p-7 shadow-sm backdrop-blur-xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div className={`rounded-2xl border p-3 ${styles[tone]}`}>
-          <Icon className="h-6 w-6" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 shadow-sm backdrop-blur-xl">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`rounded-lg border p-2 ${styles[tone]}`}>
+          <Icon className="h-4 w-4" />
         </div>
-
-        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
           Summary
         </span>
       </div>
 
-      <h3 className="text-4xl font-black text-[var(--foreground)]">
+      <h3 className="text-2xl font-bold tracking-tight text-[var(--foreground)]">
         {value}
       </h3>
 
-      <p className="mt-2 text-sm font-bold text-[var(--foreground)]">
+      <p className="text-xs font-semibold text-[var(--foreground)] mt-0.5">
         {title}
       </p>
 
-      <p className="mt-3 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+      <p className="text-[11px] text-[var(--muted-foreground)] mt-1 leading-relaxed">
         {description}
       </p>
     </div>
@@ -905,24 +821,22 @@ function ChartPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[28px] border border-[var(--border)] bg-[var(--background)]/60 p-6">
-      <div className="mb-6 flex items-start gap-4">
-        <div className="rounded-2xl bg-[var(--primary)]/10 p-3 text-[var(--primary)]">
-          <Icon className="h-5 w-5" />
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--background)]/60 p-4">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="rounded-md bg-[var(--primary)]/10 p-2 text-[var(--primary)]">
+          <Icon className="h-4 w-4" />
         </div>
-
         <div>
-          <h3 className="text-lg font-black text-[var(--foreground)]">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--foreground)]">
             {title}
           </h3>
-
-          <p className="mt-1 text-sm font-medium text-[var(--muted-foreground)]">
+          <p className="text-[11px] text-[var(--muted-foreground)]">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="h-[380px]">{children}</div>
+      <div className="h-[260px] sm:h-[300px]">{children}</div>
     </div>
   );
 }
@@ -939,24 +853,22 @@ function MetricSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[30px] border border-[var(--border)] bg-[var(--card)]/40 p-7 shadow-sm backdrop-blur-xl">
-      <div className="mb-6 flex items-start gap-4">
-        <div className="rounded-2xl bg-[var(--primary)]/10 p-3 text-[var(--primary)]">
-          <Icon className="h-5 w-5" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 sm:p-5 shadow-sm backdrop-blur-xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="rounded-lg bg-[var(--primary)]/10 p-2 text-[var(--primary)]">
+          <Icon className="h-4 w-4" />
         </div>
-
         <div>
-          <h2 className="text-xl font-black text-[var(--foreground)]">
+          <h2 className="text-sm sm:text-base font-semibold text-[var(--foreground)]">
             {title}
           </h2>
-
-          <p className="mt-1 text-sm font-medium text-[var(--muted-foreground)]">
+          <p className="text-xs text-[var(--muted-foreground)]">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {children}
       </div>
     </div>
@@ -982,14 +894,12 @@ function MiniCard({
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-5 shadow-sm">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--background)]/70 p-3 shadow-sm">
       {Icon && (
-        <Icon className={`mb-3 h-4 w-4 ${tone ? styles[tone] : ""}`} />
+        <Icon className={`mb-2 h-3.5 w-3.5 ${tone ? styles[tone] : "text-[var(--primary)]"}`} />
       )}
-
-      <p className="text-2xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+      <p className="text-lg font-bold text-[var(--foreground)] tracking-tight">{value}</p>
+      <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
         {title}
       </p>
     </div>
@@ -1005,7 +915,7 @@ function TableHead({
 }) {
   return (
     <th
-      className={`whitespace-nowrap px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ${
+      className={`px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] whitespace-nowrap ${
         alignRight ? "text-right" : "text-left"
       }`}
     >
@@ -1016,7 +926,7 @@ function TableHead({
 
 function TableValue({ value }: { value: string | number }) {
   return (
-    <td className="whitespace-nowrap px-8 py-5 text-sm font-black text-[var(--foreground)]">
+    <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-[var(--foreground)]">
       {value}
     </td>
   );

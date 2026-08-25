@@ -40,125 +40,106 @@ export default async function OwnerOperationsAnalyticsPage({
   });
 
   const filters = ["TODAY", "7_DAYS", "30_DAYS", "ALL"];
+  
+  const encodedStatus = encodeURIComponent(status);
+  const encodedSearch = encodeURIComponent(search);
 
   return (
-    <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-20 lg:pt-32 lg:px-12 max-w-[1700px] mx-auto space-y-10">
-      <header className="relative overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)]/45 p-8 shadow-sm backdrop-blur-xl lg:p-10">
-        <div className="pointer-events-none absolute right-[-140px] top-[-140px] h-[380px] w-[380px] rounded-full bg-[var(--primary)]/10 blur-[90px]" />
-        <div className="pointer-events-none absolute bottom-[-150px] left-[25%] h-[320px] w-[320px] rounded-full bg-purple-500/10 blur-[90px]" />
-
-        <div className="relative z-10">
-          <Link
-            href="/owner/analytics"
-            className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Owner Analytics
-          </Link>
-
-          <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">
-                <BarChart3 className="h-3.5 w-3.5" />
-                Owner Operations Analytics
-              </div>
-
-              <h1 className="mb-4 text-4xl font-black tracking-tight text-[var(--foreground)] lg:text-5xl">
-                Operations Department Performance
-              </h1>
-
-              <p className="max-w-3xl text-base font-medium leading-7 text-[var(--muted-foreground)]">
-                View owner-level operations performance across all operations
-                employees, queries, deals, tutor assignment, and amount flow.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <HeaderMetric
-                title="Employees"
-                value={data.totalEmployees}
-                icon={Users}
-              />
-
-              <HeaderMetric
-                title="Reports"
-                value={data.totalReports}
-                icon={FileText}
-              />
-
-              <HeaderMetric
-                title="Approval"
-                value={`${data.approvalRate}%`}
-                icon={TrendingUp}
-              />
-            </div>
+    <div className="min-h-screen bg-[var(--background)] max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6 py-5 sm:py-6 lg:py-8 space-y-6 text-[var(--foreground)]">
+      {/* PAGE HEADER */}
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-[var(--border)] pb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Link
+              href="/owner/analytics"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors"
+            >
+              <ArrowLeft className="h-3 w-3" /> Back to Analytics
+            </Link>
+            <span className="text-[var(--muted-foreground)]">/</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-0.5 rounded">
+              Owner Analytics
+            </span>
           </div>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+            Operations Department Performance
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-0.5 max-w-2xl">
+            View owner-level operations performance across all employees, queries, deals, tutor assignment, and amount flow.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <HeaderMetric title="Employees" value={data.totalEmployees} icon={Users} />
+          <HeaderMetric title="Reports" value={data.totalReports} icon={FileText} />
+          <HeaderMetric title="Approval" value={`${data.approvalRate}%`} icon={TrendingUp} />
         </div>
       </header>
 
-      <section className="rounded-[30px] border border-[var(--border)] bg-[var(--card)]/40 p-5 shadow-sm backdrop-blur-xl">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            {filters.map((item) => (
-              <Link
-                key={item}
-                href={`/owner/analytics/operations?filter=${item}&status=${status}&search=${search}`}
-                className={`rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-widest transition ${
-                  filter === item
-                    ? "bg-[var(--primary)] text-white shadow-lg"
-                    : "text-[var(--muted-foreground)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
-                }`}
-              >
-                {item.replace("_", " ")}
-              </Link>
-            ))}
+      {/* COMPACT TOOLBAR */}
+      <section className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-3 shadow-sm backdrop-blur-xl">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {filters.map((item) => (
+            <Link
+              key={item}
+              href={`/owner/analytics/operations?filter=${item}&status=${encodedStatus}&search=${encodedSearch}`}
+              className={`inline-flex items-center h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition ${
+                filter === item
+                  ? "bg-[var(--primary)] text-white shadow-sm"
+                  : "bg-[var(--background)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              {item.replace("_", " ")}
+            </Link>
+          ))}
+        </div>
+
+        <form
+          method="GET"
+          className="flex flex-col gap-2 sm:flex-row sm:items-center w-full lg:w-auto"
+        >
+          <input type="hidden" name="filter" value={filter} />
+
+          <div className="relative flex-1 sm:flex-none">
+            <Filter className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--muted-foreground)]" />
+            <select
+              name="status"
+              defaultValue={status}
+              className="h-8 w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] pl-8 pr-8 text-xs font-semibold outline-none transition focus:border-[var(--primary)] sm:w-[150px] cursor-pointer"
+            >
+              <option value="ALL">All Status</option>
+              <option value="APPROVED">Approved</option>
+              <option value="PENDING">Pending</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="DRAFT">Draft</option>
+            </select>
+            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[var(--muted-foreground)]">
+              ▼
+            </span>
           </div>
 
-          <form
-            method="GET"
-            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--muted-foreground)]" />
+            <input
+              type="text"
+              name="search"
+              defaultValue={search}
+              placeholder="Search employee..."
+              className="h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] pl-8 pr-3 text-xs font-semibold outline-none transition focus:border-[var(--primary)] sm:w-[220px]"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="inline-flex h-8 items-center justify-center rounded-lg bg-[var(--primary)] px-4 text-xs font-bold text-white transition hover:opacity-90"
           >
-            <input type="hidden" name="filter" value={filter} />
-
-            <div className="relative">
-              <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--primary)]" />
-
-              <select
-                name="status"
-                defaultValue={status}
-                className="w-full appearance-none rounded-2xl border border-[var(--border)] bg-[var(--background)] py-3 pl-11 pr-10 text-sm font-bold outline-none focus:border-[var(--primary)] sm:w-[180px]"
-              >
-                <option value="ALL">All Status</option>
-                <option value="APPROVED">Approved</option>
-                <option value="PENDING">Pending</option>
-                <option value="REJECTED">Rejected</option>
-                <option value="DRAFT">Draft</option>
-              </select>
-            </div>
-
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
-
-              <input
-                type="text"
-                name="search"
-                defaultValue={search}
-                placeholder="Search employee..."
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] py-3 pl-11 pr-4 text-sm font-bold outline-none focus:border-[var(--primary)] sm:w-[280px]"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="rounded-2xl bg-[var(--primary)] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:opacity-90"
-            >
-              Apply
-            </button>
-          </form>
-        </div>
+            Apply
+          </button>
+        </form>
       </section>
 
-      <section className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-6">
+      {/* KPI CARDS GRID */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <KPICard title="Reports" value={data.totalReports} icon={FileText} tone="blue" />
         <KPICard title="Approved" value={data.approvedReports} icon={CheckCircle2} tone="emerald" />
         <KPICard title="Pending" value={data.pendingReports} icon={Clock} tone="amber" />
@@ -167,7 +148,8 @@ export default async function OwnerOperationsAnalyticsPage({
         <KPICard title="Deals" value={data.totalDealsDone} icon={TrendingUp} tone="indigo" />
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-2">
+      {/* METRIC SECTIONS */}
+      <section className="grid gap-4 lg:grid-cols-2">
         <MetricSection
           title="Operations Work Output"
           description="Combined work completed by all operations employees."
@@ -180,6 +162,7 @@ export default async function OwnerOperationsAnalyticsPage({
             title="Deals Amount"
             value={data.totalDealsDoneAmount}
             icon={IndianRupee}
+            formatAsCurrency
           />
         </MetricSection>
 
@@ -195,111 +178,189 @@ export default async function OwnerOperationsAnalyticsPage({
         </MetricSection>
       </section>
 
-      <section className="overflow-hidden rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl">
-        <div className="flex flex-col gap-3 border-b border-[var(--border)]/60 px-8 py-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="flex items-center gap-3 text-2xl font-black text-[var(--foreground)]">
-              <Database className="h-6 w-6 text-[var(--primary)]" />
-              Employee-wise Operations Summary
-            </h2>
-
-            <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-              Owner view of each operations employee’s report output.
-            </p>
-          </div>
+      {/* DATA TABLE CONTAINER */}
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl overflow-hidden">
+        <div className="border-b border-[var(--border)] p-4 sm:p-5">
+          <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+            <Database className="h-4 w-4 text-[var(--primary)]" />
+            Employee-wise Operations Summary
+          </h2>
+          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+            Owner view of each operations employee’s report output.
+          </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1250px] text-left">
-            <thead className="border-b border-[var(--border)]/60 bg-[var(--background)]/50">
-              <tr>
-                <TableHead>Employee</TableHead>
-                <TableHead>Last Report</TableHead>
-                <TableHead>Queries</TableHead>
-                <TableHead>Deals</TableHead>
-                <TableHead>Tutor</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead alignRight>Reports</TableHead>
-              </tr>
-            </thead>
+        <div>
+          {data.employees.length === 0 ? (
+            <div className="p-8 sm:p-12 text-center text-xs font-semibold text-[var(--muted-foreground)]">
+              No operations reports found.
+            </div>
+          ) : (
+            <>
+              {/* DESKTOP TABLE */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full min-w-[1000px] text-left border-collapse">
+                  <thead className="border-b border-[var(--border)] bg-[var(--background)]/50">
+                    <tr>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Last Report</TableHead>
+                      <TableHead>Queries</TableHead>
+                      <TableHead>Deals</TableHead>
+                      <TableHead>Tutor</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead alignRight>Reports</TableHead>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]/50">
+                    {data.employees.map((employee: any) => {
+                      const employeeKey = employee.employeeCode || employee.userId || employee.email;
+                      const employeeCode = employee.employeeCode || "Not Generated";
+                      const initials = employee.fullName?.substring(0, 2).toUpperCase() || "NA";
+                      const lastReportDate = employee.lastReportDate
+                        ? new Date(employee.lastReportDate).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "No report yet";
 
-            <tbody className="divide-y divide-[var(--border)]/50">
-              {data.employees.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-8 py-16 text-center text-sm font-semibold text-[var(--muted-foreground)]"
-                  >
-                    No operations reports found.
-                  </td>
-                </tr>
-              ) : (
-                data.employees.map((employee: any) => (
-                  <tr
-                    key={employee.employeeCode ||  "Not Generated"}
-                    className="transition hover:bg-[var(--background)]/60"
-                  >
-                    <td className="whitespace-nowrap px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--background)] text-sm font-black text-[var(--foreground)]">
-                          {employee.fullName.substring(0, 2).toUpperCase()}
+                      return (
+                        <tr key={employeeKey} className="transition-colors hover:bg-[var(--background)]/60 text-xs">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--background)] text-xs font-bold text-[var(--foreground)]">
+                                {initials}
+                              </div>
+                              <div>
+                                {employee.userId ? (
+                                  <Link
+                                    href={`/owner/analytics/operations/${employee.userId}`}
+                                    className="font-semibold text-[var(--foreground)] transition hover:text-[var(--primary)]"
+                                  >
+                                    {employee.fullName}
+                                  </Link>
+                                ) : (
+                                  <span className="font-semibold text-[var(--foreground)]">
+                                    {employee.fullName}
+                                  </span>
+                                )}
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <p className="text-[10px] text-[var(--muted-foreground)] truncate max-w-[150px]">
+                                    {employee.email}
+                                  </p>
+                                  <span className="text-[10px] text-[var(--muted-foreground)]">&bull;</span>
+                                  <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-[var(--primary)]/80">
+                                    {employeeCode}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-[var(--muted-foreground)] font-medium">
+                            {lastReportDate}
+                          </td>
+                          <TableValue value={employee.queryGenerated} />
+                          <TableValue value={employee.dealsDone} />
+                          <TableValue value={employee.tutorAssigned} />
+                          <TableValue value={`₹${employee.dealsDoneAmount}`} />
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-1">
+                              <StatusMini label="A" value={employee.approved || 0} tone="emerald" />
+                              <StatusMini label="P" value={employee.pending || 0} tone="amber" />
+                              <StatusMini label="R" value={employee.rejected || 0} tone="red" />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-right">
+                            <span className="inline-flex rounded border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-500">
+                              {employee.totalReports || 0} Entries
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARDS VIEW */}
+              <div className="block lg:hidden divide-y divide-[var(--border)]">
+                {data.employees.map((employee: any) => {
+                  const employeeKey = employee.employeeCode || employee.userId || employee.email;
+                  const employeeCode = employee.employeeCode || "Not Generated";
+                  const initials = employee.fullName?.substring(0, 2).toUpperCase() || "NA";
+                  const lastReportDate = employee.lastReportDate
+                    ? new Date(employee.lastReportDate).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "No report yet";
+
+                  return (
+                    <div key={employeeKey} className="p-4 bg-[var(--background)]/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--background)] text-xs font-bold">
+                            {initials}
+                          </div>
+                          <div>
+                            {employee.userId ? (
+                              <Link
+                                href={`/owner/analytics/operations/${employee.userId}`}
+                                className="text-xs font-semibold text-[var(--foreground)] hover:text-[var(--primary)]"
+                              >
+                                {employee.fullName}
+                              </Link>
+                            ) : (
+                              <span className="text-xs font-semibold text-[var(--foreground)]">
+                                {employee.fullName}
+                              </span>
+                            )}
+                            <p className="text-[10px] font-mono text-[var(--muted-foreground)]">
+                              {employeeCode}
+                            </p>
+                          </div>
                         </div>
 
+                        <span className="inline-flex rounded border border-blue-500/20 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-bold text-blue-500">
+                          {employee.totalReports || 0} Rep
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <StatusMini label="A" value={employee.approved || 0} tone="emerald" />
+                        <StatusMini label="P" value={employee.pending || 0} tone="amber" />
+                        <StatusMini label="R" value={employee.rejected || 0} tone="red" />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px] bg-[var(--background)]/60 rounded-md border border-[var(--border)] p-2.5">
                         <div>
-                          <Link
-                            href={`/owner/analytics/operations/${employee.userId}`}
-                            className="font-black text-[var(--foreground)] transition hover:text-[var(--primary)]"
-                          >
-                            {employee.fullName}
-                          </Link>
-
-                          <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
-                            {employee.email}
-                          </p>
+                          <span className="block text-[var(--muted-foreground)] mb-0.5">Last Report</span>
+                          <span className="font-medium">{lastReportDate}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="block text-[var(--muted-foreground)] mb-0.5">Q / D / T / Amt</span>
+                          <span className="font-semibold">
+                            {employee.queryGenerated} / {employee.dealsDone} / {employee.tutorAssigned} / ₹{employee.dealsDoneAmount}
+                          </span>
                         </div>
                       </div>
-                    </td>
-
-                    <td className="whitespace-nowrap px-8 py-5 text-sm font-semibold text-[var(--muted-foreground)]">
-                      {new Date(employee.lastReportDate).toLocaleDateString(
-                        "en-IN",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        }
-                      )}
-                    </td>
-
-                    <TableValue value={employee.queryGenerated} />
-                    <TableValue value={employee.dealsDone} />
-                    <TableValue value={employee.tutorAssigned} />
-                    <TableValue value={`₹${employee.dealsDoneAmount}`} />
-
-                    <td className="whitespace-nowrap px-8 py-5">
-                      <div className="flex flex-wrap gap-2">
-                        <StatusMini label="A" value={employee.approved} tone="emerald" />
-                        <StatusMini label="P" value={employee.pending} tone="amber" />
-                        <StatusMini label="R" value={employee.rejected} tone="red" />
-                      </div>
-                    </td>
-
-                    <td className="whitespace-nowrap px-8 py-5 text-right">
-                      <span className="inline-flex rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500">
-                        {employee.totalReports} Entries
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* SUB-COMPONENTS                                                             */
+/* -------------------------------------------------------------------------- */
 
 function HeaderMetric({
   title,
@@ -311,19 +372,14 @@ function HeaderMetric({
   icon: React.ElementType;
 }) {
   return (
-    <div className="min-w-[125px] rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <Icon className="h-4 w-4 text-[var(--primary)]" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-          Live
-        </span>
+    <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)]/60 px-3 py-1.5 shadow-sm">
+      <Icon className="h-3.5 w-3.5 text-[var(--primary)]" />
+      <div>
+        <div className="text-xs font-bold text-[var(--foreground)]">{value}</div>
+        <div className="text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </div>
       </div>
-
-      <p className="text-2xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
     </div>
   );
 }
@@ -349,16 +405,16 @@ function KPICard({
   };
 
   return (
-    <div className="rounded-[24px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:border-[var(--primary)]/30">
-      <div className={`mb-5 w-fit rounded-2xl border p-3 ${styles[tone]}`}>
-        <Icon className="h-5 w-5" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-3.5 shadow-sm backdrop-blur-xl transition hover:border-[var(--primary)]/30">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </span>
+        <div className={`rounded-md border p-1.5 ${styles[tone]}`}>
+          <Icon className="h-3.5 w-3.5" />
+        </div>
       </div>
-
-      <p className="text-3xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
+      <p className="text-xl font-bold tracking-tight text-[var(--foreground)]">{value}</p>
     </div>
   );
 }
@@ -375,24 +431,21 @@ function MetricSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[30px] border border-[var(--border)] bg-[var(--card)]/40 p-7 shadow-sm backdrop-blur-xl">
-      <div className="mb-6 flex items-start gap-4">
-        <div className="rounded-2xl bg-[var(--primary)]/10 p-3 text-[var(--primary)]">
-          <Icon className="h-5 w-5" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 sm:p-5 shadow-sm backdrop-blur-xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="rounded-lg bg-[var(--primary)]/10 p-2 text-[var(--primary)]">
+          <Icon className="h-4 w-4" />
         </div>
-
         <div>
-          <h2 className="text-xl font-black text-[var(--foreground)]">
+          <h2 className="text-sm sm:text-base font-semibold text-[var(--foreground)]">
             {title}
           </h2>
-
-          <p className="mt-1 text-sm font-medium text-[var(--muted-foreground)]">
+          <p className="text-xs text-[var(--muted-foreground)]">
             {description}
           </p>
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">{children}</div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{children}</div>
     </div>
   );
 }
@@ -401,18 +454,20 @@ function MiniCard({
   title,
   value,
   icon: Icon,
+  formatAsCurrency = false,
 }: {
   title: string;
   value: number;
   icon?: React.ElementType;
+  formatAsCurrency?: boolean;
 }) {
+  const displayValue = formatAsCurrency ? `₹${value}` : value;
+
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-5 shadow-sm">
-      {Icon && <Icon className="mb-3 h-4 w-4 text-[var(--primary)]" />}
-
-      <p className="text-2xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--background)]/70 p-3 shadow-sm text-center flex flex-col items-center justify-center">
+      {Icon && <Icon className="mb-1.5 h-3.5 w-3.5 text-[var(--primary)]" />}
+      <p className="text-lg font-bold text-[var(--foreground)] tracking-tight">{displayValue}</p>
+      <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
         {title}
       </p>
     </div>
@@ -428,7 +483,7 @@ function TableHead({
 }) {
   return (
     <th
-      className={`whitespace-nowrap px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] ${
+      className={`px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] whitespace-nowrap ${
         alignRight ? "text-right" : "text-left"
       }`}
     >
@@ -439,7 +494,7 @@ function TableHead({
 
 function TableValue({ value }: { value: string | number }) {
   return (
-    <td className="whitespace-nowrap px-8 py-5 text-sm font-black text-[var(--foreground)]">
+    <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-[var(--foreground)]">
       {value}
     </td>
   );
@@ -462,9 +517,9 @@ function StatusMini({
 
   return (
     <span
-      className={`inline-flex rounded-lg border px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${styles[tone]}`}
+      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${styles[tone]}`}
     >
-      {label}: {value}
+      {label}:{value}
     </span>
   );
 }

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/actions/auth/logout";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { 
   LayoutDashboard, 
   Building2, 
@@ -42,21 +42,21 @@ const links = [
   },
 ];
 
-// Smooth staggered entry for sidebar items
-const containerVariants = {
+// Smooth, fast entry for sidebar items
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+    transition: { staggerChildren: 0.05, delayChildren: 0.05 }
   }
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, x: -15 },
+const itemVariants: Variants = {
+  hidden: { opacity: 0, x: -10 },
   visible: { 
     opacity: 1, 
     x: 0, 
-    transition: { type: "spring" as const, stiffness: 120, damping: 14 } 
+    transition: { type: "tween", ease: "easeOut", duration: 0.2 } 
   }
 };
 
@@ -75,49 +75,32 @@ export default function OwnerSidebar() {
   };
 
   return (
-    // Changed: Removed 'hidden lg:flex', 'fixed', and 'h-screen'. 
-    // Added: 'w-full md:w-[280px]', 'h-full', and 'pt-8' so it adapts to both mobile drawer and desktop.
-    <div className="flex flex-col w-full md:w-[280px] h-full bg-[var(--background)] backdrop-blur-2xl border-r border-[var(--border)]/50 flex-shrink-0 transition-colors duration-500 relative z-30 pt-8 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside className="relative z-30 flex h-full w-full shrink-0 flex-col border-r border-[var(--border)] bg-[var(--background)] transition-colors duration-300 md:w-[260px]">
       
-      {/* Subtle Ambient Glow */}
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-[var(--primary)]/5 to-transparent blur-[80px] pointer-events-none -z-10" />
-
       {/* ========================================== */}
-      {/* HEADER / LOGO AREA                         */}
+      {/* 1. COMPACT HEADER / LOGO                   */}
       {/* ========================================== */}
-      <div className="px-6 pb-6 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-blue-600 shadow-lg shadow-[var(--primary)]/20 text-white transition-transform hover:scale-105 duration-300 ring-1 ring-white/10">
-            <ShieldAlert className="w-5 h-5" />
-            {/* Pulsing indicator */}
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/80"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-white border-2 border-[var(--primary)]"></span>
-            </span>
+      <div className="px-4 pb-4 pt-5 sm:px-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white shadow-sm">
+            <ShieldAlert className="h-4 w-4" />
           </div>
-          <div className="flex flex-col">
-            <h2 className="text-[19px] font-black text-[var(--foreground)] tracking-tight leading-tight">
+          <div className="flex flex-col min-w-0">
+            <h2 className="truncate text-[14px] font-bold leading-tight tracking-tight text-[var(--foreground)]">
               Codepedia <span className="text-[var(--primary)]">EMS</span>
             </h2>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
-                Owner Panel
-              </p>
-            </div>
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              Owner Panel
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="px-6 mb-4">
-        <div className="h-px w-full bg-gradient-to-r from-[var(--border)] via-[var(--border)] to-transparent opacity-50" />
-      </div>
-
       {/* ========================================== */}
-      {/* MAIN NAVIGATION                            */}
+      {/* 2. MAIN NAVIGATION                         */}
       {/* ========================================== */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-hide relative z-10">
-        <p className="px-4 text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-3">
+      <div className="flex-1 overflow-y-auto px-3 py-2 scrollbar-hide">
+        <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
           Main Menu
         </p>
 
@@ -125,7 +108,7 @@ export default function OwnerSidebar() {
           variants={containerVariants} 
           initial="hidden" 
           animate="visible"
-          className="space-y-1"
+          className="flex flex-col gap-0.5"
         >
           <AnimatePresence>
             {links.map((link) => {
@@ -134,45 +117,44 @@ export default function OwnerSidebar() {
 
               return (
                 <motion.div key={link.href} variants={itemVariants}>
-                  <Link href={link.href} className="relative block group outline-none">
+                  <Link href={link.href} className="group relative block outline-none">
                     
-                    {/* Advanced Animated Pill Background */}
+                    {/* Subtle Active Background */}
                     {active && (
                       <motion.div
-                        layoutId="active-nav-pill"
-                        className="absolute inset-0 bg-[var(--primary)]/10 border border-[var(--primary)]/20 rounded-xl"
+                        layoutId="active-nav-bg"
+                        className="absolute inset-0 rounded-lg bg-[var(--accent)]/80 border border-[var(--border)]/50"
                         initial={false}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 40 }}
                       />
                     )}
 
-                    {/* Active vertical line indicator */}
+                    {/* Active vertical indicator */}
                     {active && (
                       <motion.div 
-                        layoutId="active-nav-line"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[var(--primary)] rounded-r-full shadow-[0_0_10px_var(--primary)]"
+                        layoutId="active-nav-indicator"
+                        className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[var(--primary)]"
                         initial={false}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 40 }}
                       />
                     )}
 
-                    <div className={`relative z-10 flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${
+                    <div className={`relative z-10 flex items-center justify-between rounded-lg px-3 py-2 transition-colors duration-200 ${
                       active 
-                        ? "text-[var(--primary)] font-bold" 
-                        : "text-[var(--muted-foreground)] font-semibold hover:bg-[var(--muted)]/50 hover:text-[var(--foreground)]"
+                        ? "text-[var(--foreground)] font-semibold" 
+                        : "text-[var(--muted-foreground)] font-medium hover:bg-[var(--accent)] hover:text-[var(--foreground)]"
                     }`}>
-                      <div className="flex items-center gap-3">
-                        <link.icon className={`w-4 h-4 transition-all duration-300 ${
-                          active ? "text-[var(--primary)] scale-110" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] group-hover:scale-110"
+                      <div className="flex items-center gap-2.5">
+                        <link.icon className={`h-4 w-4 shrink-0 transition-colors duration-200 ${
+                          active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"
                         }`} />
-                        <span className={`text-[13px] tracking-wide transition-transform duration-300 ${!active && "group-hover:translate-x-1"}`}>
+                        <span className="text-[13px] tracking-tight">
                           {link.name}
                         </span>
                       </div>
                       
-                      {/* Active indicator arrow */}
                       {active && (
-                        <ChevronRight className="w-4 h-4 opacity-70" />
+                        <ChevronRight className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                       )}
                     </div>
                   </Link>
@@ -182,38 +164,40 @@ export default function OwnerSidebar() {
           </AnimatePresence>
         </motion.nav>
 
-        {/* System & Settings Section */}
-        <div className="mt-8">
-          <p className="px-4 text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-3">
+        {/* System Settings */}
+        <div className="mt-6">
+          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
             System
           </p>
-          <Link href="/owner/settings" className="relative block group outline-none">
-            <div className="relative z-10 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-[var(--muted-foreground)] font-semibold hover:bg-[var(--muted)]/50 hover:text-[var(--foreground)]">
-              <Settings className="w-4 h-4 transition-transform duration-300 group-hover:text-[var(--foreground)] group-hover:rotate-90" />
-              <span className="text-[13px] tracking-wide transition-transform duration-300 group-hover:translate-x-1">
-                Settings
-              </span>
+          <Link href="/owner/settings" className="group relative block outline-none">
+            <div className="relative z-10 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-[var(--muted-foreground)] transition-colors duration-200 hover:bg-[var(--accent)] hover:text-[var(--foreground)]">
+              <Settings className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:rotate-45" />
+              <span className="tracking-tight">Settings</span>
             </div>
           </Link>
         </div>
       </div>
 
       {/* ========================================== */}
-      {/* BOTTOM PROFILE WIDGET                      */}
+      {/* 3. BOTTOM PROFILE WIDGET                   */}
       {/* ========================================== */}
-      <div className="p-4 mt-auto relative z-10 border-t border-[var(--border)]/40 bg-[var(--card)]/10">
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]/60 hover:border-[var(--primary)]/30 hover:shadow-md transition-all duration-300 group">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-9 h-9 rounded-[10px] bg-gradient-to-tr from-[var(--primary)] to-blue-700 flex items-center justify-center text-white font-black text-xs shadow-inner group-hover:scale-105 transition-transform duration-300">
+      <div className="mt-auto border-t border-[var(--border)]/60 bg-[var(--background)] p-3">
+        <div className="group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-[var(--accent)]">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="relative shrink-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--primary)]/10 text-[10px] font-bold text-[var(--primary)] shadow-sm">
                 OM
               </div>
-              {/* Online Status Dot */}
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-[var(--background)] rounded-full" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--background)] bg-emerald-500" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-[var(--foreground)] leading-tight">System Owner</span>
-              <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mt-0.5">Online</span>
+            
+            <div className="flex flex-col min-w-0">
+              <span className="truncate text-[13px] font-semibold leading-tight text-[var(--foreground)]">
+                System Owner
+              </span>
+              <span className="truncate text-[10px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+                Online
+              </span>
             </div>
           </div>
           
@@ -222,7 +206,7 @@ export default function OwnerSidebar() {
             onClick={handleLogout}
             disabled={isPending}
             title="Logout"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--muted-foreground)] transition-colors duration-300 hover:bg-rose-500/10 hover:text-rose-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--muted-foreground)] transition-colors hover:bg-[var(--background)] hover:text-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm border border-transparent hover:border-border"
           >
             {isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -233,6 +217,6 @@ export default function OwnerSidebar() {
         </div>
       </div>
       
-    </div>
+    </aside>
   );
 }

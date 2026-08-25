@@ -174,8 +174,7 @@ export default async function InchargeMarketingUserAnalyticsPage({
     notFound();
   }
 
-  const { employee, summary, approvalRate, countries, chartData, reports } =
-    data;
+  const { employee, summary, approvalRate, countries, chartData, reports } = data;
 
   const employeeId = employee.employeeCode || "Not Generated";
   const initials = getInitials(employee.fullName);
@@ -184,319 +183,235 @@ export default async function InchargeMarketingUserAnalyticsPage({
     filter !== "ALL" || status !== "ALL" || Boolean(from) || Boolean(to);
 
   return (
-    <div className="min-h-screen bg-[var(--background)] px-6 pt-28 pb-24 lg:px-12 lg:pt-32 max-w-[1700px] mx-auto space-y-10 text-[var(--foreground)]">
-      <header className="relative overflow-hidden rounded-[38px] border border-[var(--border)] bg-[var(--card)]/45 p-8 shadow-sm backdrop-blur-xl lg:p-10">
-        <div className="pointer-events-none absolute right-[-140px] top-[-140px] h-[380px] w-[380px] rounded-full bg-[var(--primary)]/10 blur-[90px]" />
-        <div className="pointer-events-none absolute bottom-[-140px] left-[18%] h-[320px] w-[320px] rounded-full bg-purple-500/10 blur-[90px]" />
+    <div className="min-h-screen bg-[var(--background)] max-w-[1400px] mx-auto px-4 sm:px-5 lg:px-6 py-5 sm:py-6 lg:py-8 space-y-6 text-[var(--foreground)]">
+      {/* PAGE HEADER */}
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-[var(--border)] pb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Link
+              href="/incharge/analytics"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              Back to Analytics
+            </Link>
+            <span className="text-[var(--muted-foreground)]">/</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-0.5 rounded">
+              Individual Analytics
+            </span>
+          </div>
 
-        <div className="relative z-10">
-          <Link
-            href="/incharge/analytics"
-            className="mb-8 inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] transition hover:border-[var(--primary)]/40 hover:text-[var(--foreground)]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Analytics
-          </Link>
-
-          <div className="grid gap-8 xl:grid-cols-12 xl:items-end">
-            <div className="xl:col-span-8">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">
-                <BarChart3 className="h-3.5 w-3.5" />
-                Individual Marketing Analytics
-              </div>
-
-              <div className="flex flex-col gap-6 md:flex-row md:items-center">
-                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[30px] border border-[var(--border)] bg-gradient-to-tr from-[var(--primary)] to-purple-600 text-3xl font-black text-white shadow-lg">
-                  {employee.profileImageUrl ? (
-                    <Image
-                      src={employee.profileImageUrl}
-                      alt={employee.fullName}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  ) : (
-                    initials
-                  )}
-                </div>
-
-                <div>
-                  <h1 className="text-4xl font-black tracking-tight text-[var(--foreground)] lg:text-6xl">
-                    {employee.fullName}
-                  </h1>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2 font-mono text-xs font-black text-[var(--primary)]">
-                      <Fingerprint className="h-4 w-4" />
-                      {employeeId}
-                    </span>
-
-                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-                      <ShieldCheck className="h-4 w-4 text-[var(--primary)]" />
-                      {employee.status}
-                    </span>
-
-                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-                      <Users className="h-4 w-4 text-[var(--primary)]" />
-                      {employee.department?.name || "Marketing"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[var(--border)] bg-gradient-to-tr from-[var(--primary)] to-purple-600 text-sm font-bold text-white shadow-sm">
+              {employee.profileImageUrl ? (
+                <Image
+                  src={employee.profileImageUrl}
+                  alt={employee.fullName}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              ) : (
+                initials
+              )}
             </div>
-
-            <div className="xl:col-span-4">
-              <div className="grid grid-cols-3 gap-4">
-                <HeaderMetric
-                  title="Approval"
-                  value={`${approvalRate}%`}
-                  icon={CheckCircle2}
-                />
-
-                <HeaderMetric
-                  title="Reports"
-                  value={summary.totalReports}
-                  icon={FileText}
-                />
-
-                <HeaderMetric
-                  title="Output"
-                  value={summary.totalGroups + summary.totalPosts}
-                  icon={TrendingUp}
-                />
-              </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[var(--foreground)] flex items-center gap-2">
+                {employee.fullName}
+                <span className="inline-flex items-center gap-1 rounded bg-[var(--primary)]/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--primary)]">
+                  {employeeId}
+                </span>
+              </h1>
+              <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-2 mt-0.5">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3" />
+                  {employee.status}
+                </span>
+                <span>&bull;</span>
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {employee.department?.name || "Marketing"}
+                </span>
+              </p>
             </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-2">
+          <HeaderMetric title="Approval" value={`${approvalRate}%`} icon={CheckCircle2} />
+          <HeaderMetric title="Reports" value={summary.totalReports} icon={FileText} />
+          <HeaderMetric title="Output" value={summary.totalGroups + summary.totalPosts} icon={TrendingUp} />
+        </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-6">
-        <KPICard
-          title="Total Reports"
-          value={summary.totalReports}
-          icon={FileText}
-          tone="blue"
-        />
-
-        <KPICard
-          title="Approved"
-          value={summary.approved}
-          icon={CheckCircle2}
-          tone="emerald"
-        />
-
-        <KPICard
-          title="Pending"
-          value={summary.pending}
-          icon={Clock}
-          tone="amber"
-        />
-
-        <KPICard
-          title="Rejected"
-          value={summary.rejected}
-          icon={XCircle}
-          tone="red"
-        />
-
-        <KPICard
-          title="Groups"
-          value={summary.totalGroups}
-          icon={Users}
-          tone="purple"
-        />
-
-        <KPICard
-          title="Posts"
-          value={summary.totalPosts}
-          icon={TrendingUp}
-          tone="indigo"
-        />
+      {/* KPI CARDS */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <KPICard title="Total Reports" value={summary.totalReports} icon={FileText} tone="blue" />
+        <KPICard title="Approved" value={summary.approved} icon={CheckCircle2} tone="emerald" />
+        <KPICard title="Pending" value={summary.pending} icon={Clock} tone="amber" />
+        <KPICard title="Rejected" value={summary.rejected} icon={XCircle} tone="red" />
+        <KPICard title="Groups" value={summary.totalGroups} icon={Users} tone="purple" />
+        <KPICard title="Posts" value={summary.totalPosts} icon={TrendingUp} tone="indigo" />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-4">
+      {/* EXECUTIVE TASK BREAKDOWN */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <ExecutiveCard
           title="WhatsApp Output"
           value={summary.whatsappGroups + summary.whatsappPosts}
-          description={`${summary.whatsappGroups} groups joined and ${summary.whatsappPosts} posts done.`}
+          description={`${summary.whatsappGroups} groups & ${summary.whatsappPosts} posts.`}
           icon={MessageSquareText}
           tone="emerald"
         />
-
         <ExecutiveCard
           title="Telegram Output"
           value={summary.telegramGroups + summary.telegramPosts}
-          description={`${summary.telegramGroups} groups joined and ${summary.telegramPosts} posts done.`}
+          description={`${summary.telegramGroups} groups & ${summary.telegramPosts} posts.`}
           icon={Activity}
           tone="blue"
         />
-
         <ExecutiveCard
           title="Facebook Output"
           value={summary.facebookGroups + summary.facebookPosts}
-          description={`${summary.facebookGroups} groups joined and ${summary.facebookPosts} posts done.`}
+          description={`${summary.facebookGroups} groups & ${summary.facebookPosts} posts.`}
           icon={Globe2}
           tone="purple"
         />
-
         <ExecutiveCard
           title="Login / Clean"
           value={`${summary.resourceLogin} / ${summary.accountClean}`}
-          description="Total resource login and account clean completed."
+          description="Total resources processed."
           icon={Key}
           tone="amber"
         />
       </section>
 
-      <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl">
-        <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="flex items-center gap-3 text-2xl font-black text-[var(--foreground)]">
-              <Filter className="h-6 w-6 text-[var(--primary)]" />
-              Advanced Employee Filter
-            </h2>
+      {/* MAIN CONTENT GRID (Main + Aside) */}
+      <div className="grid gap-5 lg:grid-cols-12 items-start">
+        {/* LEFT COLUMN: Charts & Tables */}
+        <div className="space-y-5 lg:col-span-8">
+          
+          {/* FILTER TOOLBAR */}
+          <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl overflow-hidden">
+            <div className="border-b border-[var(--border)] p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div>
+                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+                  <Filter className="h-4 w-4 text-[var(--primary)]" />
+                  Advanced Filter
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Refine reports by status or custom date ranges.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2">
+                {["ALL", "TODAY", "7_DAYS", "30_DAYS"].map((item) => (
+                  <Link
+                    key={item}
+                    href={buildFilterHref({ userId, filter: item, status })}
+                    className={`inline-flex items-center h-7 px-2.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition ${
+                      filter === item
+                        ? "bg-[var(--primary)] text-white border border-[var(--primary)]"
+                        : "bg-[var(--background)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    }`}
+                  >
+                    {item.replace("_", " ")}
+                  </Link>
+                ))}
+              </div>
+            </div>
 
-            <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-              Filter this employee’s reports by status, quick range, or custom
-              date range.
-            </p>
-          </div>
+            <form method="GET" className="p-4 sm:p-5 bg-[var(--background)]/30 space-y-3">
+              <div className="grid gap-3 sm:grid-cols-4">
+                <label className="space-y-1 block">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                    <ShieldCheck className="h-3 w-3" /> Status
+                  </span>
+                  <select
+                    name="status"
+                    defaultValue={status}
+                    className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-semibold outline-none transition focus:border-[var(--primary)]"
+                  >
+                    <option value="ALL">All Status</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="REJECTED">Rejected</option>
+                  </select>
+                </label>
+                
+                <label className="space-y-1 block">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                    <CalendarDays className="h-3 w-3" /> Quick Filter
+                  </span>
+                  <select
+                    name="filter"
+                    defaultValue={filter}
+                    className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-semibold outline-none transition focus:border-[var(--primary)]"
+                  >
+                    <option value="ALL">All Time</option>
+                    <option value="TODAY">Today</option>
+                    <option value="7_DAYS">Last 7 Days</option>
+                    <option value="30_DAYS">Last 30 Days</option>
+                  </select>
+                </label>
 
-          {hasFilter && (
-            <Link
-              href={`/incharge/analytics/marketing/${userId}`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--background)] px-5 py-3 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Clear
-            </Link>
-          )}
-        </div>
+                <label className="space-y-1 block">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                    <CalendarDays className="h-3 w-3" /> From
+                  </span>
+                  <input
+                    type="date"
+                    name="from"
+                    defaultValue={from}
+                    className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-semibold outline-none transition focus:border-[var(--primary)]"
+                  />
+                </label>
 
-        <form
-          method="GET"
-          className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]"
-        >
-          <label className="space-y-2">
-            <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Status
-            </span>
+                <label className="space-y-1 block">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                    <CalendarDays className="h-3 w-3" /> To
+                  </span>
+                  <input
+                    type="date"
+                    name="to"
+                    defaultValue={to}
+                    className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-semibold outline-none transition focus:border-[var(--primary)]"
+                  />
+                </label>
+              </div>
+              
+              <div className="flex items-center justify-end gap-2 pt-1">
+                {hasFilter && (
+                  <Link
+                    href={`/incharge/analytics/marketing/${userId}`}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-medium text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
+                  >
+                    <RotateCcw className="h-3 w-3" /> Reset
+                  </Link>
+                )}
+                <button
+                  type="submit"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 text-xs font-medium text-white transition hover:opacity-90"
+                >
+                  <Filter className="h-3.5 w-3.5" /> Apply Filters
+                </button>
+              </div>
+            </form>
+          </section>
 
-            <select
-              name="status"
-              defaultValue={status}
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-            >
-              <option value="ALL">All Status</option>
-              <option value="APPROVED">Approved</option>
-              <option value="PENDING">Pending</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
-          </label>
-
-          <label className="space-y-2">
-            <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-              <CalendarDays className="h-3.5 w-3.5" />
-              Quick Date
-            </span>
-
-            <select
-              name="filter"
-              defaultValue={filter}
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-            >
-              <option value="ALL">All Time</option>
-              <option value="TODAY">Today</option>
-              <option value="7_DAYS">Last 7 Days</option>
-              <option value="30_DAYS">Last 30 Days</option>
-            </select>
-          </label>
-
-          <label className="space-y-2">
-            <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-              <CalendarDays className="h-3.5 w-3.5" />
-              From Date
-            </span>
-
-            <input
-              type="date"
-              name="from"
-              defaultValue={from}
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-            />
-          </label>
-
-          <label className="space-y-2">
-            <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-              <CalendarDays className="h-3.5 w-3.5" />
-              To Date
-            </span>
-
-            <input
-              type="date"
-              name="to"
-              defaultValue={to}
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-bold outline-none transition focus:border-[var(--primary)]"
-            />
-          </label>
-
-          <button
-            type="submit"
-            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-6 text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:opacity-90"
-          >
-            <Filter className="h-4 w-4" />
-            Apply
-          </button>
-
-          <Link
-            href={`/incharge/analytics/marketing/${userId}`}
-            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--background)] px-6 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Link>
-        </form>
-
-        <div className="mt-5 flex flex-wrap gap-2">
-          {["ALL", "TODAY", "7_DAYS", "30_DAYS"].map((item) => (
-            <Link
-              key={item}
-              href={buildFilterHref({
-                userId,
-                filter: item,
-                status,
-              })}
-              className={`rounded-xl border px-4 py-2 text-[10px] font-black uppercase tracking-widest transition ${
-                filter === item
-                  ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                  : "border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-              }`}
-            >
-              {item.replace("_", " ")}
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-8 lg:grid-cols-12">
-        <div className="space-y-8 lg:col-span-8">
-          <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 p-8 shadow-sm backdrop-blur-xl">
-            <div className="mb-8">
-              <h2 className="flex items-center gap-3 text-2xl font-black text-[var(--foreground)]">
-                <BarChart3 className="h-6 w-6 text-[var(--primary)]" />
+          {/* DAILY ACTIVITY TRENDS */}
+          <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 sm:p-5 shadow-sm backdrop-blur-xl">
+            <div className="mb-4">
+              <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+                <BarChart3 className="h-4 w-4 text-[var(--primary)]" />
                 Daily Activity Trend
               </h2>
-
-              <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-                Date-wise combined marketing performance for this employee.
-              </p>
             </div>
 
             {chartData.length === 0 ? (
-              <EmptyState message="No chart data available for selected filters." />
+              <EmptyState message="No chart data available for selected filters." compact />
             ) : (
-              <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {chartData.map((row: any) => {
                   const maxValue = Math.max(
                     row.totalGroups,
@@ -509,14 +424,13 @@ export default async function InchargeMarketingUserAnalyticsPage({
                   return (
                     <div
                       key={row.date}
-                      className="rounded-[24px] border border-[var(--border)] bg-[var(--background)]/70 p-5"
+                      className="rounded-lg border border-[var(--border)] bg-[var(--background)]/70 p-3 sm:p-4"
                     >
-                      <div className="mb-4 flex items-center justify-between">
-                        <p className="text-sm font-black text-[var(--foreground)]">
+                      <div className="mb-3 flex items-center justify-between border-b border-[var(--border)] pb-2">
+                        <p className="text-xs font-bold text-[var(--foreground)]">
                           {row.date}
                         </p>
-
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
                           Total:{" "}
                           {row.totalGroups +
                             row.totalPosts +
@@ -525,33 +439,12 @@ export default async function InchargeMarketingUserAnalyticsPage({
                         </p>
                       </div>
 
-                      <TrendBar
-                        label="Groups"
-                        value={row.totalGroups}
-                        max={maxValue}
-                        tone="blue"
-                      />
-
-                      <TrendBar
-                        label="Posts"
-                        value={row.totalPosts}
-                        max={maxValue}
-                        tone="purple"
-                      />
-
-                      <TrendBar
-                        label="Login"
-                        value={row.resourceLogin}
-                        max={maxValue}
-                        tone="emerald"
-                      />
-
-                      <TrendBar
-                        label="Clean"
-                        value={row.accountClean}
-                        max={maxValue}
-                        tone="pink"
-                      />
+                      <div className="space-y-2.5">
+                        <TrendBar label="Groups" value={row.totalGroups} max={maxValue} tone="blue" />
+                        <TrendBar label="Posts" value={row.totalPosts} max={maxValue} tone="purple" />
+                        <TrendBar label="Login" value={row.resourceLogin} max={maxValue} tone="emerald" />
+                        <TrendBar label="Clean" value={row.accountClean} max={maxValue} tone="pink" />
+                      </div>
                     </div>
                   );
                 })}
@@ -559,170 +452,176 @@ export default async function InchargeMarketingUserAnalyticsPage({
             )}
           </section>
 
-          <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl">
-            <div className="border-b border-[var(--border)]/60 p-6">
-              <h2 className="flex items-center gap-3 text-2xl font-black text-[var(--foreground)]">
-                <Database className="h-6 w-6 text-[var(--primary)]" />
+          {/* FULL REPORT LEDGER */}
+          <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 shadow-sm backdrop-blur-xl overflow-hidden">
+            <div className="border-b border-[var(--border)] p-4 sm:p-5">
+              <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+                <Database className="h-4 w-4 text-[var(--primary)]" />
                 Full Report Ledger
               </h2>
-
-              <p className="mt-2 text-sm font-medium text-[var(--muted-foreground)]">
-                Every report entry submitted by this employee under selected
-                filter.
-              </p>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1200px] text-left">
-                <thead className="border-b border-[var(--border)]/60 bg-[var(--background)]/50">
-                  <tr>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Groups</TableHead>
-                    <TableHead>Posts</TableHead>
-                    <TableHead>Login</TableHead>
-                    <TableHead>Clean</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Updated</TableHead>
-                  </tr>
-                </thead>
+            <div>
+              {reports.length === 0 ? (
+                <EmptyState message="No reports found for selected filters." />
+              ) : (
+                <>
+                  {/* DESKTOP TABLE */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full min-w-[900px] text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-[var(--border)] bg-[var(--background)]/50">
+                          <TableHead>Date</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Groups</TableHead>
+                          <TableHead>Posts</TableHead>
+                          <TableHead>Login</TableHead>
+                          <TableHead>Clean</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Updated</TableHead>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--border)]/50">
+                        {reports.map((report: any) => {
+                          const StatusIcon = getStatusIcon(report.status);
+                          return (
+                            <tr
+                              key={report.id || report._id}
+                              className="transition-colors hover:bg-[var(--background)]/60 text-xs"
+                            >
+                              <td className="px-4 py-3 whitespace-nowrap font-medium text-[var(--foreground)]">
+                                {formatDate(report.reportDate)}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-[var(--muted-foreground)]">
+                                {report.countryLabel || formatCountry(report.country)}
+                              </td>
+                              <TableValue value={report.totalGroups} />
+                              <TableValue value={report.totalPosts} />
+                              <TableValue value={report.resourceLogin ?? 0} />
+                              <TableValue value={report.accountClean ?? 0} />
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(
+                                    report.status
+                                  )}`}
+                                >
+                                  <StatusIcon className="h-3 w-3" />
+                                  {report.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-[var(--muted-foreground)]">
+                                {formatDateTime(report.updatedAt)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
-                <tbody className="divide-y divide-[var(--border)]/50">
-                  {reports.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="px-8 py-16 text-center text-sm font-semibold text-[var(--muted-foreground)]"
-                      >
-                        No reports found for selected filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    reports.map((report: any) => {
+                  {/* MOBILE LIST */}
+                  <div className="block lg:hidden divide-y divide-[var(--border)]">
+                    {reports.map((report: any) => {
                       const StatusIcon = getStatusIcon(report.status);
-
                       return (
-                        <tr
-                          key={report.id || report._id}
-                          className="transition hover:bg-[var(--background)]/60"
-                        >
-                          <td className="whitespace-nowrap px-8 py-5 text-sm font-black text-[var(--foreground)]">
-                            {formatDate(report.reportDate)}
-                          </td>
-
-                          <td className="whitespace-nowrap px-8 py-5 text-sm font-semibold text-[var(--muted-foreground)]">
-                            {report.countryLabel || formatCountry(report.country)}
-                          </td>
-
-                          <TableValue value={report.totalGroups} />
-                          <TableValue value={report.totalPosts} />
-                          <TableValue value={report.resourceLogin ?? 0} />
-                          <TableValue value={report.accountClean ?? 0} />
-
-                          <td className="whitespace-nowrap px-8 py-5">
+                        <div key={report.id || report._id} className="p-4 bg-[var(--background)]/30 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold">{formatDate(report.reportDate)}</span>
                             <span
-                              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest ${getStatusStyle(
+                              className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${getStatusStyle(
                                 report.status
                               )}`}
                             >
-                              <StatusIcon className="h-3.5 w-3.5" />
+                              <StatusIcon className="h-3 w-3" />
                               {report.status}
                             </span>
-                          </td>
-
-                          <td className="whitespace-nowrap px-8 py-5 text-xs font-semibold text-[var(--muted-foreground)]">
-                            {formatDateTime(report.updatedAt)}
-                          </td>
-                        </tr>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[11px] border border-[var(--border)] bg-[var(--background)]/60 rounded-md p-2">
+                            <div>
+                              <span className="block text-[var(--muted-foreground)]">Country</span>
+                              <span className="font-medium">{report.countryLabel || formatCountry(report.country)}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="block text-[var(--muted-foreground)]">G / P / L / C</span>
+                              <span className="font-semibold">
+                                {report.totalGroups} / {report.totalPosts} / {report.resourceLogin ?? 0} / {report.accountClean ?? 0}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-[var(--muted-foreground)] text-right">
+                            Updated: {formatDateTime(report.updatedAt)}
+                          </div>
+                        </div>
                       );
-                    })
-                  )}
-                </tbody>
-              </table>
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </section>
         </div>
 
-        <aside className="space-y-8 lg:col-span-4">
-          <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 p-8 shadow-sm backdrop-blur-xl">
-            <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-[var(--foreground)]">
-              <User className="h-5 w-5 text-[var(--primary)]" />
+        {/* RIGHT COLUMN: Aside Info */}
+        <aside className="space-y-5 lg:col-span-4">
+          
+          <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 sm:p-5 shadow-sm backdrop-blur-xl">
+            <h2 className="mb-4 flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+              <User className="h-4 w-4 text-[var(--primary)]" />
               Employee Details
             </h2>
 
-            <div className="space-y-4">
-              <InfoRow icon={Fingerprint} label="Employee ID" value={employeeId} mono />
+            <div className="space-y-2">
+              <InfoRow icon={Fingerprint} label="ID" value={employeeId} mono />
               <InfoRow icon={User} label="Name" value={employee.fullName} />
               <InfoRow icon={Mail} label="Email" value={employee.email} />
-              <InfoRow icon={Phone} label="Phone" value={employee.phone || "Not Provided"} />
+              <InfoRow icon={Phone} label="Phone" value={employee.phone || "N/A"} />
               <InfoRow icon={ShieldCheck} label="Status" value={employee.status} />
               <InfoRow icon={CalendarDays} label="Joined" value={formatDate(employee.createdAt)} />
             </div>
           </section>
 
-          <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 p-8 shadow-sm backdrop-blur-xl">
-            <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-[var(--foreground)]">
-              <MapPin className="h-5 w-5 text-[var(--primary)]" />
+          <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 sm:p-5 shadow-sm backdrop-blur-xl">
+            <h2 className="mb-4 flex items-center gap-2 text-sm sm:text-base font-semibold text-[var(--foreground)]">
+              <MapPin className="h-4 w-4 text-[var(--primary)]" />
               Country Performance
             </h2>
 
             {countries.length === 0 ? (
               <EmptyState message="No country data available." compact />
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {countries.map((country: any) => (
                   <div
                     key={country.country}
-                    className="rounded-[24px] border border-[var(--border)] bg-[var(--background)]/70 p-5"
+                    className="rounded-lg border border-[var(--border)] bg-[var(--background)]/70 p-3 sm:p-4"
                   >
-                    <div className="mb-4 flex items-center justify-between gap-4">
+                    <div className="mb-3 flex items-center justify-between border-b border-[var(--border)] pb-2">
                       <div>
-                        <p className="font-black text-[var(--foreground)]">
+                        <p className="text-xs font-bold text-[var(--foreground)]">
                           {country.countryLabel}
                         </p>
-
-                        <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
-                          {country.totalReports} Report
-                          {country.totalReports > 1 ? "s" : ""}
+                        <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">
+                          {country.totalReports} Report{country.totalReports > 1 ? "s" : ""}
                         </p>
                       </div>
-
-                      <span className="rounded-xl border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-3 py-1.5 text-xs font-black text-[var(--primary)]">
-                        {country.groups + country.posts}
+                      <span className="rounded bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--primary)]">
+                        {country.groups + country.posts} Outputs
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <MiniStat title="Groups" value={country.groups} />
-                      <MiniStat title="Posts" value={country.posts} />
-                      <MiniStat title="Login" value={country.login} />
-                      <MiniStat title="Clean" value={country.clean} />
+                    <div className="grid grid-cols-4 gap-2">
+                      <MiniStat title="Grps" value={country.groups} />
+                      <MiniStat title="Psts" value={country.posts} />
+                      <MiniStat title="Lgn" value={country.login} />
+                      <MiniStat title="Cln" value={country.clean} />
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </section>
-
-          {/* <section className="rounded-[34px] border border-[var(--border)] bg-[var(--card)]/40 p-8 shadow-sm backdrop-blur-xl">
-            <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-[var(--foreground)]">
-              <Target className="h-5 w-5 text-[var(--primary)]" />
-              Task Breakdown
-            </h2>
-
-            <div className="grid grid-cols-2 gap-4">
-              <MiniStat title="WA Groups" value={summary.whatsappGroups} />
-              <MiniStat title="WA Posts" value={summary.whatsappPosts} />
-              <MiniStat title="TG Groups" value={summary.telegramGroups} />
-              <MiniStat title="TG Posts" value={summary.telegramPosts} />
-              <MiniStat title="FB Groups" value={summary.facebookGroups} />
-              <MiniStat title="FB Posts" value={summary.facebookPosts} />
-              <MiniStat title="Login" value={summary.resourceLogin} />
-              <MiniStat title="Clean" value={summary.accountClean} />
-            </div>
-          </section> */}
         </aside>
-      </section>
+      </div>
     </div>
   );
 }
@@ -737,14 +636,14 @@ function HeaderMetric({
   icon: React.ElementType;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-4 shadow-sm">
-      <Icon className="mb-3 h-4 w-4 text-[var(--primary)]" />
-
-      <p className="text-2xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
+    <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)]/60 px-3 py-1.5 shadow-sm">
+      <Icon className="h-3.5 w-3.5 text-[var(--primary)]" />
+      <div>
+        <div className="text-xs font-bold text-[var(--foreground)]">{value}</div>
+        <div className="text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </div>
+      </div>
     </div>
   );
 }
@@ -770,16 +669,16 @@ function KPICard({
   };
 
   return (
-    <div className="rounded-[24px] border border-[var(--border)] bg-[var(--card)]/40 p-6 shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:border-[var(--primary)]/30">
-      <div className={`mb-5 w-fit rounded-2xl border p-3 ${styles[tone]}`}>
-        <Icon className="h-5 w-5" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-3.5 shadow-sm backdrop-blur-xl transition hover:border-[var(--primary)]/30">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          {title}
+        </span>
+        <div className={`rounded-md border p-1.5 ${styles[tone]}`}>
+          <Icon className="h-3.5 w-3.5" />
+        </div>
       </div>
-
-      <h3 className="text-3xl font-black text-[var(--foreground)]">{value}</h3>
-
-      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        {title}
-      </p>
+      <h3 className="text-xl font-bold tracking-tight text-[var(--foreground)]">{value}</h3>
     </div>
   );
 }
@@ -805,20 +704,18 @@ function ExecutiveCard({
   };
 
   return (
-    <div className="rounded-[30px] border border-[var(--border)] bg-[var(--card)]/40 p-7 shadow-sm backdrop-blur-xl">
-      <div className={`mb-6 w-fit rounded-2xl border p-3 ${styles[tone]}`}>
-        <Icon className="h-6 w-6" />
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/40 p-4 shadow-sm backdrop-blur-xl">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`rounded-lg border p-2 ${styles[tone]}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          Summary
+        </span>
       </div>
-
-      <h3 className="text-4xl font-black text-[var(--foreground)]">{value}</h3>
-
-      <p className="mt-2 text-sm font-bold text-[var(--foreground)]">
-        {title}
-      </p>
-
-      <p className="mt-3 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
-        {description}
-      </p>
+      <h3 className="text-2xl font-bold tracking-tight text-[var(--foreground)]">{value}</h3>
+      <p className="mt-0.5 text-xs font-semibold text-[var(--foreground)]">{title}</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted-foreground)]">{description}</p>
     </div>
   );
 }
@@ -835,14 +732,13 @@ function InfoRow({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 px-4 py-3">
-      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-        <Icon className="h-4 w-4 text-[var(--primary)]" />
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--background)]/50 px-3 py-2">
+      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+        <Icon className="h-3 w-3 text-[var(--primary)]" />
         {label}
       </span>
-
       <span
-        className={`max-w-[190px] truncate text-sm font-bold text-[var(--foreground)] ${
+        className={`max-w-[150px] truncate text-xs font-semibold text-[var(--foreground)] ${
           mono ? "font-mono" : ""
         }`}
       >
@@ -854,10 +750,9 @@ function InfoRow({
 
 function MiniStat({ title, value }: { title: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)]/70 p-4">
-      <p className="text-xl font-black text-[var(--foreground)]">{value}</p>
-
-      <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+    <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--background)]/50 p-2 text-center">
+      <p className="text-sm font-bold text-[var(--foreground)]">{value}</p>
+      <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
         {title}
       </p>
     </div>
@@ -885,13 +780,12 @@ function TrendBar({
   const width = max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0;
 
   return (
-    <div className="mb-3">
-      <div className="mb-1.5 flex items-center justify-between text-xs font-bold">
-        <span className="text-[var(--muted-foreground)]">{label}</span>
+    <div>
+      <div className="mb-1 flex items-center justify-between text-[10px] font-bold">
+        <span className="uppercase tracking-wider text-[var(--muted-foreground)]">{label}</span>
         <span className="font-mono text-[var(--foreground)]">{value}</span>
       </div>
-
-      <div className="h-2.5 overflow-hidden rounded-full bg-[var(--card)]">
+      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--border)]/50">
         <div
           className={`h-full rounded-full ${styles[tone]}`}
           style={{ width: `${width}%` }}
@@ -910,24 +804,18 @@ function EmptyState({
 }) {
   return (
     <div
-      className={`rounded-[24px] border border-dashed border-[var(--border)] bg-[var(--background)]/60 text-center ${
-        compact ? "p-6" : "p-12"
+      className={`rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)]/30 text-center ${
+        compact ? "p-4" : "p-8 sm:p-12"
       }`}
     >
-      <p className="text-sm font-bold text-[var(--muted-foreground)]">
-        {message}
-      </p>
+      <p className="text-xs font-semibold text-[var(--muted-foreground)]">{message}</p>
     </div>
   );
 }
 
-function TableHead({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function TableHead({ children }: { children: React.ReactNode }) {
   return (
-    <th className="whitespace-nowrap px-8 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+    <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] whitespace-nowrap">
       {children}
     </th>
   );
@@ -935,7 +823,7 @@ function TableHead({
 
 function TableValue({ value }: { value: string | number }) {
   return (
-    <td className="whitespace-nowrap px-8 py-5 text-sm font-black text-[var(--foreground)]">
+    <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-[var(--foreground)]">
       {value}
     </td>
   );
